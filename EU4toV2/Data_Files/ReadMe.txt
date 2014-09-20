@@ -46,6 +46,7 @@ An (incomplete) list of those who contributed effort to this mammoth undertaking
 Idhrendur		- Project Lead, Programming
 Ztaesek			- Programming, Data Files
 theosZA			- Programming
+PTSnoop			- Programming, graphics, analysis
 kwsdev			- data files
 TheSpartanD		- Data Files
 LordBawbag		- Data Files
@@ -54,5 +55,9 @@ LordOfTurtles		- Data Files
 localtoast		- Data Files
 G_Morgan		- Data Files
 rageair			- Data Files
+LowTartare		- Graphics
+ChortlingGnome		- Graphics
+Magc8Ball		- Graphics
+
 
  - AND ALL THE OTHERS WHO GAVE THEIR INPUT ON THE FORUM -

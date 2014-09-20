@@ -1,3 +1,26 @@
+/*Copyright (c) 2014 The Paradox Game Converters Project
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
+
+
+
 #include "V2Country.h"
 #include <algorithm>
 #include <math.h>
@@ -12,7 +35,6 @@
 #include "../EU4World/Eu4Country.h"
 #include "../EU4World/EU4Province.h"
 #include "../EU4World/EU4Relations.h"
-#include "../EU4World/EU4Loan.h"
 #include "../EU4World/EU4Leader.h"
 #include "V2World.h"
 #include "V2State.h"
@@ -37,7 +59,7 @@ V2Country::V2Country(string _tag, string _commonCountryFile, vector<V2Party*> _p
 	newCountry = _newCountry;
 
 	tag					= _tag;
-	commonCountryFile	= _commonCountryFile;
+	commonCountryFile	= localisation.convertCountryFileName(_commonCountryFile);
 	parties				= _parties;
 	rulingParty			= "";
 
@@ -51,6 +73,10 @@ V2Country::V2Country(string _tag, string _commonCountryFile, vector<V2Party*> _p
 	for (unsigned int i = 0; i < HOD_naval_exercises; i++)
 	{
 		HODInventions[i] = illegal;
+	}
+	for (unsigned int i = 0; i < HOD_NNM_naval_exercises; i++)
+	{
+		HODNNMInventions[i] = illegal;
 	}
 
 	leadership		= 0.0;
@@ -125,9 +151,9 @@ void V2Country::output() const
 	{
 		fprintf(output, "primary_culture = %s\n", primaryCulture.c_str());
 	}
-	for (unsigned int i = 0; i < acceptedCultures.size(); i++)
+	for (set<string>::iterator i = acceptedCultures.begin(); i != acceptedCultures.end(); i++)
 	{
-		fprintf(output, "culture = %s\n", acceptedCultures[i].c_str());
+		fprintf(output, "culture = %s\n", i->c_str());
 	}
 	if (religion != "")
 	{
@@ -173,7 +199,7 @@ void V2Country::output() const
 		}
 	}
 	fprintf(output, "prestige=%f\n", prestige);
-
+	fprintf(output, "\n");
 	fprintf(output, "# Social Reforms\n");
 	fprintf(output, "wage_reform = no_minimum_wage\n");
 	fprintf(output, "work_hours = no_work_hour_limit\n");
@@ -182,6 +208,11 @@ void V2Country::output() const
 	fprintf(output, "unemployment_subsidies = no_subsidies\n");
 	fprintf(output, "pensions = no_pensions\n");
 	fprintf(output, "school_reforms = no_schools\n");
+
+	if (reforms != NULL)
+	{
+		reforms->output(output);
+	}
 	
 	/*for (vector<V2Leader*>::const_iterator itr = leaders.begin(); itr != leaders.end(); ++itr)
 	{
@@ -197,7 +228,11 @@ void V2Country::output() const
 	}
 	fprintf(output, "	schools=\"%s\"\n", techSchool.c_str());*/
 
+	fprintf(output, "oob = \"%s\"\n", (tag + "_OOB.txt").c_str());
+
 	fclose(output);
+
+	outputOOB();
 
 	if (newCountry)
 	{
@@ -268,7 +303,27 @@ void V2Country::outputElection(FILE* output) const
 }
 
 
-void V2Country::initFromEU4Country(const EU4Country* _srcCountry, vector<string> outputOrder, const CountryMapping& countryMap, cultureMapping cultureMap, religionMapping religionMap, unionCulturesMap unionCultures, governmentMapping governmentMap, inverseProvinceMapping inverseProvinceMap, vector<V2TechSchool> techSchools, map<int,int>& leaderMap, const V2LeaderTraits& lt)
+void V2Country::outputOOB() const
+{
+	FILE* output;
+	if (fopen_s(&output, ("Output\\" + Configuration::getOutputName() + "\\history\\units\\" + tag + "_OOB.txt").c_str(), "w") != 0)
+	{
+		LOG(LogLevel::Error) << "Could not create OOB file " << (tag + "_OOB.txt");
+		exit(-1);
+	}
+
+	fprintf(output, "#Sphere of Influence\n");
+	fprintf(output, "\n");
+	for (map<string, V2Relations*>::const_iterator relationsItr = relations.begin(); relationsItr != relations.end(); relationsItr++)
+	{
+		relationsItr->second->output(output);
+	}
+
+	fclose(output);
+}
+
+
+void V2Country::initFromEU4Country(const EU4Country* _srcCountry, vector<string> outputOrder, const CountryMapping& countryMap, cultureMapping cultureMap, religionMapping religionMap, unionCulturesMap unionCultures, governmentMapping governmentMap, inverseProvinceMapping inverseProvinceMap, vector<V2TechSchool> techSchools, map<int, int>& leaderMap, const V2LeaderTraits& lt, const map<string, double>& UHLiberalIdeas, const map<string, double>& UHReactionaryIdeas, const vector< pair<string, int> >& literacyIdeas)
 {
 	srcCountry = _srcCountry;
 
@@ -385,7 +440,7 @@ void V2Country::initFromEU4Country(const EU4Country* _srcCountry, vector<string>
 		}
 		if (!matched)
 		{
-			LOG(LogLevel::Debug) << "No culture mapping defined for " << srcCulture << " (" << srcCountry->getTag() << " -> " << tag << ')';
+			LOG(LogLevel::Warning) << "No culture mapping defined for " << srcCulture << " (" << srcCountry->getTag() << " -> " << tag << ')';
 		}
 	}
 
@@ -433,19 +488,16 @@ void V2Country::initFromEU4Country(const EU4Country* _srcCountry, vector<string>
 				}
 				if (match)
 				{
-					acceptedCultures.push_back(j->dstCulture);
+					acceptedCultures.insert(j->dstCulture);
 					matched = true;
 				}
 			}
 		}
 		if (!matched)
 		{
-			LOG(LogLevel::Warning) << "No culture mapping defined for " << srcCulture << " (" << srcCountry->getTag() << " -> " << tag << ')';
+			LOG(LogLevel::Warning) << "No culture mapping defined for " << *i << " (" << srcCountry->getTag() << " -> " << tag << ')';
 		}
 	}
-
-	// Reforms
-	//reforms		=  new V2Reforms(srcCountry);
 
 	// Government
 	string srcGovernment = srcCountry->getGovernment();
@@ -463,17 +515,19 @@ void V2Country::initFromEU4Country(const EU4Country* _srcCountry, vector<string>
 	}
 
 	//  Politics
-	double liberalEffect			=  (srcCountry->hasNationalIdea("innovativeness_ideas") + 1) * 0.0125;
-	liberalEffect					+= (srcCountry->hasNationalIdea("plutocracy_ideas") + 1) * 0.0125;
-	liberalEffect					+= (srcCountry->hasNationalIdea("trade_ideas") + 1) * 0.0125;
-	liberalEffect					+= (srcCountry->hasNationalIdea("economic_ideas") + 1) * 0.0125;
-	double reactionaryEffect	=  (srcCountry->hasNationalIdea("aristocracy_ideas") + 1) * 0.0125;
-	reactionaryEffect				+= (srcCountry->hasNationalIdea("defensive_ideas") + 1) * 0.0125;
-	reactionaryEffect				+= (srcCountry->hasNationalIdea("quantity_ideas") + 1) * 0.0125;
-	reactionaryEffect				+= (srcCountry->hasNationalIdea("expansion_ideas") + 1) * 0.0125;
+	double liberalEffect = 0.0;
+	for (map<string, double>::const_iterator UHLiberalItr = UHLiberalIdeas.begin(); UHLiberalItr != UHLiberalIdeas.end(); UHLiberalItr++)
+	{
+		liberalEffect += (srcCountry->hasNationalIdea(UHLiberalItr->first) + 1) * UHLiberalItr->second;
+	}
+	double reactionaryEffect = 0.0;
+	for (map<string, double>::const_iterator UHReactionaryItr = UHReactionaryIdeas.begin(); UHReactionaryItr != UHReactionaryIdeas.end(); UHReactionaryItr++)
+	{
+		reactionaryEffect += (srcCountry->hasNationalIdea(UHReactionaryItr->first) + 1) * UHReactionaryItr->second;
+	}
 	upperHouseReactionary		=  static_cast<int>(5  + (100 * reactionaryEffect));
 	upperHouseLiberal				=  static_cast<int>(10 + (100 * liberalEffect));
-	upperHouseConservative		=  static_cast<int>(85 - (100 * (reactionaryEffect + liberalEffect)));
+	upperHouseConservative		= 100 - (upperHouseReactionary + upperHouseLiberal);
 	LOG(LogLevel::Debug) << tag << " has an Upper House of " << upperHouseReactionary << " reactionary, "
 																				<< upperHouseConservative << " conservative, and "
 																				<< upperHouseLiberal << " liberal";
@@ -512,6 +566,9 @@ void V2Country::initFromEU4Country(const EU4Country* _srcCountry, vector<string>
 	}
 	LOG(LogLevel::Debug) << tag << " ruling party is " << rulingParty;
 
+	// Reforms
+	reforms		=  new V2Reforms(this, srcCountry);
+
 	// Relations
 	vector<EU4Relations*> srcRelations = srcCountry->getRelations();
 	if (srcRelations.size() > 0)
@@ -522,11 +579,10 @@ void V2Country::initFromEU4Country(const EU4Country* _srcCountry, vector<string>
 			if (!V2Tag.empty())
 			{
 				V2Relations* v2r = new V2Relations(V2Tag, *itr);
-				relations.push_back(v2r);
+				relations.insert(make_pair(V2Tag, v2r));
 			}
 		}
 	}
-	sortRelations(outputOrder);
 
 	//// Finances
 	//money				= MONEYFACTOR * srcCountry->getTreasury();
@@ -560,33 +616,12 @@ void V2Country::initFromEU4Country(const EU4Country* _srcCountry, vector<string>
 
 	// Literacy
 	literacy = 0.1;
-	if (srcCountry->hasNationalIdea("innovativeness_ideas") >= 3)
+	for (vector< pair<string, int> >::const_iterator literacyItr = literacyIdeas.begin(); literacyItr != literacyIdeas.end(); literacyItr++)
 	{
-		literacy += 0.1;
-	}
-	if (srcCountry->hasNationalIdea("innovativeness_ideas") >= 4)
-	{
-		literacy += 0.1;
-	}
-	if (srcCountry->hasNationalIdea("religious_ideas") >= 2)
-	{
-		literacy += 0.1;
-	}
-	if (srcCountry->hasNationalIdea("economic_ideas") >= 1)
-	{
-		literacy += 0.1;
-	}
-	if (srcCountry->hasNationalIdea("economic_ideas") >= 2)
-	{
-		literacy += 0.1;
-	}
-	if (srcCountry->hasNationalIdea("economic_ideas") >= 5)
-	{
-		literacy += 0.1;
-	}
-	if (srcCountry->hasNationalIdea("administrative_ideas") >= 6)
-	{
-		literacy += 0.1;
+		if (srcCountry->hasNationalIdea(literacyItr->first) >= literacyItr->second)
+		{
+			literacy += 0.1;
+		}
 	}
 	if ( (srcCountry->getReligion() == "Protestant") || (srcCountry->getReligion() == "Confucianism") || (srcCountry->getReligion() == "Reformed") )
 	{
@@ -694,31 +729,37 @@ void V2Country::initFromEU4Country(const EU4Country* _srcCountry, vector<string>
 	//	}
 	//}
 
-	//double totalInvestment			= landInvestment + navalInvestment + tradeInvestment + productionInvestment + governmentInvestment;
-	//landInvestment						/= totalInvestment;
-	//navalInvestment					/= totalInvestment;
-	//tradeInvestment					/= totalInvestment;
-	//productionInvestment				/= totalInvestment;
-	//governmentInvestment				/= totalInvestment;
+	double armyInvestment			= srcCountry->getArmyInvestment();
+	double navyInvestment			= srcCountry->getNavyInvestment();
+	double commerceInvestment		= srcCountry->getCommerceInvestment();
+	double industryInvestment		= srcCountry->getIndustryInvestment();
+	double cultureInvestment		= srcCountry->getCultureInvestment();
+	
+	double totalInvestment	 = armyInvestment + navyInvestment + commerceInvestment + industryInvestment + cultureInvestment;
+	armyInvestment				/= totalInvestment;
+	navyInvestment				/= totalInvestment;
+	commerceInvestment		/= totalInvestment;
+	industryInvestment		/= totalInvestment;
+	cultureInvestment			/= totalInvestment;
 
-	//double lowestScore = 1.0;
-	//string bestSchool = "traditional_academic";
+	double lowestScore = 1.0;
+	string bestSchool = "traditional_academic";
 
-	//for (unsigned int j = 0; j < techSchools.size(); j++)
-	//{
-	//	double newScore = abs(landInvestment			-  techSchools[j].armyInvestment			- 0.2) +
-	//							abs(navalInvestment			-  techSchools[j].navyInvestment			- 0.2) +
-	//							abs(tradeInvestment			-  techSchools[j].commerceInvestment	- 0.2) +
-	//							abs(productionInvestment	-  techSchools[j].industryInvestment	- 0.2) +
-	//							abs(governmentInvestment	-  techSchools[j].cultureInvestment		- 0.2);
-	//	if (newScore < lowestScore)
-	//	{
-	//		bestSchool	= techSchools[j].name;
-	//		lowestScore	= newScore;
-	//	}
-	//}
-	//log("	%s has tech school %s\n", tag.c_str(), bestSchool.c_str());
-	//techSchool = bestSchool;
+	for (unsigned int j = 0; j < techSchools.size(); j++)
+	{
+		double newScore = abs(armyInvestment		- techSchools[j].armyInvestment - 0.2) +
+								abs(navyInvestment		- techSchools[j].navyInvestment - 0.2) +
+								abs(commerceInvestment	- techSchools[j].commerceInvestment - 0.2) +
+								abs(industryInvestment	- techSchools[j].industryInvestment - 0.2) +
+								abs(cultureInvestment	- techSchools[j].cultureInvestment - 0.2);
+		if (newScore < lowestScore)
+		{
+			bestSchool	= techSchools[j].name;
+			lowestScore	= newScore;
+		}
+	}
+	LOG(LogLevel::Debug) << tag << " has tech school " << bestSchool;
+	techSchool = bestSchool;
 
 	//// Leaders
 	//vector<EU4Leader*> oldLeaders = srcCountry->getLeaders();
@@ -795,7 +836,7 @@ void V2Country::initFromHistory()
 	results = obj->getValue("culture");
 	for (vector<Object*>::iterator itr = results.begin(); itr != results.end(); ++itr)
 	{
-		acceptedCultures.push_back((*itr)->getLeaf());
+		acceptedCultures.insert((*itr)->getLeaf());
 	}
 
 	results = obj->getValue("religion");
@@ -834,7 +875,7 @@ void V2Country::addState(V2State* newState)
 {
 	int				highestNavalLevel	= 0;
 	unsigned int	hasHighestLevel	= -1;
-	bool				hasNavalBase = false;
+	bool				hasNavalBase		= false;
 
 	states.push_back(newState);
 	vector<V2Province*> newProvinces = newState->getProvinces();
@@ -843,7 +884,7 @@ void V2Country::addState(V2State* newState)
 		provinces.push_back(newProvinces[i]);
 
 		// find the province with the highest naval base level
-		if (Configuration::getV2Gametype() == "HOD")
+		if ((Configuration::getV2Gametype() == "HOD") || (Configuration::getV2Gametype() == "HoD-NNM"))
 		{
 			int navalLevel = 0;
 			const EU4Province* srcProvince = newProvinces[i]->getSrcProvince();
@@ -874,7 +915,7 @@ void V2Country::addState(V2State* newState)
 			newProvinces[i]->setNavalBaseLevel(0);
 		}
 	}
-	if ((Configuration::getV2Gametype() == "HOD") && (highestNavalLevel > 0))
+	if (((Configuration::getV2Gametype() == "HOD") || (Configuration::getV2Gametype() == "HoD-NNM")) && (highestNavalLevel > 0))
 	{
 		newProvinces[hasHighestLevel]->setNavalBaseLevel(1);
 	}
@@ -1041,100 +1082,65 @@ void V2Country::convertArmies(const map<int,int>& leaderIDMap, double cost_per_r
 }
 
 
-void V2Country::getNationalValueScores(int& libertyScore, int& equalityScore, int& orderScore)
+void V2Country::getNationalValueScores(int& libertyScore, int& equalityScore, int& orderScore, const map<string, int>& orderIdeas, const map<string, int>& libertyIdeas, const map<string, int>& equalityIdeas)
 {
-	int ideaScore;
-
 	orderScore = 0;
-	ideaScore = srcCountry->hasNationalIdea("religious_ideas");
-	orderScore += (ideaScore + 1);
-	if (ideaScore == 7)
+	for (map<string, int>::const_iterator orderIdeaItr = orderIdeas.begin(); orderIdeaItr != orderIdeas.end(); orderIdeaItr++)
 	{
-		orderScore += 1;
+		int ideaScore = srcCountry->hasNationalIdea(orderIdeaItr->first);
+		orderScore += (ideaScore + 1) * orderIdeaItr->second;
+		if (ideaScore == 7)
+		{
+			orderScore += orderIdeaItr->second;
+		}
 	}
-	ideaScore = srcCountry->hasNationalIdea("innovativeness_ideas");
-	orderScore -= (ideaScore + 1);
-	if (ideaScore == 7)
-	{
-		orderScore -= 1;
-	}
-	ideaScore = srcCountry->hasNationalIdea("quantity_ideas");
-	orderScore -= (ideaScore + 1);
-	if (ideaScore == 7)
-	{
-		orderScore -= 1;
-	}
-	ideaScore = srcCountry->hasNationalIdea("quality_ideas");
-	orderScore += (ideaScore + 1);
-	if (ideaScore == 7)
-	{
-		orderScore += 1;
-	}
-	
-
+		
 	libertyScore = 0;
-	ideaScore = srcCountry->hasNationalIdea("exploration_ideas");
-	libertyScore += (ideaScore + 1);
-	if (ideaScore == 7)
+	for (map<string, int>::const_iterator libertyIdeaItr = libertyIdeas.begin(); libertyIdeaItr != libertyIdeas.end(); libertyIdeaItr++)
 	{
-		libertyScore += 1;
-	}
-	ideaScore = srcCountry->hasNationalIdea("administrative_ideas");
-	libertyScore -= (ideaScore + 1);
-	if (ideaScore == 7)
-	{
-		libertyScore -= 1;
-	}
-	ideaScore = srcCountry->hasNationalIdea("plutocracy_ideas");
-	libertyScore += (ideaScore + 1);
-	if (ideaScore == 7)
-	{
-		libertyScore += 1;
-	}
-	ideaScore = srcCountry->hasNationalIdea("aristocracy_ideas");
-	libertyScore -= (ideaScore + 1);
-	if (ideaScore == 7)
-	{
-		libertyScore -= 1;
-	}
-	ideaScore = srcCountry->hasNationalIdea("spy_ideas");
-	libertyScore -= (ideaScore + 1);
-	if (ideaScore == 7)
-	{
-		libertyScore -= 1;
+		int ideaScore = srcCountry->hasNationalIdea(libertyIdeaItr->first);
+		libertyScore += (ideaScore + 1) * libertyIdeaItr->second;
+		if (ideaScore == 7)
+		{
+			libertyScore += libertyIdeaItr->second;
+		}
 	}
 
 	equalityScore = 0;
-	ideaScore = srcCountry->hasNationalIdea("innovativeness_ideas");
-	equalityScore += (ideaScore + 1);
-	if (ideaScore == 7)
+	for (map<string, int>::const_iterator equalityIdeaItr = equalityIdeas.begin(); equalityIdeaItr != equalityIdeas.end(); equalityIdeaItr++)
 	{
-		equalityScore += 1;
+		int ideaScore = srcCountry->hasNationalIdea(equalityIdeaItr->first);
+		equalityScore += (ideaScore + 1) * equalityIdeaItr->second;
+		if (ideaScore == 7)
+		{
+			equalityScore += equalityIdeaItr->second;
+		}
 	}
-	ideaScore = srcCountry->hasNationalIdea("religious_ideas");
-	orderScore -= (ideaScore + 1);
-	if (ideaScore == 7)
+}
+
+
+void V2Country::addRelation(V2Relations* newRelation)
+{
+	relations.insert(make_pair(newRelation->getTag(), newRelation));
+}
+
+
+void V2Country::absorbColony(V2Country* colony)
+{
+	Log(LogLevel::Debug) << "\t" << tag << " is absorbing the colony " << colony->getTag();
+
+	// change province ownership and add owner cores if needed
+	vector<V2Province*> colonyProvinces = colony->getProvinces();
+	for (vector<V2Province*>::iterator provItr = colonyProvinces.begin(); provItr != colonyProvinces.end(); provItr++)
 	{
-		orderScore -= 1;
+		(*provItr)->setOwner(tag);
+		(*provItr)->addCore(tag);
 	}
-	ideaScore = srcCountry->hasNationalIdea("plutocracy_ideas");
-	equalityScore += (ideaScore + 1);
-	if (ideaScore == 7)
-	{
-		equalityScore += 1;
-	}
-	ideaScore = srcCountry->hasNationalIdea("aristocracy_ideas");
-	equalityScore -= (ideaScore + 1);
-	if (ideaScore == 7)
-	{
-		equalityScore -= 1;
-	}
-	ideaScore = srcCountry->hasNationalIdea("quantity_ideas");
-	equalityScore += (ideaScore + 1);
-	if (ideaScore == 7)
-	{
-		equalityScore += 1;
-	}
+
+	// accept cultures from the colony
+	acceptedCultures.insert(colony->getPrimaryCulture());
+	set<string> cultures = colony->getAcceptedCultures();
+	acceptedCultures.insert(cultures.begin(), cultures.end());
 }
 
 
@@ -1176,6 +1182,15 @@ bool V2Country::addFactory(V2Factory* factory)
 		if (requiredInvention >= 0 && HODInventions[requiredInvention] != active)
 		{
 			LOG(LogLevel::Debug) << tag << " rejected " << factory->getTypeName() << " (missing required invention: " << HODInventionNames[requiredInvention] << ')';
+			return false;
+		}
+	}
+	else if (Configuration::getV2Gametype() == "HoD-NNM")
+	{
+		HODNNMInventionType requiredInvention = factory->getHODNNMRequiredInvention();
+		if (requiredInvention >= 0 && HODNNMInventions[requiredInvention] != active)
+		{
+			LOG(LogLevel::Debug) << tag << " rejected " << factory->getTypeName() << " (missing reqd invention: " << HODNNMInventionNames[requiredInvention] << ')';
 			return false;
 		}
 	}
@@ -1258,7 +1273,8 @@ void V2Country::convertUncivReforms()
 			double militaryDev	= srcCountry->getMilTech() / totalTechs;
 			double socioEconDev	= srcCountry->getAdmTech() / totalTechs;
 			LOG(LogLevel::Debug) << "Setting unciv reforms for " << tag << " - westernization at 0%";
-			uncivReforms = new V2UncivReforms(0, militaryDev, socioEconDev, this);
+			uncivReforms	= new V2UncivReforms(0, militaryDev, socioEconDev, this);
+			government		= "absolute_monarchy";
 		}
 		else if (srcCountry->getTechGroup() == "sub_saharan")
 		{
@@ -1266,7 +1282,8 @@ void V2Country::convertUncivReforms()
 			double militaryDev	= srcCountry->getMilTech() / totalTechs;
 			double socioEconDev	= srcCountry->getAdmTech() / totalTechs;
 			LOG(LogLevel::Debug) << "Setting unciv reforms for " << tag << " - westernization at 20%";
-			uncivReforms = new V2UncivReforms(20, militaryDev, socioEconDev, this);
+			uncivReforms	= new V2UncivReforms(20, militaryDev, socioEconDev, this);
+			government		= "absolute_monarchy";
 		}
 		else if (srcCountry->getTechGroup() == "nomad_group")
 		{
@@ -1274,7 +1291,8 @@ void V2Country::convertUncivReforms()
 			double militaryDev	= srcCountry->getMilTech() / totalTechs;
 			double socioEconDev	= srcCountry->getAdmTech() / totalTechs;
 			LOG(LogLevel::Debug) << "Setting unciv reforms for " << tag << " - westernization at 30%";
-			uncivReforms = new V2UncivReforms(30, militaryDev, socioEconDev, this);
+			uncivReforms	= new V2UncivReforms(30, militaryDev, socioEconDev, this);
+			government		= "absolute_monarchy";
 		}
 		else if (srcCountry->getTechGroup() == "chinese")
 		{
@@ -1282,7 +1300,8 @@ void V2Country::convertUncivReforms()
 			double militaryDev	= srcCountry->getMilTech() / totalTechs;
 			double socioEconDev	= srcCountry->getAdmTech() / totalTechs;
 			LOG(LogLevel::Debug) << "Setting unciv reforms for " << tag << " - westernization at 36%";
-			uncivReforms = new V2UncivReforms(36, militaryDev, socioEconDev, this);
+			uncivReforms	= new V2UncivReforms(36, militaryDev, socioEconDev, this);
+			government		= "absolute_monarchy";
 		}
 		else if (srcCountry->getTechGroup() == "indian")
 		{
@@ -1290,7 +1309,8 @@ void V2Country::convertUncivReforms()
 			double militaryDev	= srcCountry->getMilTech() / totalTechs;
 			double socioEconDev	= srcCountry->getAdmTech() / totalTechs;
 			LOG(LogLevel::Debug) << "Setting unciv reforms for " << tag << " - westernization at 40%";
-			uncivReforms = new V2UncivReforms(40, militaryDev, socioEconDev, this);
+			uncivReforms	= new V2UncivReforms(40, militaryDev, socioEconDev, this);
+			government		= "absolute_monarchy";
 		}
 		else if (srcCountry->getTechGroup() == "muslim")
 		{
@@ -1298,7 +1318,8 @@ void V2Country::convertUncivReforms()
 			double militaryDev	= srcCountry->getMilTech() / totalTechs;
 			double socioEconDev	= srcCountry->getAdmTech() / totalTechs;
 			LOG(LogLevel::Debug) << "Setting unciv reforms for " << tag << " - westernization at 44%";
-			uncivReforms = new V2UncivReforms(44, militaryDev, socioEconDev, this);
+			uncivReforms	= new V2UncivReforms(44, militaryDev, socioEconDev, this);
+			government		= "absolute_monarchy";
 		}
 		else
 		{
@@ -1306,7 +1327,8 @@ void V2Country::convertUncivReforms()
 			double totalTechs		= srcCountry->getMilTech() + srcCountry->getAdmTech();
 			double militaryDev	= srcCountry->getMilTech() / totalTechs;
 			double socioEconDev	= srcCountry->getAdmTech() / totalTechs;
-			uncivReforms = new V2UncivReforms(0, militaryDev, socioEconDev, this);
+			uncivReforms	= new V2UncivReforms(0, militaryDev, socioEconDev, this);
+			government		= "absolute_monarchy";
 		}
 	}
 }
@@ -1325,44 +1347,49 @@ void V2Country::setupPops(EU4World& sourceWorld)
 }
 
 
-void V2Country::setArmyTech(double mean, double scale, double stdDev)
+void V2Country::setArmyTech(double mean, double highest)
 {
 	if (srcCountry == NULL)
 	{
 		return;
 	}
 
-	double newTechLevel = (scale * (srcCountry->getMilTech() - mean) / stdDev) + 2.5;
+	double newTechLevel = (srcCountry->getAdmTech() + srcCountry->getMilTech() - mean) / (highest - mean);
 	LOG(LogLevel::Debug) << tag << " has army tech of " << newTechLevel;
 
 	if ( (Configuration::getV2Gametype() == "vanilla") || (civilized == true) )
 	{
-		if (newTechLevel >= 0)
+		if (newTechLevel >= -1.0)
 		{
 			techs.push_back("flintlock_rifles");
-			HODInventions[HOD_flintlock_rifle_armament] = active;
+			HODInventions[HOD_flintlock_rifle_armament]			= active;
+			HODNNMInventions[HOD_NNM_flintlock_rifle_armament] = active;
 		}
-		if (newTechLevel >= 0.25)
+		if (newTechLevel >= -0.9)
 		{
 			techs.push_back("bronze_muzzle_loaded_artillery");
 		}
-		if (newTechLevel >= 2)
+		if (newTechLevel >= -0.2)
 		{
 			techs.push_back("post_napoleonic_thought");
-			HODInventions[HOD_post_napoleonic_army_doctrine] = active;
+			HODInventions[HOD_post_napoleonic_army_doctrine]			= active;
+			HODNNMInventions[HOD_NNM_post_napoleonic_army_doctrine]	= active;
 		}
-		if (newTechLevel >= 3)
+		if (newTechLevel >= 0.2)
 		{
 			techs.push_back("army_command_principle");
 		}
-		if (newTechLevel >= 4)
+		if (newTechLevel >= 0.6)
 		{
 			techs.push_back("military_staff_system");
-			HODInventions[HOD_cuirassier_activation]	= active;
-			HODInventions[HOD_dragoon_activation]		= active;
-			HODInventions[HOD_hussar_activation]		= active;
+			HODInventions[HOD_cuirassier_activation]			= active;
+			HODInventions[HOD_dragoon_activation]				= active;
+			HODInventions[HOD_hussar_activation]				= active;
+			HODNNMInventions[HOD_NNM_cuirassier_activation]	= active;
+			HODNNMInventions[HOD_NNM_dragoon_activation]		= active;
+			HODNNMInventions[HOD_NNM_hussar_activation]		= active;
 		}
-		if (newTechLevel >= 5)
+		if (newTechLevel >= 1.0)
 		{
 			techs.push_back("army_professionalism");
 			vanillaInventions[VANILLA_army_academic_training]	= active;
@@ -1371,19 +1398,22 @@ void V2Country::setArmyTech(double mean, double scale, double stdDev)
 			HODInventions[HOD_army_academic_training]				= active;
 			HODInventions[HOD_field_training]						= active;
 			HODInventions[HOD_army_societal_status]				= active;
+			HODNNMInventions[HOD_NNM_army_academic_training]	= active;
+			HODNNMInventions[HOD_NNM_field_training]				= active;
+			HODNNMInventions[HOD_NNM_army_societal_status]		= active;
 		}
 	}
 }
 
 
-void V2Country::setNavyTech(double mean, double scale, double stdDev)
+void V2Country::setNavyTech(double mean, double highest)
 {
 	if (srcCountry == NULL)
 	{
 		return;
 	}
 
-	double newTechLevel = scale * (srcCountry->getDipTech() - mean) / stdDev;
+	double newTechLevel = (srcCountry->getMilTech() + srcCountry->getDipTech() - mean) / (highest - mean);
 	LOG(LogLevel::Debug) << tag << " has navy tech of " << newTechLevel;
 
 	if ( (Configuration::getV2Gametype() == "vanilla") || (civilized == true) )
@@ -1391,22 +1421,25 @@ void V2Country::setNavyTech(double mean, double scale, double stdDev)
 		if (newTechLevel >= 0)
 		{
 			techs.push_back("post_nelsonian_thought");
-			HODInventions[HOD_long_range_fire_tactic]		= active;
-			HODInventions[HOD_speedy_maneuvering_tactic]	= active;
+			HODInventions[HOD_long_range_fire_tactic]					= active;
+			HODInventions[HOD_speedy_maneuvering_tactic]				= active;
+			HODNNMInventions[HOD_NNM_long_range_fire_tactic]		= active;
+			HODNNMInventions[HOD_NNM_speedy_maneuvering_tactic]	= active;
 		}
-		if (newTechLevel >= 0.25)
+		if (newTechLevel >= 0.036)
 		{
 			techs.push_back("the_command_principle");
 		}
-		if (newTechLevel >= 4)
+		if (newTechLevel >= 0.571)
 		{
 			techs.push_back("clipper_design");
 			techs.push_back("naval_design_bureaus");
 			techs.push_back("alphabetic_flag_signaling");
 			vanillaInventions[VANILLA_building_station_shipyards]	= active;
 			HODInventions[HOD_building_station_shipyards]			= active;
+			HODNNMInventions[HOD_NNM_building_station_shipyards]	= active;
 		}
-		if (newTechLevel >= 6)
+		if (newTechLevel >= 0.857)
 		{
 			techs.push_back("battleship_column_doctrine");
 			techs.push_back("steamers");
@@ -1422,8 +1455,14 @@ void V2Country::setNavyTech(double mean, double scale, double stdDev)
 			HODInventions[HOD_steamer_automatic_construction_plants]				= active;
 			HODInventions[HOD_steamer_transports]										= active;
 			HODInventions[HOD_commerce_raiders]											= active;
+			HODNNMInventions[HOD_NNM_long_range_fire_tactic]						= active;
+			HODNNMInventions[HOD_NNM_speedy_maneuvering_tactic]					= active;
+			HODNNMInventions[HOD_NNM_mechanized_fishing_vessels]					= active;
+			HODNNMInventions[HOD_NNM_steamer_automatic_construction_plants]	= active;
+			HODNNMInventions[HOD_NNM_steamer_transports]								= active;
+			HODNNMInventions[HOD_NNM_commerce_raiders]								= active;
 		}
-		if (newTechLevel >= 7)
+		if (newTechLevel >= 1.0)
 		{
 			techs.push_back("naval_professionalism");
 			vanillaInventions[VANILLA_academic_training]			= active;
@@ -1432,37 +1471,40 @@ void V2Country::setNavyTech(double mean, double scale, double stdDev)
 			HODInventions[HOD_academic_training]					= active;
 			HODInventions[HOD_combat_station_training]			= active;
 			HODInventions[HOD_societal_status]						= active;
+			HODNNMInventions[HOD_NNM_academic_training]			= active;
+			HODNNMInventions[HOD_NNM_combat_station_training]	= active;
+			HODNNMInventions[HOD_NNM_societal_status]				= active;
 		}
 	}
 }
 
 
-void V2Country::setCommerceTech(double mean, double scale, double stdDev)
+void V2Country::setCommerceTech(double mean, double highest)
 {
 	if (srcCountry == NULL)
 	{
 		return;
 	}
 
-	double newTechLevel = (scale * (srcCountry->getDipTech() - mean) / stdDev) + 4.5;
+	double newTechLevel = (srcCountry->getAdmTech() + srcCountry->getDipTech() - mean) / (highest - mean);
 	LOG(LogLevel::Debug) << tag << " has commerce tech of " << newTechLevel;
 
 	if ( (Configuration::getV2Gametype() == "vanilla") || (civilized == true) )
 	{
 		techs.push_back("no_standard");
-		if (newTechLevel >= 1)
+		if (newTechLevel >= -0.777)
 		{
 			techs.push_back("guild_based_production");
 		}
-		if (newTechLevel >= 2)
+		if (newTechLevel >= -0.555)
 		{
 			techs.push_back("private_banks");
 		}
-		if (newTechLevel >= 3)
+		if (newTechLevel >= -0.333)
 		{
 			techs.push_back("early_classical_theory_and_critique");
 		}
-		if (newTechLevel >= 3.25)
+		if (newTechLevel >= -.277)
 		{
 			techs.push_back("freedom_of_trade");
 			vanillaInventions[VANILLA_john_ramsay_mcculloch]	= active;
@@ -1471,8 +1513,11 @@ void V2Country::setCommerceTech(double mean, double scale, double stdDev)
 			HODInventions[HOD_john_ramsay_mcculloch]				= active;
 			HODInventions[HOD_nassau_william_sr]					= active;
 			HODInventions[HOD_james_mill]								= active;
+			HODNNMInventions[HOD_NNM_john_ramsay_mcculloch]		= active;
+			HODNNMInventions[HOD_NNM_nassau_william_sr]			= active;
+			HODNNMInventions[HOD_NNM_james_mill]					= active;
 		}
-		if (newTechLevel >= 6)
+		if (newTechLevel >= 0.333)
 		{
 			techs.push_back("stock_exchange");
 			vanillaInventions[VANILLA_multitude_of_financial_instruments]		= active;
@@ -1481,8 +1526,11 @@ void V2Country::setCommerceTech(double mean, double scale, double stdDev)
 			HODInventions[HOD_multitude_of_financial_instruments]					= active;
 			HODInventions[HOD_insurance_companies]										= active;
 			HODInventions[HOD_regulated_buying_and_selling_of_stocks]			= active;
+			HODNNMInventions[HOD_NNM_multitude_of_financial_instruments]		= active;
+			HODNNMInventions[HOD_NNM_insurance_companies]							= active;
+			HODNNMInventions[HOD_NNM_regulated_buying_and_selling_of_stocks]	= active;
 		}
-		if (newTechLevel >= 8)
+		if (newTechLevel >= 0.777)
 		{
 			techs.push_back("ad_hoc_money_bill_printing");
 			techs.push_back("market_structure");
@@ -1496,9 +1544,14 @@ void V2Country::setCommerceTech(double mean, double scale, double stdDev)
 			HODInventions[HOD_polypoly_structure]					= active;
 			HODInventions[HOD_oligopoly_structure]					= active;
 			HODInventions[HOD_monopoly_structure]					= active;
+			HODNNMInventions[HOD_NNM_silver_standard]				= active;
+			HODNNMInventions[HOD_NNM_decimal_monetary_system]	= active;
+			HODNNMInventions[HOD_NNM_polypoly_structure]			= active;
+			HODNNMInventions[HOD_NNM_oligopoly_structure]		= active;
+			HODNNMInventions[HOD_NNM_monopoly_structure]			= active;
 		}
 
-		if (newTechLevel >= 9)
+		if (newTechLevel >= 1.0)
 		{
 			techs.push_back("late_classical_theory");
 			vanillaInventions[VANILLA_john_elliot_cairnes]	= active;
@@ -1507,33 +1560,36 @@ void V2Country::setCommerceTech(double mean, double scale, double stdDev)
 			HODInventions[HOD_john_elliot_cairnes]				= active;
 			HODInventions[HOD_robert_torrens]					= active;
 			HODInventions[HOD_john_stuart_mill]					= active;
+			HODNNMInventions[HOD_NNM_john_elliot_cairnes]	= active;
+			HODNNMInventions[HOD_NNM_robert_torrens]			= active;
+			HODNNMInventions[HOD_NNM_john_stuart_mill]		= active;
 		}
 	}
 }
 
 
-void V2Country::setIndustryTech(double mean, double scale, double stdDev)
+void V2Country::setIndustryTech(double mean, double highest)
 {
 	if (srcCountry == NULL)
 	{
 		return;
 	}
 
-	double newTechLevel = (scale * (srcCountry->getAdmTech() - mean) / stdDev) + 3.5;
+	double newTechLevel = (srcCountry->getMilTech() + srcCountry->getAdmTech() + srcCountry->getDipTech() - mean) / (highest - mean);
 	LOG(LogLevel::Debug) << tag << " has industry tech of " << newTechLevel;
 
 	if ( (Configuration::getV2Gametype() == "vanilla") || (civilized == true) )
 	{
-		if (newTechLevel >= 0)
+		if (newTechLevel >= -1.0)
 		{
 			techs.push_back("water_wheel_power");
 			HODInventions[HOD_tulls_seed_drill]	= active;
 		}
-		if (newTechLevel >= 1)
+		if (newTechLevel >= -0.714)
 		{
 			techs.push_back("publishing_industry");
 		}
-		if (newTechLevel >= 3)
+		if (newTechLevel >= -0.143)
 		{
 			techs.push_back("mechanized_mining");
 			techs.push_back("basic_chemistry");
@@ -1545,17 +1601,22 @@ void V2Country::setIndustryTech(double mean, double scale, double stdDev)
 			HODInventions[HOD_small_arms_production]				= active;
 			HODInventions[HOD_explosives_production]				= active;
 			HODInventions[HOD_artillery_production]				= active;
+			HODNNMInventions[HOD_NNM_ammunition_production]		= active;
+			HODNNMInventions[HOD_NNM_small_arms_production]		= active;
+			HODNNMInventions[HOD_NNM_explosives_production]		= active;
+			HODNNMInventions[HOD_NNM_artillery_production]		= active;
 		}
-		if (newTechLevel >= 4)
+		if (newTechLevel >= 0.143)
 		{
 			techs.push_back("practical_steam_engine");
 			HODInventions[HOD_rotherham_plough]						= active;
+			HODNNMInventions[HOD_NNM_rotherham_plough]			= active;
 		}
-		if (newTechLevel >= 5)
+		if (newTechLevel >= 0.428)
 		{
 			techs.push_back("experimental_railroad");
 		}
-		if (newTechLevel >= 6)
+		if (newTechLevel >= 0.714)
 		{
 			techs.push_back("mechanical_production");
 			vanillaInventions[VANILLA_sharp_n_roberts_power_loom]				= active;
@@ -1575,51 +1636,72 @@ void V2Country::setIndustryTech(double mean, double scale, double stdDev)
 			HODInventions[HOD_pitts_threshing_machine]							= active;
 			HODInventions[HOD_mechanized_slaughtering_block]					= active;
 			HODInventions[HOD_precision_work]										= active;
+			HODNNMInventions[HOD_NNM_sharp_n_roberts_power_loom]				= active;
+			HODNNMInventions[HOD_NNM_jacquard_power_loom]						= active;
+			HODNNMInventions[HOD_NNM_northrop_power_loom]						= active;
+			HODNNMInventions[HOD_NNM_mechanical_saw]								= active;
+			HODNNMInventions[HOD_NNM_mechanical_precision_saw]					= active;
+			HODNNMInventions[HOD_NNM_hussey_n_mccormicks_reaping_machine]	= active;
+			HODNNMInventions[HOD_NNM_pitts_threshing_machine]					= active;
+			HODNNMInventions[HOD_NNM_mechanized_slaughtering_block]			= active;
+			HODNNMInventions[HOD_NNM_precision_work]								= active;
 		}
-		if (newTechLevel >= 7)
+		if (newTechLevel >= 1.0)
 		{
 			techs.push_back("clean_coal");
 			vanillaInventions[VANILLA_pit_coal]	= active;
 			vanillaInventions[VANILLA_coke]		= active;
 			HODInventions[HOD_pit_coal]			= active;
 			HODInventions[HOD_coke]					= active;
+			HODNNMInventions[HOD_NNM_pit_coal]	= active;
+			HODNNMInventions[HOD_NNM_coke]		= active;
 		}
 	}
 }
 
 
-void V2Country::setCultureTech(double mean, double scale, double stdDev)
+void V2Country::setCultureTech(double mean, double highest)
 {
 	if (srcCountry == NULL)
 	{
 		return;
 	}
 
-	double newTechLevel = ((scale * (srcCountry->getAdmTech() - mean) / stdDev) + 3);
+	double newTechLevel = (srcCountry->getDipTech() - mean) / (highest - mean);
 	LOG(LogLevel::Debug) << tag << " has culture tech of " << newTechLevel;
 
 	if ( (Configuration::getV2Gametype() == "vanilla") || (civilized == true) )
 	{
 		techs.push_back("classicism_n_early_romanticism");
+		HODNNMInventions[HOD_NNM_carlism] = active;
 		techs.push_back("late_enlightenment_philosophy");
-		if (newTechLevel >= 2)
+		HODNNMInventions[HOD_NNM_declaration_of_the_rights_of_man] = active;
+		if (newTechLevel >= -0.333)
 		{
 			techs.push_back("enlightenment_thought");
-			HODInventions[HOD_paternalism]			= active;
-			HODInventions[HOD_constitutionalism]	= active;
-			HODInventions[HOD_atheism]					= active;
-			HODInventions[HOD_egalitarianism]		= active;
-			HODInventions[HOD_rationalism]			= active;
+			HODInventions[HOD_paternalism]					= active;
+			HODInventions[HOD_constitutionalism]			= active;
+			HODInventions[HOD_atheism]							= active;
+			HODInventions[HOD_egalitarianism]				= active;
+			HODInventions[HOD_rationalism]					= active;
+			HODNNMInventions[HOD_NNM_caste_privileges]	= active;
+			HODNNMInventions[HOD_NNM_sati_abolished]		= active;
+			HODNNMInventions[HOD_NNM_pig_fat_cartridges]	= active;
+			HODNNMInventions[HOD_NNM_paternalism]			= active;
+			HODNNMInventions[HOD_NNM_constitutionalism]	= active;
+			HODNNMInventions[HOD_NNM_atheism]				= possible;
+			HODNNMInventions[HOD_NNM_egalitarianism]		= possible;
+			HODNNMInventions[HOD_NNM_rationalism]			= possible;
 		}
-		if (newTechLevel >= 4)
+		if (newTechLevel >= 0.333)
 		{
 			techs.push_back("malthusian_thought");
 		}
-		if (newTechLevel >= 4)
+		if (newTechLevel >= 0.333)
 		{
 			techs.push_back("introspectionism");
 		}
-		if (newTechLevel >= 5)
+		if (newTechLevel >= 0.666)
 		{
 			techs.push_back("romanticism");
 			vanillaInventions[VANILLA_romanticist_literature]	= active;
@@ -1628,6 +1710,9 @@ void V2Country::setCultureTech(double mean, double scale, double stdDev)
 			HODInventions[HOD_romanticist_literature]				= active;
 			HODInventions[HOD_romanticist_art]						= active;
 			HODInventions[HOD_romanticist_music]					= active;
+			HODNNMInventions[HOD_NNM_romanticist_literature]	= active;
+			HODNNMInventions[HOD_NNM_romanticist_art]				= active;
+			HODNNMInventions[HOD_NNM_romanticist_music]			= active;
 		}
 	}
 }
@@ -1635,32 +1720,15 @@ void V2Country::setCultureTech(double mean, double scale, double stdDev)
 
 V2Relations* V2Country::getRelations(string withWhom) const
 {
-	for (vector<V2Relations*>::const_iterator i = relations.begin(); i != relations.end(); ++i)
+	map<string, V2Relations*>::const_iterator i = relations.find(withWhom);
+	if (i != relations.end())
 	{
-		if ((*i)->getTag() == withWhom)
-		{
-			return *i;
-		}
+		return i->second;
 	}
-	return NULL;
-}
-
-
-void V2Country::sortRelations(const vector<string>& order)
-{
-	vector<V2Relations*> sortedRelations;
-	for (vector<string>::const_iterator oitr = order.begin(); oitr != order.end(); ++oitr)
+	else
 	{
-		for (vector<V2Relations*>::iterator itr = relations.begin(); itr != relations.end(); ++itr)
-		{
-			if ( (*itr)->getTag() == (*oitr) )
-			{
-				sortedRelations.push_back(*itr);
-				break;
-			}
-		}
+		return NULL;
 	}
-	relations.swap(sortedRelations);
 }
 
 

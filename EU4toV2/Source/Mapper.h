@@ -1,3 +1,26 @@
+/*Copyright (c) 2014 The Paradox Game Converters Project
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
+
+
+
 #ifndef MAPPER_H
 #define MAPPER_H
 
@@ -8,6 +31,7 @@
 #include <map>
 #include <vector>
 #include <unordered_set>
+#include <set>
 class EU4World;
 class V2World;
 
@@ -22,18 +46,7 @@ void initProvinceMap(Object* obj, const EU4Version* version, provinceMapping& pr
 const vector<int>& getV2ProvinceNums(const inverseProvinceMapping& invProvMap, int eu4ProvinceNum);
 
 
-typedef struct {
-	int type;
-	int to;
-	int via;
-	int unknown1;
-	int unknown2;
-	int pathX;
-	int pathY;
-	int unknown3;
-	int unknown4;
-} adjacency;
-typedef vector< vector<adjacency> > adjacencyMapping;
+typedef vector< vector<int> > adjacencyMapping;
 adjacencyMapping initAdjacencyMap();
 
 
@@ -41,12 +54,10 @@ typedef map<int, string>	continentMapping;	// <province, continent>
 void initContinentMap(Object* obj, continentMapping& continentMap);
 
 
-vector<string> processBlockedNations(Object* obj);
 void mergeNations(EU4World&, Object* mergeObj);
 void uniteJapan(EU4World&);
 void removeEmptyNations(EU4World&);
 void removeDeadLandlessNations(EU4World&);
-void removeOlderLandlessNations(EU4World&, int excess);
 void removeLandlessNations(EU4World&);
 
 
@@ -56,17 +67,19 @@ typedef map< int, int >				stateIndexMapping; // < province, state index >
 void initStateMap(Object* obj, stateMapping& stateMap, stateIndexMapping& stateIndexMap);
 
 
-// Culture Mappings
+// Distinguishers for mappings
 enum distinguisherType
 {
 	DTOwner,
 	DTReligion
 };
+
+// Culture Mappings
 typedef pair<distinguisherType, string> distinguisher;
 typedef struct {
-	string srcCulture;
-	string dstCulture;
-	vector<distinguisher> distinguishers;
+	string srcCulture;							// the EU4 culture
+	string dstCulture;							// the V2 culture
+	vector<distinguisher> distinguishers;	// additional rules to match the culture
 } cultureStruct;
 typedef vector<cultureStruct> cultureMapping;
 cultureMapping initCultureMap(Object* obj);
@@ -88,9 +101,22 @@ governmentMapping initGovernmentMap(Object* obj);
 
 
 // Cultural Union Nation mappings
-typedef map< string, vector<string> > unionCulturesMap; // <culture group, cultures>
-void initUnionCultures(Object* obj, unionCulturesMap& unionCultures);
+typedef map< string, vector<string> > unionCulturesMap;	// <culture group, cultures>
+typedef map< string, string > inverseUnionCulturesMap;	// <culture, culture group>
+void initUnionCultures(Object* obj, unionCulturesMap& unionCultures, inverseUnionCulturesMap& inverseUnionCultures);
 
+// idea effects
+void initIdeaEffects(Object* obj, map<string, int>& armyInvIdeas, map<string, int>& commerceInvIdeas, map<string, int>& cultureInvIdeas, map<string, int>& industryInvIdeas, map<string, int>& navyInvIdeas, map<string, double>& UHLiberalIdeas, map<string, double>& UHReactionaryIdeas, vector< pair<string, int> >& literacyIdeas, map<string, int>& orderIdeas, map<string, int>& libertyIdeas, map<string, int>& equalityIdeas);
+
+// colonial nations
+typedef struct {
+	string tag;
+	string EU4Region;
+	string V2Region;
+	string cultureGroup;
+} colonyStruct;
+typedef vector<colonyStruct> colonyMapping;
+colonyMapping initColonyMap(Object* obj);
 
 
 #endif // MAPPER_H

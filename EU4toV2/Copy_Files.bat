@@ -4,7 +4,6 @@ copy "Data_Files\readme.txt" "release\readme.txt"
 copy "Data_Files\merge_nations.txt" "release\merge_nations.txt"
 copy "Data_Files\starting_factories.txt" "release\starting_factories.txt
 copy "Data_Files\province_mappings.txt" "release\province_mappings.txt
-copy "Data_Files\blocked_nations.txt" "release\blocked_nations.txt
 copy "Data_Files\country_mappings.txt" "release\country_mappings.txt
 copy "Data_Files\cultureMap.txt" "release\cultureMap.txt
 copy "Data_Files\religionMap.txt" "release\religionMap.txt
@@ -13,6 +12,9 @@ copy "Data_Files\governmentMapping.txt" "release\governmentMapping.txt
 copy "Data_Files\blocked_tech_schools.txt" "release\blocked_tech_schools.txt
 copy "Data_Files\leader_traits.txt" "release\leader_traits.txt
 copy "Data_Files\regiment_costs.txt" "release\regiment_costs.txt
+copy "Data_Files\license.txt" "release\license.txt"
+copy "Data_Files\idea_effects.txt" "release\idea_effects.txt"
+copy "Data_Files\colonial.txt" "release\colonial.txt"
 
 rem hg log > Release/log.txt
 hg log --template "Change:\t\t{rev}: {node}\nAuthor:\t\t{author}\nDescription:\t{desc}\nDate:\t\t{date|isodate}\nBranch:\t\t{branch}\n***\n" > Release/log.txt
@@ -52,11 +54,14 @@ mkdir "release\blankMod\output\history\provinces\united kingdom"
 mkdir "release\blankMod\output\history\provinces\usa"
 mkdir "release\blankMod\output\history\countries"
 mkdir "release\blankMod\output\history\diplomacy"
+mkdir "release\blankMod\output\history\units"
 mkdir "release\blankMod\output\common"
 
 xcopy "Data_Files\countries" "release\blankmod\output\common\countries" /Y /E /I
 xcopy "Data_Files\gfx" "release\blankmod\output\gfx" /Y /E /I
 xcopy "Data_files\localisation" "release\blankmod\output\localisation" /Y /E /I
+xcopy "Data_files\interface" "release\blankmod\output\interface" /Y /E /I
 copy "Data_Files\countries.txt" "release\blankMod\output\common\countries.txt"
 copy "Data_Files\country_colors.txt" "release\blankMod\output\common\country_colors.txt"
 copy "Data_Files\religion.txt" "release\blankMod\output\common\religion.txt"
+copy "Data_Files\cultures.txt" "release\blankMod\output\common\cultures.txt"

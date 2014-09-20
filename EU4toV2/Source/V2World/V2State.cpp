@@ -1,3 +1,26 @@
+/*Copyright (c) 2014 The Paradox Game Converters Project
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
+
+
+
 #include "V2State.h"
 #include "V2Pop.h"
 #include "V2Province.h"
@@ -8,52 +31,12 @@
 
 V2State::V2State(int newId, V2Province* firstProvince)
 {
-	id				= newId;
-	colonial		= false;
-	colonised	= false;
+	id					= newId;
+	colonial			= false;
+	colonised		= false;
 	provinces.clear();
 	provinces.push_back(firstProvince);
-	factories.clear();
-}
-
-
-void V2State::output(FILE* output) const
-{
-	fprintf(output, "\tstate=\n");
-	fprintf(output, "\t{\n");
-	fprintf(output, "\t\tid=\n");
-	fprintf(output, "\t\t{\n");
-	fprintf(output, "\t\t\tid=%d\n", id);
-	fprintf(output, "\t\t\ttype=47\n");
-	fprintf(output, "\t\t}\n");
-	fprintf(output, "\t\tprovinces=\n");
-	fprintf(output, "\t\t{\n");
-	fprintf(output, "\t\t\t");
-	for (vector<V2Province*>::const_iterator i = provinces.begin(); i != provinces.end(); i++)
-	{
-		fprintf(output, "%d ", (*i)->getNum());
-	}
-	fprintf(output, "\n");
-	fprintf(output, "\t\t}\n");
-	for (vector<const V2Factory*>::const_iterator itr = factories.begin(); itr != factories.end(); ++itr)
-	{
-		(*itr)->output(output);
-	}
-	if (colonial)
-	{
-	}
-	if (colonised)
-	{
-		if (Configuration::getV2Gametype() == "HOD")
-		{
-			fprintf(output, "\t\tis_colonial=2\n");
-		}
-		else
-		{
-			fprintf(output, "\t\tis_colonial=yes\n");
-		}
-	}
-	fprintf(output, "\t}\n");
+	numFactories	= 0;
 }
 
 
@@ -66,7 +49,7 @@ void V2State::addRailroads()
 }
 
 
-void V2State::setupPops(string primaryCulture, vector<string> acceptedCultures, string religion)
+void V2State::setupPops(string primaryCulture, set<string> acceptedCultures, string religion)
 {
 	int	statePopulation = getStatePopulation();
 	for (vector<V2Province*>::iterator itr = provinces.begin(); itr != provinces.end(); ++itr)
@@ -113,7 +96,7 @@ int V2State::getCraftsmenPerFactory() const
 			totalCraftsmen += (*pitr)->getSize();
 		}
 	}
-	return totalCraftsmen / (factories.size() + 1);
+	return totalCraftsmen / (numFactories + 1);
 }
 
 
@@ -139,4 +122,11 @@ int V2State::getStatePopulation() const
 		population += (*itr)->getOldPopulation();
 	}
 	return population;
+}
+
+
+void V2State::addFactory(const V2Factory* factory)
+{
+	provinces[0]->addFactory(factory);
+	numFactories++;
 }

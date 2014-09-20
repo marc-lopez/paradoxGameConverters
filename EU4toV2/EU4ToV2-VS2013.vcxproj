@@ -108,7 +108,6 @@
     <ClCompile Include="Source\EU4World\EU4Country.cpp" />
     <ClCompile Include="Source\EU4World\EU4Diplomacy.cpp" />
     <ClCompile Include="Source\EU4World\EU4Leader.cpp" />
-    <ClCompile Include="Source\EU4World\EU4Loan.cpp" />
     <ClCompile Include="Source\EU4World\EU4Localisation.cpp" />
     <ClCompile Include="Source\EU4World\EU4Province.cpp" />
     <ClCompile Include="Source\EU4World\EU4Relations.cpp" />
@@ -148,7 +147,6 @@
     <ClInclude Include="Source\EU4World\EU4Country.h" />
     <ClInclude Include="Source\EU4World\EU4Diplomacy.h" />
     <ClInclude Include="Source\EU4World\EU4Leader.h" />
-    <ClInclude Include="Source\EU4World\EU4Loan.h" />
     <ClInclude Include="Source\EU4World\EU4Localisation.h" />
     <ClInclude Include="Source\EU4World\EU4Province.h" />
     <ClInclude Include="Source\EU4World\EU4Relations.h" />

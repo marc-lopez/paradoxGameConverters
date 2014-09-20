@@ -1,3 +1,26 @@
+/*Copyright (c) 2014 The Paradox Game Converters Project
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
+
+
+
 #include "V2World.h"
 #include <fstream>
 #include <algorithm>
@@ -14,7 +37,6 @@
 #include "../WinUtils.h"
 #include "../EU4World/EU4World.h"
 #include "../EU4World/EU4Relations.h"
-#include "../EU4World/EU4Loan.h"
 #include "../EU4World/EU4Leader.h"
 #include "../EU4World/EU4Province.h"
 #include "../EU4World/EU4Diplomacy.h"
@@ -75,6 +97,7 @@ V2World::V2World()
 	catch (boost::filesystem::filesystem_error& error)
 	{
 		LOG(LogLevel::Error) << error.what();
+				LOG(LogLevel::Error) << "Could not open directory " << Configuration::getV2Path() << "\\history\\provinces" << directories.front() << "\\*.*";
 		exit(-1);
 	}
 					
@@ -262,7 +285,7 @@ V2World::V2World()
 		else
 		{
 			potentialCountries.push_back(newCountry);
-			dynamicCountries.push_back(newCountry);
+			dynamicCountries.insert( make_pair(tag, newCountry) );
 		}
 	}
 	V2CountriesInput.close();
@@ -271,7 +294,6 @@ V2World::V2World()
 }
 
 
-// The majority of the output changes will take place here.  See comments for the plan of action:
 void V2World::output() const
 {
 	// Create common\countries path.
@@ -282,6 +304,7 @@ void V2World::output() const
 	}
 
 	// Output common\countries.txt
+	LOG(LogLevel::Debug) << "Writing countries file";
 	FILE* allCountriesFile;
 	if (fopen_s(&allCountriesFile, boost::filesystem::path("Output\\" + Configuration::getOutputName() + "\\common\\countries.txt").generic_string().c_str(), "w") != 0)
 	{
@@ -291,7 +314,21 @@ void V2World::output() const
 	for (map<string, V2Country*>::const_iterator i = countries.begin(); i != countries.end(); i++)
 	{
 		const V2Country& country = *i->second;
-		country.outputToCommonCountriesFile(allCountriesFile);
+		map<string, V2Country*>::const_iterator j = dynamicCountries.find(country.getTag());
+		if (j == dynamicCountries.end())
+		{
+			country.outputToCommonCountriesFile(allCountriesFile);
+		}
+	}
+	fprintf(allCountriesFile, "\n");
+	if ((Configuration::getV2Gametype() == "HOD") || (Configuration::getV2Gametype() == "HoD_NNM"))
+	{
+		fprintf(allCountriesFile, "##HoD Dominions\n");
+		fprintf(allCountriesFile, "dynamic_tags = yes # any tags after this is considered dynamic dominions\n");
+		for (map<string, V2Country*>::const_iterator i = dynamicCountries.begin(); i != dynamicCountries.end(); i++)
+		{
+			i->second->outputToCommonCountriesFile(allCountriesFile);
+		}
 	}
 	fclose(allCountriesFile);
 
@@ -301,6 +338,7 @@ void V2World::output() const
 	flags.Output();
 
 	// Create localisations for all new countries. We don't actually know the names yet so we just use the tags as the names.
+	LOG(LogLevel::Debug) << "Writing localisation text";
 	boost::filesystem::path  localisationPath = "Output\\" + Configuration::getOutputName() + "\\localisation";
 	if (!WinUtils::TryCreateFolder(localisationPath.generic_string()))
 	{
@@ -325,17 +363,24 @@ void V2World::output() const
 	}
 	fclose(localisationFile);
 
+	LOG(LogLevel::Debug) << "Writing provinces";
 	for (map<int, V2Province*>::const_iterator i = provinces.begin(); i != provinces.end(); i++)
 	{
 		//i->second->sortPops();
 		i->second->output();
 	}
+	LOG(LogLevel::Debug) << "Writing countries";
 	for (map<string, V2Country*>::const_iterator itr = countries.begin(); itr != countries.end(); itr++)
 	{
 		itr->second->output();
 	}
+	for (map<string, V2Country*>::const_iterator itr = dynamicCountries.begin(); itr != dynamicCountries.end(); itr++)
+	{
+		itr->second->isANewCountry();
+		itr->second->output();
+	}
 	diplomacy.output();
-	/*if(Configuration::getV2Gametype() == "HOD")
+	/*if ((Configuration::getV2Gametype() == "HOD") || (Configuration::getV2Gametype() == "HoD-NNM"))
 	{
 		for (map< int, set<string> >::const_iterator colonyIter = colonies.begin(); colonyIter != colonies.end(); colonyIter++)
 		{
@@ -367,7 +412,7 @@ bool scoresSorter(pair<V2Country*, int> first, pair<V2Country*, int> second)
 }
 
 
-void V2World::convertCountries(const EU4World& sourceWorld, const CountryMapping& countryMap, const cultureMapping& cultureMap, const unionCulturesMap& unionCultures, const religionMapping& religionMap, const governmentMapping& governmentMap, const inverseProvinceMapping& inverseProvinceMap, const vector<techSchool>& techSchools, map<int,int>& leaderMap, const V2LeaderTraits& lt)
+void V2World::convertCountries(const EU4World& sourceWorld, const CountryMapping& countryMap, const cultureMapping& cultureMap, const unionCulturesMap& unionCultures, const religionMapping& religionMap, const governmentMapping& governmentMap, const inverseProvinceMapping& inverseProvinceMap, const vector<techSchool>& techSchools, map<int, int>& leaderMap, const V2LeaderTraits& lt, const map<string, double>& UHLiberalIdeas, const map<string, double>& UHReactionaryIdeas, const vector< pair<string, int> >& literacyIdeas, const map<string, int>& orderIdeas, const map<string, int>& libertyIdeas, const map<string, int>& equalityIdeas)
 {
 	vector<string> outputOrder;
 	outputOrder.clear();
@@ -398,7 +443,7 @@ void V2World::convertCountries(const EU4World& sourceWorld, const CountryMapping
 				std::string countryFileName = '/' + sourceCountry->getName() + ".txt";
 				destCountry = new V2Country(V2Tag, countryFileName, std::vector<V2Party*>(), this, true);
 			}
-			destCountry->initFromEU4Country(sourceCountry, outputOrder, countryMap, cultureMap, religionMap, unionCultures, governmentMap, inverseProvinceMap, techSchools, leaderMap, lt);
+			destCountry->initFromEU4Country(sourceCountry, outputOrder, countryMap, cultureMap, religionMap, unionCultures, governmentMap, inverseProvinceMap, techSchools, leaderMap, lt, UHLiberalIdeas, UHReactionaryIdeas, literacyIdeas);
 			countries.insert(make_pair(V2Tag, destCountry));
 		}
 		else
@@ -416,7 +461,7 @@ void V2World::convertCountries(const EU4World& sourceWorld, const CountryMapping
 		int libertyScore = 1;
 		int equalityScore = 1;
 		int orderScore = 1;
-		countryItr->second->getNationalValueScores(libertyScore, equalityScore, orderScore);
+		countryItr->second->getNationalValueScores(libertyScore, equalityScore, orderScore, orderIdeas, libertyIdeas, equalityIdeas);
 		if (libertyScore > orderScore)
 		{
 			libertyScores.push_back( make_pair(countryItr->second, libertyScore) );
@@ -560,16 +605,33 @@ void V2World::convertDiplomacy(const EU4World& sourceWorld, const CountryMapping
 		V2Relations* r1 = country1->second->getRelations(V2Tag2);
 		if (!r1)
 		{
-			LOG(LogLevel::Warning) << "Vic2 country " << V2Tag1 << " has no relations with " << V2Tag2;
-			continue;
+			r1 = new V2Relations(V2Tag2);
+			country1->second->addRelation(r1);
 		}
 		V2Relations* r2 = country2->second->getRelations(V2Tag1);
 		if (!r2)
 		{
-			LOG(LogLevel::Warning) << "Vic2 country " << V2Tag2 << " has no relations with " << V2Tag1;
-			continue;
+			r2 = new V2Relations(V2Tag1);
+			country2->second->addRelation(r2);
 		}
 
+		if (itr->type == "is_colonial")
+		{
+			if (country2->second->getSourceCountry()->getLibertyDesire() < Configuration::getLibertyThreshold())
+			{
+				country1->second->absorbColony(country2->second);
+			}
+			else
+			{
+				V2Agreement v2a;
+				v2a.country1 = V2Tag1;
+				v2a.country2 = V2Tag2;
+				v2a.start_date = itr->startDate;
+				v2a.type = "vassal";
+				diplomacy.addAgreement(v2a);
+				r1->setLevel(5);
+			}
+		}
 		if ((itr->type == "royal_marriage") || (itr->type == "guarantee"))
 		{
 			// influence level +1, but never exceed 4
@@ -586,7 +648,7 @@ void V2World::convertDiplomacy(const EU4World& sourceWorld, const CountryMapping
 				r2->setLevel(r2->getLevel() + 1);
 			}
 		}
-		if ((itr->type == "vassal") || (itr->type == "union"))
+		if ((itr->type == "vassal") || (itr->type == "union") || (itr->type == "protectorate"))
 		{
 			// influence level = 5
 			r1->setLevel(5);
@@ -671,7 +733,7 @@ void V2World::convertProvinces(const EU4World& sourceWorld, const provinceMappin
 			{
 				provinceBins[tag] = MTo1ProvinceComp();
 			}
-			if ((Configuration::getV2Gametype() == "HOD") && /*(province->getPopulation() < 1000)*/ false && (owner != NULL))
+			if (((Configuration::getV2Gametype() == "HOD") || (Configuration::getV2Gametype() == "HoD-NNM")) && /*(province->getPopulation() < 1000)*/ false && (owner != NULL))
 			{
 				stateIndexMapping::const_iterator stateIndexMapping = stateIndexMap.find(i->first);
 				if (stateIndexMapping == stateIndexMap.end())
@@ -824,19 +886,6 @@ void V2World::convertProvinces(const EU4World& sourceWorld, const provinceMappin
 					{
 						i->second->setFortLevel(1);
 					}
-					// note: HTTT has only shipyard
-					if (   (*vitr)->hasBuilding("shipyard") || (*vitr)->hasBuilding("grand_shipyard")
-						|| (*vitr)->hasBuilding("naval_arsenal") || (*vitr)->hasBuilding("naval_base"))
-					{
-						// place naval bases only in port provinces
-						vector<int> candidates;
-						candidates.push_back(i->second->getNum());
-						candidates = getPortProvinces(candidates);
-						if (candidates.size() > 0)
-						{
-							i->second->setNavalBaseLevel(1);
-						}
-					}
 				}
 			}
 		}
@@ -870,10 +919,10 @@ void V2World::setupColonies(const adjacencyMapping& adjacencyMap, const continen
 				LOG(LogLevel::Warning) << "No adjacency mapping for province " << currentProvince;
 				continue;
 			}
-			vector<adjacency> adjacencies = adjacencyMap[currentProvince];
+			vector<int> adjacencies = adjacencyMap[currentProvince];
 			for (unsigned int i = 0; i < adjacencies.size(); i++)
 			{
-				map<int, V2Province*>::iterator openItr = openProvinces.find(adjacencies[i].to);
+				map<int, V2Province*>::iterator openItr = openProvinces.find(adjacencies[i]);
 				if (openItr == openProvinces.end())
 				{
 					continue;
@@ -1069,23 +1118,25 @@ void V2World::convertTechs(const EU4World& sourceWorld)
 {
 	map<string, EU4Country*> sourceCountries = sourceWorld.getCountries();
 	
-	double oldAdmMean;
-	double admMean;
-	double oldAdmS = 0.0;
-	double newAdmS;
-	double highestAdm;
+	double oldArmyMean;
+	double armyMean;
+	double highestArmy;
 
-	double oldDipMean;
-	double dipMean;
-	double oldDipS = 0.0;
-	double newDipS;
-	double highestDip;
+	double oldNavyMean;
+	double navyMean;
+	double highestNavy;
 
-	double oldMilMean;
-	double milMean;
-	double oldMilS = 0.0;
-	double newMilS;
-	double highestMil;
+	double oldCommerceMean;
+	double commerceMean;
+	double highestCommerce;
+
+	double oldCultureMean;
+	double cultureMean;
+	double highestCulture;
+
+	double oldIndustryMean;
+	double industryMean;
+	double highestIndustry;
 
 	int num = 2;
 	map<string, EU4Country*>::iterator i = sourceCountries.begin();
@@ -1093,9 +1144,11 @@ void V2World::convertTechs(const EU4World& sourceWorld)
 	{
 		i++;
 	}
-	highestAdm			= oldAdmMean			= admMean			= i->second->getAdmTech();
-	highestDip			= oldDipMean			= dipMean			= i->second->getDipTech();
-	highestMil			= oldMilMean			= milMean			= i->second->getMilTech();
+	highestArmy			= oldArmyMean		= armyMean		= i->second->getAdmTech() + i->second->getMilTech();
+	highestNavy			= oldNavyMean		= navyMean		= i->second->getMilTech() + i->second->getDipTech();
+	highestCommerce	= oldCommerceMean	= commerceMean	= i->second->getAdmTech() + i->second->getDipTech();
+	highestCulture		= oldCultureMean	= cultureMean	= i->second->getDipTech();
+	highestIndustry	= oldIndustryMean	= industryMean	= i->second->getMilTech() + i->second->getAdmTech() + i->second->getDipTech();
 
 	for (i++; i != sourceCountries.end(); i++)
 	{
@@ -1103,63 +1156,65 @@ void V2World::convertTechs(const EU4World& sourceWorld)
 		{
 			continue;
 		}
-		double newTech	= i->second->getAdmTech();
-		admMean			= oldAdmMean + ((newTech - oldAdmMean) / num);
-		newAdmS			= oldAdmS + ((newTech - oldAdmMean) * (newTech - admMean));
-		oldAdmMean		= admMean; 
-		oldAdmS			= newAdmS;
-		if (newTech > highestAdm)
+		double newTech	= i->second->getAdmTech() + i->second->getMilTech();
+		armyMean			= oldArmyMean + ((newTech - oldArmyMean) / num);
+		oldArmyMean		= armyMean; 
+		if (newTech > highestArmy)
 		{
-			highestAdm = newTech;
+			highestArmy = newTech;
+		}
+
+		newTech		= i->second->getMilTech() + i->second->getDipTech();
+		navyMean		= oldNavyMean + ((newTech - oldNavyMean) / num);
+		oldNavyMean	= navyMean;
+		if (newTech > highestNavy)
+		{
+			highestNavy = newTech;
+		}
+
+		newTech				= i->second->getAdmTech() + i->second->getDipTech();
+		commerceMean		= oldCommerceMean + ((newTech - oldCommerceMean) / num);
+		oldCommerceMean	= commerceMean;
+		if (newTech > highestCommerce)
+		{
+			highestCommerce = newTech;
 		}
 
 		newTech			= i->second->getDipTech();
-		dipMean			= oldDipMean + ((newTech - oldDipMean) / num);
-		newDipS			= oldDipS + ((newTech - oldDipMean) * (newTech - dipMean));
-		oldDipMean		= dipMean; 
-		oldDipS			= newDipS;
-		if (newTech > highestDip)
+		cultureMean		= oldCultureMean + ((newTech - oldCultureMean) / num);
+		oldCultureMean	= cultureMean;
+		if (newTech > highestCulture)
 		{
-			highestDip = newTech;
+			highestCulture = newTech;
 		}
 
-		newTech			= i->second->getMilTech();
-		milMean			= oldMilMean + ((newTech - oldMilMean) / num);
-		newMilS			= oldMilS + ((newTech - oldMilMean) * (newTech - milMean));
-		oldMilMean		= milMean; 
-		oldMilS			= newMilS;
-		if (newTech > highestMil)
+		newTech				= i->second->getMilTech() + i->second->getAdmTech() + i->second->getDipTech();
+		industryMean		= oldIndustryMean + ((newTech - oldIndustryMean) / num);
+		oldIndustryMean	= industryMean;
+		if (newTech > highestIndustry)
 		{
-			highestMil = newTech;
+			highestIndustry = newTech;
 		}
 
 		num++;
 	}
 
-	double admStdDev		= sqrt( (num > 1) ? (newAdmS/(num - 1)) : 0.0 );
-	double dipStdDev		= sqrt( (num > 1) ? (newDipS/(num - 1)) : 0.0 );
-	double milStdDev		= sqrt( (num > 1) ? (newMilS/(num - 1)) : 0.0 );
-
-	double admScale		= (2.5	* admStdDev)			/ (highestAdm			- admMean);
-	double dipScale		= (7	* dipStdDev)			/ (highestDip			- dipMean);
-	double milScale		= (4.5	* milStdDev)			/ (highestMil			- milMean);
-
 	for (map<string, V2Country*>::iterator itr = countries.begin(); itr != countries.end(); itr++)
 	{
 		if ((Configuration::getV2Gametype() == "vanilla") || itr->second->isCivilized())
 		{
-			itr->second->setArmyTech(milMean, milScale, milStdDev);
-			itr->second->setNavyTech(dipMean, dipScale, dipStdDev);
-			itr->second->setCommerceTech(dipMean, dipScale, dipStdDev);
-			itr->second->setIndustryTech(admMean, admScale, admStdDev);
-			itr->second->setCultureTech(admMean, admScale, admStdDev);
+			itr->second->setArmyTech(armyMean, highestArmy);
+			itr->second->setNavyTech(navyMean, highestNavy);
+			itr->second->setCommerceTech(commerceMean, highestCommerce);
+			itr->second->setIndustryTech(industryMean, highestIndustry);
+			itr->second->setCultureTech(cultureMean, highestCulture);
 		}
 	}
 
 	int numRomanticLit = 0;
 	int numRomanticArt = 0;
 	int numRomanticMusic = 0;
-	if (Configuration::getV2Gametype() != "HOD")
+	if ((Configuration::getV2Gametype() == "vanilla") || (Configuration::getV2Gametype() == "AHD"))
 	{
 		for (map<string, V2Country*>::iterator itr = countries.begin(); itr != countries.end(); itr++)
 		{
@@ -1190,6 +1245,24 @@ void V2World::convertTechs(const EU4World& sourceWorld)
 				numRomanticArt++;
 			}
 			if (itr->second->getInventionState(HOD_romanticist_literature) == active)
+			{
+				numRomanticMusic++;
+			}
+		}
+	}
+	else if (Configuration::getV2Gametype() == "HoD-NNM")
+	{
+		for (map<string, V2Country*>::iterator itr = countries.begin(); itr != countries.end(); itr++)
+		{
+			if (itr->second->getInventionState(HOD_NNM_romanticist_literature) == active)
+			{
+				numRomanticLit++;
+			}
+			if (itr->second->getInventionState(HOD_NNM_romanticist_literature) == active)
+			{
+				numRomanticArt++;
+			}
+			if (itr->second->getInventionState(HOD_NNM_romanticist_literature) == active)
 			{
 				numRomanticMusic++;
 			}
@@ -1220,7 +1293,7 @@ void V2World::convertTechs(const EU4World& sourceWorld)
 	romanticMusicPrestige *= 20;
 	romanticMusicPrestige /= numRomanticMusic;
 
-	if (Configuration::getV2Gametype() != "HOD")
+	if ((Configuration::getV2Gametype() == "vanilla") || (Configuration::getV2Gametype() == "AHD"))
 	{
 		for (map<string, V2Country*>::iterator itr = countries.begin(); itr != countries.end(); itr++)
 		{
@@ -1251,6 +1324,24 @@ void V2World::convertTechs(const EU4World& sourceWorld)
 				itr->second->addPrestige(romanticArtPrestige);
 			}
 			if (itr->second->getInventionState(HOD_romanticist_music) == active)
+			{
+				itr->second->addPrestige(romanticMusicPrestige);
+			}
+		}
+	}
+	else if (Configuration::getV2Gametype() == "HoD-NNM")
+	{
+		for (map<string, V2Country*>::iterator itr = countries.begin(); itr != countries.end(); itr++)
+		{
+			if (itr->second->getInventionState(HOD_NNM_romanticist_literature) == active)
+			{
+				itr->second->addPrestige(romanticLitPrestige);
+			}
+			if (itr->second->getInventionState(HOD_NNM_romanticist_art) == active)
+			{
+				itr->second->addPrestige(romanticArtPrestige);
+			}
+			if (itr->second->getInventionState(HOD_NNM_romanticist_music) == active)
 			{
 				itr->second->addPrestige(romanticMusicPrestige);
 			}
@@ -1397,11 +1488,7 @@ map<string, V2Country*> V2World::getPotentialCountries() const
 
 map<string, V2Country*> V2World::getDynamicCountries() const
 {
-	map<string, V2Country*> retVal;
-	for (vector<V2Country*>::const_iterator i = dynamicCountries.begin(); i != dynamicCountries.end(); i++)
-	{
-		retVal[(*i)->getTag()] = *i;
-	}
+	map<string, V2Country*> retVal = dynamicCountries;
 	return retVal;
 }
 

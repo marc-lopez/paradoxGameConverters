@@ -1,3 +1,26 @@
+/*Copyright (c) 2014 The Paradox Game Converters Project
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
+
+
+
 #ifndef V2COUNTRY_H_
 #define V2COUNTRY_H_
 
@@ -11,6 +34,7 @@
 #include "V2Localisation.h"
 #include "V2TechSchools.h"
 #include <vector>
+#include <set>
 using namespace std;
 
 class EU4World;
@@ -37,7 +61,8 @@ class V2Country
 		void								output() const;
 		void								outputToCommonCountriesFile(FILE*) const;
 		void								outputLocalisation(FILE*) const;
-		void								initFromEU4Country(const EU4Country* _srcCountry, vector<string> outputOrder, const CountryMapping& countryMap, cultureMapping cultureMap, religionMapping religionMap, unionCulturesMap unionCultures, governmentMapping governmentMap, inverseProvinceMapping inverseProvinceMap, vector<V2TechSchool> techSchools, map<int, int>& leaderMap, const V2LeaderTraits& lt);
+		void								outputOOB() const;
+		void								initFromEU4Country(const EU4Country* _srcCountry, vector<string> outputOrder, const CountryMapping& countryMap, cultureMapping cultureMap, religionMapping religionMap, unionCulturesMap unionCultures, governmentMapping governmentMap, inverseProvinceMapping inverseProvinceMap, vector<V2TechSchool> techSchools, map<int, int>& leaderMap, const V2LeaderTraits& lt, const map<string, double>& UHLiberalIdeas, const map<string, double>& UHReactionaryIdeas, const vector< pair<string, int> >& literacyIdeas);
 		void								initFromHistory();
 		void								addState(V2State* newState);
 		void								convertArmies(const map<int,int>& leaderIDMap, double cost_per_regiment[num_reg_categories], const inverseProvinceMapping& inverseProvinceMap, map<int, V2Province*> allProvinces, vector<int> port_whitelist);
@@ -45,43 +70,47 @@ class V2Country
 		void								addRailroadtoCapitalState();
 		void								convertUncivReforms();
 		void								setupPops(EU4World& sourceWorld);
-		void								setArmyTech(double mean, double scale, double stdDev);
-		void								setNavyTech(double mean, double scale, double stdDev);
-		void								setCommerceTech(double mean, double scale, double stdDev);
-		void								setIndustryTech(double mean, double scale, double stdDev);
-		void								setCultureTech(double mean, double scale, double stdDev);
+		void								setArmyTech(double mean, double highest);
+		void								setNavyTech(double mean, double highest);
+		void								setCommerceTech(double mean, double highest);
+		void								setIndustryTech(double mean, double highest);
+		void								setCultureTech(double mean, double highest);
+		void								addRelation(V2Relations* newRelation);
+		void								absorbColony(V2Country* colony);
 
 		V2Relations*					getRelations(string withWhom) const;
-		void								getNationalValueScores(int& liberty, int& equality, int& order);
+		void								getNationalValueScores(int& liberty, int& equality, int& order, const map<string, int>& orderIdeas, const map<string, int>& libertyIdeas, const map<string, int>& equalityIdeas);
 		
-		void								addProvince(V2Province* _province)		{ provinces.push_back(_province); };
-		void								addPrestige(double additionalPrestige) { prestige += additionalPrestige; };
-		void								addResearchPoints(double newPoints)		{ researchPoints += newPoints; };
-		void								addTech(string newTech)						{ techs.push_back(newTech); };
-		void								setNationalValue(string NV)				{ nationalValue = NV; };
+		void								addProvince(V2Province* _province)		{ provinces.push_back(_province); }
+		void								addPrestige(double additionalPrestige) { prestige += additionalPrestige; }
+		void								addResearchPoints(double newPoints)		{ researchPoints += newPoints; }
+		void								addTech(string newTech)						{ techs.push_back(newTech); }
+		void								setNationalValue(string NV)				{ nationalValue = NV; }
+		void								isANewCountry(void)							{ newCountry = true; }
 
-		vector<V2Province*>			getProvinces() const { return provinces; };
-		string							getTag() const { return tag; };
-		bool								isCivilized() const { return civilized; };
-		string							getPrimaryCulture() const { return primaryCulture; };
-		vector<string>					getAcceptedCultures() const { return acceptedCultures; };
-		const EU4Country*				getSourceCountry() const { return srcCountry; };
-		inventionStatus				getInventionState(vanillaInventionType invention) const { return vanillaInventions[invention]; };
-		inventionStatus				getInventionState(HODInventionType invention) const { return HODInventions[invention]; };
-		double							getReactionary() const { return upperHouseReactionary; };
-		double							getConservative() const { return upperHouseConservative; };
-		double							getLiberal() const { return upperHouseLiberal; };
-		vector< pair<int, int> >	getReactionaryIssues() const { return reactionaryIssues; };
-		vector< pair<int, int> >	getConservativeIssues() const { return conservativeIssues; };
-		vector< pair<int, int> >	getLiberalIssues() const { return liberalIssues; };
-		double							getLiteracy() const { return literacy; };
-		int								getCapital() const { return capital; };
-		bool								isNewCountry() const { return newCountry; };
+		vector<V2Province*>			getProvinces() const { return provinces; }
+		string							getTag() const { return tag; }
+		bool								isCivilized() const { return civilized; }
+		string							getPrimaryCulture() const { return primaryCulture; }
+		set<string>						getAcceptedCultures() const { return acceptedCultures; }
+		const EU4Country*				getSourceCountry() const { return srcCountry; }
+		inventionStatus				getInventionState(vanillaInventionType invention) const { return vanillaInventions[invention]; }
+		inventionStatus				getInventionState(HODInventionType invention) const { return HODInventions[invention]; }
+		inventionStatus				getInventionState(HODNNMInventionType invention) const { return HODNNMInventions[invention]; }
+		double							getReactionary() const { return upperHouseReactionary; }
+		double							getConservative() const { return upperHouseConservative; }
+		double							getLiberal() const { return upperHouseLiberal; }
+		string							getGovernment() const { return government; }
+		vector< pair<int, int> >	getReactionaryIssues() const { return reactionaryIssues; }
+		vector< pair<int, int> >	getConservativeIssues() const { return conservativeIssues; }
+		vector< pair<int, int> >	getLiberalIssues() const { return liberalIssues; }
+		double							getLiteracy() const { return literacy; }
+		int								getCapital() const { return capital; }
+		bool								isNewCountry() const { return newCountry; }
 
 	private:
 		void			outputTech(FILE*) const ;
 		void			outputElection(FILE*) const;
-		void			sortRelations(const vector<string>& order);
 		void			addLoan(string creditor, double size, double interest);
 		int			addRegimentToArmy(V2Army* army, RegimentCategory rc, const inverseProvinceMapping& inverseProvinceMap, map<int, V2Province*> allProvinces);
 		vector<int>	getPortProvinces(vector<int> locationCandidates, map<int, V2Province*> allProvinces);
@@ -99,7 +128,7 @@ class V2Country
 		int								capital;
 		bool								civilized;
 		string							primaryCulture;
-		vector<string>					acceptedCultures;
+		set<string>						acceptedCultures;
 		string							religion;
 		vector<V2Party*>				parties;
 		string							rulingParty;
@@ -110,6 +139,7 @@ class V2Country
 		vector<string>					techs;
 		inventionStatus				vanillaInventions[VANILLA_naval_exercises];
 		inventionStatus				HODInventions[HOD_naval_exercises];
+		inventionStatus				HODNNMInventions[HOD_NNM_naval_exercises];
 		V2UncivReforms*				uncivReforms;
 		double							researchPoints;
 		string							techSchool;
@@ -120,7 +150,7 @@ class V2Country
 		vector< pair<int, int> >	reactionaryIssues;
 		vector< pair<int, int> >	conservativeIssues;
 		vector< pair<int, int> >	liberalIssues;
-		vector<V2Relations*>			relations;
+		map<string,V2Relations*>	relations;
 		vector<V2Army*>				armies;
 		V2Reforms*						reforms;
 		string							nationalValue;
