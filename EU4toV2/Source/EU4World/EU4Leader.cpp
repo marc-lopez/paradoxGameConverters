@@ -2,6 +2,8 @@
 #include "../Log.h"
 #include "../Parsers/Object.h"
 
+#include <stdlib.h>
+
 
 
 EU4Leader::EU4Leader(Object *obj)

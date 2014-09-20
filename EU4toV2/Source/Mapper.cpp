@@ -1,15 +1,20 @@
 #include "Mapper.h"
 #include "Log.h"
 #include "Configuration.h"
-#include "Parsers\Object.h"
-#include "EU4World\EU4World.h"
-#include "EU4World\EU4Country.h"
-#include "EU4World\EU4Province.h"
-#include "V2World\V2World.h"
-#include "V2World\V2Country.h"
+#include "Parsers/Object.h"
+#include "EU4World/EU4World.h"
+#include "EU4World/EU4Country.h"
+#include "EU4World/EU4Province.h"
+#include "V2World/V2World.h"
+#include "V2World/V2Country.h"
 #include <algorithm>
 #include <sys/stat.h>
 
+#include <boost/filesystem.hpp>
+
+#ifndef WIN32 
+#define fopen_s(pFile,filename,mode) ((*(pFile))=fopen((filename),(mode)))==NULL
+#endif
 
 void initProvinceMap(Object* obj, const EU4Version* version, provinceMapping& provinceMap, provinceMapping& inverseProvinceMap, resettableMap& resettableProvinces)
 {
@@ -113,14 +118,13 @@ const vector<int>& getV2ProvinceNums(const inverseProvinceMapping& invProvMap, i
 adjacencyMapping initAdjacencyMap()
 {
 	FILE* adjacenciesBin = NULL;
-	string filename = Configuration::getV2DocumentsPath() + "\\map\\cache\\adjacencies.bin";
-	struct _stat st;
-	if ((_stat(filename.c_str(), &st) != 0))
+	boost::filesystem::path filename = Configuration::getV2DocumentsPath() + "\\map\\cache\\adjacencies.bin";
+	if (boost::filesystem::exists(filename))
 	{
 		LOG(LogLevel::Warning) << "Could not find " << filename << " - looking in install folder";
 		filename = Configuration::getV2Path() + "\\map\\cache\\adjacencies.bin";
 	}
-	fopen_s(&adjacenciesBin, filename.c_str(), "rb");
+	fopen_s(&adjacenciesBin, filename.generic_string().c_str(), "rb");
 	if (adjacenciesBin == NULL)
 	{
 		LOG(LogLevel::Error) << "Could not open " << filename;

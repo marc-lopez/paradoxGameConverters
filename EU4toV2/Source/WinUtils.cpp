@@ -1,6 +1,6 @@
 #include "WinUtils.h"
 
-#include <Windows.h>
+#include <boost/filesystem.hpp>
 
 #include "Log.h"
 
@@ -8,8 +8,11 @@ namespace WinUtils {
 
 bool TryCreateFolder(const std::string& path)
 {
-	BOOL success = ::CreateDirectory(path.c_str(), NULL);
-	if (success || GetLastError() == 183)	// 183 is if the folder already exists
+	//BOOL success = ::CreateDirectory(path.c_str(), NULL);
+	if (boost::filesystem::exists(path))
+		return true;
+	
+	if (boost::filesystem::create_directory(path))
 	{
 		return true;
 	}
@@ -22,6 +25,20 @@ bool TryCreateFolder(const std::string& path)
 
 void GetAllFilesInFolder(const std::string& path, std::set<std::string>& fileNames)
 {
+	if (boost::filesystem::exists(path) && boost::filesystem::is_directory(path))
+	{
+		for (boost::filesystem::directory_iterator dir_iter(path); 
+			dir_iter != boost::filesystem::directory_iterator(); 
+			++dir_iter)
+		{
+			if (boost::filesystem::is_regular_file(dir_iter->status()))
+			{
+				fileNames.insert(dir_iter->path().filename().string());
+			}
+		}
+	}
+
+	/*
 	WIN32_FIND_DATA findData;
 	HANDLE findHandle = FindFirstFile((path + "\\*").c_str(), &findData);
 	if (findHandle == INVALID_HANDLE_VALUE)
@@ -36,30 +53,31 @@ void GetAllFilesInFolder(const std::string& path, std::set<std::string>& fileNam
 		}
 	} while (FindNextFile(findHandle, &findData) != 0);
 	FindClose(findHandle);
+	*/
 }
 
 bool TryCopyFile(const std::string& sourcePath, const std::string& destPath)
 {
-	BOOL success = ::CopyFile(sourcePath.c_str(), destPath.c_str(), FALSE);
-	if (success)
+	try
 	{
+		boost::filesystem::copy_file(sourcePath, destPath);
 		return true;
 	}
-	else
+	catch (...)
 	{
-		LOG(LogLevel::Warning) << "Could not copy file " << sourcePath << " to " << destPath << " - " << GetLastWindowsError();
+		LOG(LogLevel::Warning) << "Could not copy file " << sourcePath << " to " << destPath;
 		return false;
 	}
 }
 
 bool DoesFileExist(const std::string& path)
 {
-	DWORD attributes = GetFileAttributes(path.c_str());
-	return (attributes != INVALID_FILE_ATTRIBUTES && !(attributes & FILE_ATTRIBUTE_DIRECTORY));
+	return boost::filesystem::exists(path);	
 }
 
 std::string GetLastWindowsError()
 {
+	/*
 	DWORD errorCode = ::GetLastError();
 	const DWORD errorBufferSize = 256;
 	CHAR errorBuffer[errorBufferSize];
@@ -75,9 +93,9 @@ std::string GetLastWindowsError()
 		return errorBuffer;
 	}
 	else
-	{
+	{*/
 		return "Unknown error";
-	}
+	//}
 }
 
 } // namespace WinUtils

@@ -1,7 +1,7 @@
 #include "EU4Relations.h"
 #include "../Parsers/Object.h"
 
-
+#include <stdlib.h>
 
 EU4Relations::EU4Relations(Object* obj) {
 	tag = obj->getKey();

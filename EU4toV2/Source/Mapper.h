@@ -3,8 +3,8 @@
 
 
 
-#include "Parsers\Object.h"
-#include "EU4World\EU4Version.h"
+#include "Parsers/Object.h"
+#include "EU4World/EU4Version.h"
 #include <map>
 #include <vector>
 #include <unordered_set>

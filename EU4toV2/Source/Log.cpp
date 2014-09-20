@@ -4,7 +4,9 @@
 #include <fstream>
 #include <iostream>
 
+#ifdef WIN32a
 #include <Windows.h>
+#endif
 
 Log::Log(LogLevel level)
 : logLevel(level)
@@ -32,6 +34,7 @@ void Log::WriteToConsole(LogLevel level, const std::string& logMessage)
 		return;
 	}
 
+#ifdef WIN32a
 	HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
 	if (console != INVALID_HANDLE_VALUE)
 	{
@@ -68,6 +71,7 @@ void Log::WriteToConsole(LogLevel level, const std::string& logMessage)
 			return;
 		}
 	}
+#endif
 
 	std::cout << logMessage;
 }
@@ -78,16 +82,13 @@ void Log::WriteToFile(LogLevel level, const std::string& logMessage)
 
 	time_t rawtime;
 	time(&rawtime);
-	tm timeInfo;
-	errno_t error = localtime_s(&timeInfo, &rawtime);
-	if (error == 0)
+	struct tm * timeInfo;
+	timeInfo = localtime(&rawtime);
+	char timeBuffer[64];
+	size_t bytesWritten = strftime(timeBuffer, 64, "%Y-%m-%d %H:%M:%S ", timeInfo);
+	if (bytesWritten != 0)
 	{
-		char timeBuffer[64];
-		size_t bytesWritten = strftime(timeBuffer, 64, "%Y-%m-%d %H:%M:%S ", &timeInfo);
-		if (bytesWritten != 0)
-		{
-			logFile << timeBuffer;
-		}
+		logFile << timeBuffer;
 	}
 
 	switch (level)

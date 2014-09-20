@@ -2,7 +2,7 @@
 #include "../Parsers/Parser.h"
 #include "../Log.h"
 
-
+#include <stdlib.h>
 
 V2TraitConversion::V2TraitConversion(Object* obj)
 {

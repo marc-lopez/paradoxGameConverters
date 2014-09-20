@@ -73,6 +73,10 @@
 #include <iostream>
 #include <assert.h>
 
+#ifndef WIN32
+#define sprintf_s snprintf // Not the same... but as long as we don't look at the return values, we're fine.
+#endif
+
 bool Object::debug = false; 
 
 Object::Object (string k) :

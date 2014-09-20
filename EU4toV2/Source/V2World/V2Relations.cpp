@@ -1,7 +1,7 @@
 #include "V2Relations.h"
 #include "../EU4World/EU4Relations.h"
 
-
+#include <stdio.h>
 
 V2Relations::V2Relations(string newTag, EU4Relations* oldRelations)
 {

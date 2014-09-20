@@ -11,9 +11,14 @@
 #include <algorithm>
 #include <stdio.h>
 #include <sys/stat.h>
+#include <stdio.h>
+#include <errno.h>
 using namespace std;
 
-
+#include <boost/filesystem.hpp>
+#ifndef WIN32 
+#define fopen_s(pFile,filename,mode) ((*(pFile))=fopen((filename),(mode)))==NULL
+#endif
 
 V2Province::V2Province(string _filename)
 {
@@ -50,16 +55,18 @@ V2Province::V2Province(string _filename)
 	railLevel			= 0;
 	factories.clear();
 
-	int slash		= filename.find_last_of("\\");
+	boost::filesystem::path slashpath("/");
+	std::string slashstring = slashpath.make_preferred().generic_string();
+
+	int slash		= filename.find_last_of(slashstring);
 	int numDigits	= filename.find_first_of("-") - slash - 2;
 	string temp		= filename.substr(slash + 1, numDigits);
 	num				= atoi(temp.c_str());
 
 	Object* obj;
-	struct _stat st;
-	if (_stat((string(".\\blankMod\\output\\history\\provinces\\") + _filename).c_str(), &st) == 0)
+	if (boost::filesystem::exists(boost::filesystem::path(string(".\\blankMod\\output\\history\\provinces\\") + _filename).generic_string().c_str()))
 	{
-		obj = doParseFile((string(".\\blankMod\\output\\history\\provinces\\") + _filename).c_str());
+		obj = doParseFile(boost::filesystem::path(string(".\\blankMod\\output\\history\\provinces\\") + _filename).generic_string().c_str());
 		if (obj == NULL)
 		{
 			LOG(LogLevel::Error) << "Could not parse .\\blankMod\\output\\history\\provinces\\" << _filename;
@@ -68,7 +75,7 @@ V2Province::V2Province(string _filename)
 	}
 	else
 	{
-		obj = doParseFile((Configuration::getV2Path() + "\\history\\provinces\\" + _filename).c_str());
+		obj = doParseFile(boost::filesystem::path(Configuration::getV2Path() + "\\history\\provinces\\" + _filename).generic_string().c_str());
 		if (obj == NULL)
 		{
 			LOG(LogLevel::Error) << "Could not parse " << Configuration::getV2Path() << "\\history\\provinces\\" << _filename;
@@ -146,35 +153,46 @@ V2Province::V2Province(string _filename)
 void V2Province::output() const
 {
 	FILE* output;
-	if (fopen_s(&output, ("Output\\" + Configuration::getOutputName() + "\\history\\provinces\\" + filename).c_str(), "w") != 0)
+#ifndef WIN32
+	errno = 0;
+#endif
+
+	if (fopen_s(&output, boost::filesystem::path("Output\\" + Configuration::getOutputName() + "\\history\\provinces\\" + filename).generic_string().c_str(), "w") != 0)
 	{
 		int errNum;
-		_get_errno(&errNum);
+		
+#ifdef WIN32
 		char errStr[256];
+		_get_errno(&errNum);
 		strerror_s(errStr, sizeof(errStr), errNum);
+#else
+		char* errStr = strerror(errno);
+#endif
+			
 		LOG(LogLevel::Error) << "Could not create province history file Output\\" << Configuration::getOutputName() << "\\history\\provinces\\" << filename << " - " << errStr;
 		exit(-1);
 	}
+
 	if (owner != "")
 	{
-		fprintf_s(output, "owner= %s\n", owner.c_str());
-		fprintf_s(output, "controller= %s\n", owner.c_str());
+		fprintf(output, "owner= %s\n", owner.c_str());
+		fprintf(output, "controller= %s\n", owner.c_str());
 	}
 	for (unsigned int i = 0; i < cores.size(); i++)
 	{
-		fprintf_s(output, "add_core= %s\n", cores[i].c_str());
+		fprintf(output, "add_core= %s\n", cores[i].c_str());
 	}
 	if(rgoType != "")
 	{
-		fprintf_s(output, "trade_goods = %s\n", rgoType.c_str());
+		fprintf(output, "trade_goods = %s\n", rgoType.c_str());
 	}
 	if (lifeRating > 0)
 	{
-		fprintf_s(output, "life_rating = %d\n", lifeRating);
+		fprintf(output, "life_rating = %d\n", lifeRating);
 	}
 	if (terrain != "")
 	{
-		fprintf_s(output, "terrain = %s\n", terrain.c_str());
+		fprintf(output, "terrain = %s\n", terrain.c_str());
 	}
 	if (colonial > 0)
 	{
@@ -189,23 +207,23 @@ void V2Province::output() const
 	}
 	/*if (colonyLevel > 0)
 	{
-		fprintf_s(output, "colony = %d\n", colonyLevel);
+		fprintf(output, "colony = %d\n", colonyLevel);
 	}*/
 	if (navalBaseLevel > 0)
 	{
-		fprintf_s(output, "naval_base = %d\n", navalBaseLevel);
+		fprintf(output, "naval_base = %d\n", navalBaseLevel);
 	}
 	if (fortLevel > 0)
 	{
-		fprintf_s(output, "fort = %d\n", fortLevel);
+		fprintf(output, "fort = %d\n", fortLevel);
 	}
 	if (railLevel > 0)
 	{
-		fprintf_s(output, "railroad = %d\n", railLevel);
+		fprintf(output, "railroad = %d\n", railLevel);
 	}
 	if (slaveState)
 	{
-		fprintf_s(output, "is_slave = yes\n");
+		fprintf(output, "is_slave = yes\n");
 	}
 	for (vector<const V2Factory*>::const_iterator itr = factories.begin(); itr != factories.end(); itr++)
 	{

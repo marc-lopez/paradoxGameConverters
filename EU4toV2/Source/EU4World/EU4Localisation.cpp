@@ -3,7 +3,7 @@
 #include <fstream>
 #include <vector>
 
-#include <Windows.h>
+#include <boost/filesystem.hpp>
 
 void EU4Localisation::ReadFromFile(const std::string& fileName)
 {
@@ -39,27 +39,17 @@ void EU4Localisation::ReadFromFile(const std::string& fileName)
 
 void EU4Localisation::ReadFromAllFilesInFolder(const std::string& folderPath)
 {
-	// Get all files in the folder.
-	std::vector<std::string> fileNames;
-	WIN32_FIND_DATA findData;
-	HANDLE findHandle = FindFirstFile((folderPath + "\\*").c_str(), &findData);
-	if (findHandle == INVALID_HANDLE_VALUE)
+	if (boost::filesystem::exists(folderPath) && boost::filesystem::is_directory(folderPath))
 	{
-		return;
-	}
-	do
-	{
-		if (!(findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+		for (boost::filesystem::directory_iterator dir_iter(folderPath);
+			dir_iter != boost::filesystem::directory_iterator();
+			++dir_iter)
 		{
-			fileNames.push_back(findData.cFileName);
+			if (boost::filesystem::is_regular_file(dir_iter->status()))
+			{
+				ReadFromFile(dir_iter->path().string());
+			}
 		}
-	} while (FindNextFile(findHandle, &findData) != 0);
-	FindClose(findHandle);
-
-	// Read all these files.
-	for (const auto& fileName : fileNames)
-	{
-		ReadFromFile(folderPath + '\\' + fileName);
 	}
 }
 

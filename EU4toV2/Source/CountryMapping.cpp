@@ -9,10 +9,10 @@
 
 #include <boost/algorithm/string.hpp>
 
-#include "EU4World\EU4World.h"
-#include "Parsers\Object.h"
-#include "Parsers\Parser.h"
-#include "V2World\V2World.h"
+#include "EU4World/EU4World.h"
+#include "Parsers/Object.h"
+#include "Parsers/Parser.h"
+#include "V2World/V2World.h"
 #include "Log.h"
 
 bool CountryMapping::ReadRules(const std::string& fileName)

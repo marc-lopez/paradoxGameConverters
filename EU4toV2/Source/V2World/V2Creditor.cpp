@@ -1,6 +1,6 @@
 #include "V2Creditor.h"
 
-
+#include <stdio.h>
 
 void V2Creditor::addLoan(double size, double _interest)
 {

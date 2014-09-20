@@ -2,7 +2,7 @@
 #define EU4VERSION_H_
 
 
-#include "..\Parsers\Object.h"
+#include "../Parsers/Object.h"
 #include <string>
 using namespace std;
 
@@ -14,7 +14,7 @@ class EU4Version
 		EU4Version();
 		EU4Version(Object* obj);
 		EU4Version(string version);
-		bool operator >= (EU4Version& rhs) const;
+		bool operator >= (const EU4Version& rhs) const;
 	private:
 		int	first;
 		int	second;
@@ -24,4 +24,4 @@ class EU4Version
 
 
 
-#endif EU4VERSION_H_
+#endif // EU4VERSION_H_

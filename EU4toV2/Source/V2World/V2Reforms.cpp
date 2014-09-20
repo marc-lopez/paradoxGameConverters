@@ -6,7 +6,7 @@
 #include "V2State.h"
 #include "V2Province.h"
 
-
+#include <stdio.h>
 
 V2Reforms::V2Reforms(const EU4Country* srcCountry)
 {

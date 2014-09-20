@@ -2,7 +2,7 @@
 #include "../Log.h"
 #include "../Parsers/Parser.h"
 
-
+#include <boost/filesystem.hpp>
 
 EU4Regiment::EU4Regiment(Object *obj)
 {
@@ -222,10 +222,11 @@ void AddCategoryToRegimentTypeMap(Object* obj, RegimentCategory category, string
 
 void AddUnitFileToRegimentTypeMap(string directory, string name, RegimentTypeMap& rtm)
 {
-	Object* obj = doParseFile((directory + "\\" + name + ".txt").c_str());
+	boost::filesystem::path ParseFilePath(directory + "\\" + name + ".txt");
+	Object* obj = doParseFile(ParseFilePath.generic_string().c_str());
 	if (obj == NULL)
 	{
-		LOG(LogLevel::Error) << "Could not parse file " << directory << '\\' << name << ".txt";
+		LOG(LogLevel::Error) << "Could not parse file " << ParseFilePath.generic_string();
 		exit(-1);
 	}
 

@@ -1,6 +1,8 @@
 #include "Date.h"
 #include <vector>
-#include "Parsers\Object.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include "Parsers/Object.h"
 using namespace std;
 
 
@@ -194,6 +196,10 @@ bool date::isSet() const
 string date::toString() const
 {
 	char buf[16];
+#ifdef WIN32
 	sprintf_s(buf, 16, "%d.%d.%d", year, month, day);
+#else
+	snprintf(buf, 16, "%d.%d.%d", year, month, day);
+#endif
 	return string(buf);
 }

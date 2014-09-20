@@ -4,6 +4,7 @@
 #include "V2Factory.h"
 #include "../log.h"
 
+#include <stdio.h>
 
 V2State::V2State(int newId, V2Province* firstProvince)
 {

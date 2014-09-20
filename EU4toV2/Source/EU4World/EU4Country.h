@@ -4,8 +4,8 @@
 
 
 #include "EU4Army.h"
-#include "..\Color.h"
-#include "..\Date.h"
+#include "../Color.h"
+#include "../Date.h"
 
 class EU4Province;
 class EU4Relations;

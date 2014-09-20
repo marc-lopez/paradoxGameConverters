@@ -2,9 +2,9 @@
 #include <algorithm>
 #include <math.h>
 #include <float.h>
-#include <io.h>
 #include <fstream>
 #include <sstream>
+#include <stdio.h>
 #include "../Log.h"
 #include "../Configuration.h"
 #include "../Parsers/Parser.h"
@@ -23,7 +23,10 @@
 #include "V2Creditor.h"
 #include "V2Leader.h"
 
-
+#include <boost/filesystem.hpp>
+#ifndef WIN32 
+#define fopen_s(pFile,filename,mode) ((*(pFile))=fopen((filename),(mode)))==NULL
+#endif
 
 const int MONEYFACTOR = 30;	// ducat to pound conversion rate
 
@@ -108,7 +111,7 @@ V2Country::V2Country(string _tag, string _commonCountryFile, vector<V2Party*> _p
 void V2Country::output() const
 {
 	FILE* output;
-	if (fopen_s(&output, ("Output\\" + Configuration::getOutputName() + "\\history\\countries\\" + filename).c_str(), "w") != 0)
+	if (fopen_s(&output, boost::filesystem::path("Output\\" + Configuration::getOutputName() + "\\history\\countries\\" + filename).generic_string().c_str(), "w") != 0)
 	{
 		LOG(LogLevel::Error) << "Could not create country history file " << filename;
 		exit(-1);
@@ -199,7 +202,7 @@ void V2Country::output() const
 	if (newCountry)
 	{
 		// Output common country file. 
-		std::ofstream commonCountryOutput("Output\\" + Configuration::getOutputName() + "\\common\\countries\\" + commonCountryFile);
+		std::ofstream commonCountryOutput(boost::filesystem::path("Output\\" + Configuration::getOutputName() + "\\common\\countries\\" + commonCountryFile).generic_string().c_str());
 		commonCountryOutput << "graphical_culture = UsGC\n";	// default to US graphics
 		commonCountryOutput << "color = { " << color << " }\n";
 		for (auto party : parties)
@@ -269,22 +272,38 @@ void V2Country::initFromEU4Country(const EU4Country* _srcCountry, vector<string>
 {
 	srcCountry = _srcCountry;
 
-	struct _finddata_t	fileData;
-	intptr_t					fileListing;
-	string filesearch = ".\\blankMod\\output\\history\\countries\\" + tag + "*.txt";
-	if ((fileListing = _findfirst(filesearch.c_str(), &fileData)) != -1L)
+	boost::filesystem::path filesearch = ".\\blankMod\\output\\history\\countries\\";// +tag + "*.txt";
+
+	for (boost::filesystem::directory_iterator itr(filesearch); itr != boost::filesystem::directory_iterator(); ++itr)
 	{
-		filename = fileData.name;
+		if (!is_regular_file(itr->status()))
+			continue;
+		
+		std::string thisFilename = itr->path().filename().string();
+
+		if (0 == thisFilename.compare(0,3,tag))
+		{
+			filename = thisFilename;
+			break;
+		}
 	}
-	_findclose(fileListing);
+
 	if (filename == "")
 	{
-		string filesearch = Configuration::getV2Path() + "\\history\\countries\\" + tag + "*.txt";
-		if ((fileListing = _findfirst(filesearch.c_str(), &fileData)) != -1L)
+		boost::filesystem::path filesearch = Configuration::getV2Path() + "\\history\\countries\\";// +tag + "*.txt";
+		for (boost::filesystem::directory_iterator itr(filesearch); itr != boost::filesystem::directory_iterator(); ++itr)
 		{
-			filename = fileData.name;
+			if (!is_regular_file(itr->status()))
+				continue;
+
+			std::string thisFilename = itr->path().filename().string();
+
+			if (0 == thisFilename.compare(0, 3, tag))
+			{
+				filename = thisFilename;
+				break;
+			}
 		}
-		_findclose(fileListing);
 	}
 	if (filename == "")
 	{
@@ -715,27 +734,43 @@ void V2Country::initFromEU4Country(const EU4Country* _srcCountry, vector<string>
 // used only for countries which are NOT converted (i.e. unions, dead countries, etc)
 void V2Country::initFromHistory()
 {
-	string fullFilename;
-	struct _finddata_t	fileData;
-	intptr_t					fileListing;
-	string filesearch = ".\\blankMod\\output\\history\\countries\\" + tag + "*.txt";
-	if ((fileListing = _findfirst(filesearch.c_str(), &fileData)) != -1L)
+	boost::filesystem::path fullFilename;
+	boost::filesystem::path filesearch = ".\\blankMod\\output\\history\\countries\\";// +tag + "*.txt";
+
+	for (boost::filesystem::directory_iterator itr(filesearch); itr != boost::filesystem::directory_iterator(); ++itr)
 	{
-		filename			= fileData.name;
-		fullFilename	= string(".\\blankMod\\output\\history\\countries\\") + fileData.name;
-	}
-	_findclose(fileListing);
-	if (fullFilename == "")
-	{
-		string filesearch = Configuration::getV2Path() + "\\history\\countries\\" + tag + "*.txt";
-		if ((fileListing = _findfirst(filesearch.c_str(), &fileData)) != -1L)
+		if (!is_regular_file(itr->status()))
+			continue;
+
+		std::string thisFilename = itr->path().filename().string();
+
+		if (0 == thisFilename.compare(0, 3, tag))
 		{
-			filename			= fileData.name;
-			fullFilename	= Configuration::getV2Path() + "\\history\\countries\\" + fileData.name;
+			filename = itr->path().filename().string();
+			fullFilename = string(".\\blankMod\\output\\history\\countries\\") + filename;
+			break;
 		}
-		_findclose(fileListing);
 	}
-	if (fullFilename == "")
+
+	if (fullFilename.empty())
+	{
+		boost::filesystem::path filesearch = Configuration::getV2Path() + "\\history\\countries\\" + tag + "*.txt";
+		for (boost::filesystem::directory_iterator itr(filesearch); itr != boost::filesystem::directory_iterator(); ++itr)
+		{
+			if (!is_regular_file(itr->status()))
+				continue;
+
+			std::string thisFilename = itr->path().filename().string();
+
+			if (0 == thisFilename.compare(0, 3, tag))
+			{
+				filename = itr->path().filename().string();
+				fullFilename = string(".\\blankMod\\output\\history\\countries\\") + filename;
+				break;
+			}
+		}
+	}
+	if (fullFilename.empty())
 	{
 		string countryName	= commonCountryFile;
 		int lastSlash			= countryName.find_last_of("/");
@@ -744,7 +779,7 @@ void V2Country::initFromHistory()
 		return;
 	}
 
-	Object* obj = doParseFile(fullFilename.c_str());
+	Object* obj = doParseFile(fullFilename.generic_string().c_str());
 	if (obj == NULL)
 	{
 		LOG(LogLevel::Error) << "Could not parse file " << fullFilename;

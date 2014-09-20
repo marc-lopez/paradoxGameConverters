@@ -1,10 +1,10 @@
 #include "V2Localisation.h"
 
-#include <Windows.h>
-
 #include "..\EU4World\EU4Country.h"
 #include "..\Log.h"
 #include "..\WinUtils.h"
+
+#include <stdlib.h>
 
 const std::array<std::string, V2Localisation::numLanguages> V2Localisation::languages = 
 	{ "english", "french", "german", "spanish" };
@@ -41,7 +41,14 @@ void V2Localisation::SetPartyName(size_t partyIndex, const std::string& language
 	{
 		parties.resize(partyIndex + 1);
 	}
-	auto languageIter = std::find(languages.begin(), languages.end(), language);
+
+	//auto languageIter = std::find(languages.begin(), languages.end(), language); // GCC doesn't like this. I don't know why.
+	auto languageIter = languages.begin();
+	while (languageIter != languages.end()) {
+		if (*languageIter == language) break;
+		++languageIter;
+	}
+
 	if (languageIter != languages.end())
 	{
 		size_t languageIndex = std::distance(languages.begin(), languageIter);
@@ -78,6 +85,9 @@ void V2Localisation::WriteToStream(std::ostream& out) const
 
 std::string V2Localisation::Convert(const std::string& text)
 {
+	return text;
+	/*
+
 	if (text.empty())
 	{
 		return "";
@@ -110,4 +120,5 @@ std::string V2Localisation::Convert(const std::string& text)
 		return "";
 	}
 	return std::string(latin1Text.begin(), latin1Text.end());
+	*/
 }

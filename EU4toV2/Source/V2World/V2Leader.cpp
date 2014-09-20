@@ -3,7 +3,7 @@
 #include "V2Country.h"
 #include "../EU4World/EU4Leader.h"
 
-
+#include <stdio.h>
 
 static int nextId = 0;
 

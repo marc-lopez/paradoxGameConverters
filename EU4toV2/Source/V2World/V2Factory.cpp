@@ -3,7 +3,8 @@
 #include "../Log.h"
 #include "../Configuration.h"
 
-
+#include <stdio.h>
+#include <stdlib.h>
 
 V2FactoryType::V2FactoryType(Object* factory)
 {

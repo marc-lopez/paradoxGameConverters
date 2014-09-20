@@ -1,7 +1,7 @@
 #include "EU4Loan.h"
 #include "../Parsers/Object.h"
 
-
+#include <stdlib.h>
 
 EU4Loan::EU4Loan(Object* obj)
 {

@@ -69,7 +69,7 @@
 #include <fstream>
 #include <boost/spirit/include/support_istream_iterator.hpp>
 #include <boost/spirit/include/qi.hpp>
-#include "..\Log.h"
+#include "../Log.h"
 
 using namespace boost::spirit;
 

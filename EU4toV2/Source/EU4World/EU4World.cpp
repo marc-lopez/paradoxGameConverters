@@ -12,6 +12,8 @@
 #include "EU4Version.h"
 #include "EU4Localisation.h"
 
+#include <boost/filesystem.hpp>
+
 EU4World::EU4World(EU4Localisation& localisation, Object* obj)
 {
 	vector<Object*> versionObj = obj->getValue("savegame_version");
@@ -241,10 +243,10 @@ void EU4World::readCommonCountries(istream& in, const std::string& rootPath)
 				}
 				std::replace(fileName.begin(), fileName.end(), '/', '\\');
 				// Parse the country file.
-				std::string path = rootPath + "\\common\\" + fileName;
-				size_t lastPathSeparatorPos = path.find_last_of('\\');
-				std::string localFileName = path.substr(lastPathSeparatorPos + 1, string::npos);
-				country->readFromCommonCountry(localFileName, doParseFile(path.c_str()));
+				boost::filesystem::path path = rootPath + "\\common\\" + fileName;
+				std::string localFileName = path.filename().generic_string();
+				
+				country->readFromCommonCountry(localFileName, doParseFile(path.generic_string().c_str()));
 			}
 		}
 	}

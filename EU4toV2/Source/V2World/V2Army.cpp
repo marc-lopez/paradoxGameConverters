@@ -1,7 +1,8 @@
 #include "V2Army.h"
 #include "../Log.h"
 
-
+#include <stdio.h>
+#include <string.h>
 
 static int nextArmyID = 0;
 

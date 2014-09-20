@@ -12,6 +12,8 @@
 #include "..\Log.h"
 #include "..\WinUtils.h"
 
+#include <boost/filesystem.hpp>
+
 const std::vector<std::string> V2Flags::flagFileSuffixes = { ".tga", "_communist.tga", "_fascist.tga", "_monarchy.tga", "_republic.tga" };
 
 void V2Flags::SetV2Tags(const std::map<std::string, V2Country*>& V2Countries)
@@ -20,11 +22,11 @@ void V2Flags::SetV2Tags(const std::map<std::string, V2Country*>& V2Countries)
 	tagMapping.clear();
 
 	// Generate a list of all flags that we can use.
-	const std::vector<std::string> availableFlagFolders = { "blankMod\\output\\gfx\\flags", Configuration::getV2Path() + "\\gfx\\flags" };
+	const std::vector<boost::filesystem::path> availableFlagFolders = { "blankMod\\output\\gfx\\flags", Configuration::getV2Path() + "\\gfx\\flags" };
 	std::set<std::string> availableFlags;
 	for (size_t i = 0; i < availableFlagFolders.size(); ++i)
 	{
-		WinUtils::GetAllFilesInFolder(availableFlagFolders[i], availableFlags);
+		WinUtils::GetAllFilesInFolder(availableFlagFolders[i].generic_string(), availableFlags);
 	}
 	std::set<std::string> usableFlagTags;
 	while (!availableFlags.empty())
@@ -106,19 +108,19 @@ bool V2Flags::Output() const
 	LOG(LogLevel::Debug) << "Copying flags";
 
 	// Create output folders.
-	std::string outputGraphicsFolder = "Output\\" + Configuration::getOutputName() + "\\gfx";
-	if (!WinUtils::TryCreateFolder(outputGraphicsFolder))
+	boost::filesystem::path outputGraphicsFolder("Output\\" + Configuration::getOutputName() + "\\gfx");
+	if (!WinUtils::TryCreateFolder(outputGraphicsFolder.generic_string()))
 	{
 		return false;
 	}
-	std::string outputFlagFolder = outputGraphicsFolder + "\\flags";
-	if (!WinUtils::TryCreateFolder(outputFlagFolder))
+	boost::filesystem::path outputFlagFolder( outputGraphicsFolder / "flags") ;
+	if (!WinUtils::TryCreateFolder(outputFlagFolder.generic_string()))
 	{
 		return false;
 	}
 
 	// Copy files.
-	const std::vector<std::string> availableFlagFolders = { "blankMod\\output\\gfx\\flags", Configuration::getV2Path() + "\\gfx\\flags" };
+	const std::vector<boost::filesystem::path> availableFlagFolders = { "blankMod\\output\\gfx\\flags", Configuration::getV2Path() + "\\gfx\\flags" };
 	for (V2TagToFlagTagMap::const_iterator i = tagMapping.begin(); i != tagMapping.end(); ++i)
 	{
 		const std::string& V2Tag = i->first;
@@ -127,15 +129,15 @@ bool V2Flags::Output() const
 		{
 			const std::string& suffix = *i;
 			bool flagFileFound = false;
-			for (std::vector<std::string>::const_iterator j = availableFlagFolders.begin(); j != availableFlagFolders.end() && !flagFileFound; ++j)
+			for (std::vector<boost::filesystem::path>::const_iterator j = availableFlagFolders.begin(); j != availableFlagFolders.end() && !flagFileFound; ++j)
 			{
-				const std::string& folderPath = *j;
-				std::string sourceFlagPath = folderPath + '\\' + flagTag + suffix;
-				flagFileFound = WinUtils::DoesFileExist(sourceFlagPath);
+				const boost::filesystem::path& folderPath = *j;
+				boost::filesystem::path sourceFlagPath (folderPath / (flagTag + suffix));
+				flagFileFound = WinUtils::DoesFileExist(sourceFlagPath.generic_string());
 				if (flagFileFound)
 				{
-					std::string destFlagPath = outputFlagFolder + '\\' + V2Tag + suffix;
-					WinUtils::TryCopyFile(sourceFlagPath, destFlagPath);
+					boost::filesystem::path destFlagPath (outputFlagFolder / (V2Tag + suffix));
+					WinUtils::TryCopyFile(sourceFlagPath.generic_string(), destFlagPath.generic_string());
 				}
 			}
 		}

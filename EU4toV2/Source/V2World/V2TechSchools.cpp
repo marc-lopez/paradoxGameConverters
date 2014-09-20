@@ -2,7 +2,7 @@
 #include "../Log.h"
 #include "../Parsers\Object.h"
 
-
+#include <stdlib.h>
 
 vector<techSchool> initTechSchools(Object* obj, vector<string> blockedTechSchools)
 {
