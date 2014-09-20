@@ -57,7 +57,8 @@ void Log::WriteToConsole(LogLevel level, const std::string& logMessage)
 		return;
 	}
 
-#ifdef WIN32
+#ifdef WIN32a
+	HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
 	if (console != INVALID_HANDLE_VALUE)
 	{
 		CONSOLE_SCREEN_BUFFER_INFO oldConsoleInfo;	// the current (soon to be outdated) console data

@@ -1525,7 +1525,7 @@ const char* const HODInventionNames[HOD_naval_exercises + 1] = {
 	DO(HOD_NNM_, eduard_bernstein) \
 	DO(HOD_NNM_, sidney_webb) \
 	DO(HOD_NNM_, karl_kautsky) \
-	DO(HOD_NNM_, jean_jaurès) \
+	DO(HOD_NNM_, jean_jaures) \
 	\
 	/*the_historical_theory*/ \
 	DO(HOD_NNM_, friedrich_list) \
@@ -1537,8 +1537,8 @@ const char* const HODInventionNames[HOD_naval_exercises + 1] = {
 	DO(HOD_NNM_, william_cunningham) \
 	\
 	/*neoclassical_theory*/ \
-	DO(HOD_NNM_, johann_heinrich_von_thünen) \
-	DO(HOD_NNM_, léon_walras) \
+	DO(HOD_NNM_, johann_heinrich_von_thunen) \
+	DO(HOD_NNM_, leon_walras) \
 	DO(HOD_NNM_, stanley_jevons) \
 	DO(HOD_NNM_, carl_menger) \
 	DO(HOD_NNM_, thorstein_veblen) \
@@ -1549,7 +1549,7 @@ const char* const HODInventionNames[HOD_naval_exercises + 1] = {
 	DO(HOD_NNM_, knut_wicksell) \
 	DO(HOD_NNM_, irving_fischer) \
 	DO(HOD_NNM_, joseph_schumpeter) \
-	DO(HOD_NNM_, eugen_von_böhm_bawerk) \
+	DO(HOD_NNM_, eugen_von_bohm_bawerk) \
 	\
 	/*keynesian_economics*/ \
 	DO(HOD_NNM_, john_maynard_keynes) \

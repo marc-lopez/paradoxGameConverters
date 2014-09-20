@@ -90,14 +90,13 @@ V2World::V2World()
 			provinceFileData != boost::filesystem::recursive_directory_iterator();
 			++provinceFileData)
 		{
-			V2Province* newProvince = new V2Province(provinceFileData->path().generic_string());
+			V2Province* newProvince = new V2Province(provinceFileData->path().filename().generic_string());
 			provinces.insert(make_pair(newProvince->getNum(), newProvince));
 		}
 	}
 	catch (boost::filesystem::filesystem_error& error)
 	{
 		LOG(LogLevel::Error) << error.what();
-				LOG(LogLevel::Error) << "Could not open directory " << Configuration::getV2Path() << "\\history\\provinces" << directories.front() << "\\*.*";
 		exit(-1);
 	}
 					

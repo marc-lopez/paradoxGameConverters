@@ -99,11 +99,11 @@ V2Province::V2Province(string _filename)
 	}
 	else
 	{
-		LOG(LogLevel::Debug) << "Parsing " << (Configuration::getV2Path() + "\\history\\provinces" + _filename);
+		LOG(LogLevel::Debug) << "Parsing " << (Configuration::getV2Path() + "\\history\\provinces\\" + _filename);
 		obj = doParseFile(boost::filesystem::path(Configuration::getV2Path() + "\\history\\provinces\\" + _filename).generic_string().c_str());
 		if (obj == NULL)
 		{
-			LOG(LogLevel::Error) << "Could not parse " << Configuration::getV2Path() << "\\history\\provinces" << _filename;
+			LOG(LogLevel::Error) << "Could not parse " << Configuration::getV2Path() << "\\history\\provinces\\" << _filename;
 			exit(-1);
 		}
 	}

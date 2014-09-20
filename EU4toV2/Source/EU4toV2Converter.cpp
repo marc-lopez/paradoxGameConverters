@@ -28,7 +28,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #include <boost/filesystem.hpp>
 
-
 #include "Configuration.h"
 #include "Log.h"
 #include "Parsers/Parser.h"
@@ -39,6 +38,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 #include "V2World/V2Factory.h"
 #include "V2World/V2TechSchools.h"
 #include "V2World/V2LeaderTraits.h"
+#include "WinUtils.h"
 
 #ifndef MAX_PATH
 #define MAX_PATH 256
@@ -64,7 +64,7 @@ int ConvertEU4ToV2(const std::string& EU4SaveFileName)
 	// Get V2 install location
 	LOG(LogLevel::Info) << "Get V2 Install Path";
 	string V2Loc = Configuration::getV2Path();	// the V2 install location as stated in the configuration file
-	if (!boost::filesystem::exists(V2Loc))
+	if (!boost::filesystem::is_directory(V2Loc))
 	{
 		LOG(LogLevel::Error) << "No Victoria 2 path was specified in configuration.txt, or the path was invalid";
 		return (-1);
@@ -77,7 +77,7 @@ int ConvertEU4ToV2(const std::string& EU4SaveFileName)
 	// Get V2 Documents Directory
 	LOG(LogLevel::Debug) << "Get V2 Documents directory";
 	string V2DocLoc = Configuration::getV2DocumentsPath();	// the V2 My Documents location as stated in the configuration file
-	if (!boost::filesystem::exists(V2DocLoc))
+	if (!boost::filesystem::is_directory(V2DocLoc))
 	{
 		LOG(LogLevel::Error) << "No Victoria 2 documents directory was specified in configuration.txt, or the path was invalid";
 		return (-1);
@@ -90,7 +90,7 @@ int ConvertEU4ToV2(const std::string& EU4SaveFileName)
 	// Get EU4 install location
 	LOG(LogLevel::Debug) << "Get EU4 Install Path";
 	string EU4Loc = Configuration::getEU4Path();	// the EU4 install location as stated in the configuration file
-	if (!boost::filesystem::exists(EU4Loc))
+	if (!boost::filesystem::is_directory(EU4Loc))
 	{
 		LOG(LogLevel::Error) << "No Europa Universalis 4 path was specified in configuration.txt, or the path was invalid";
 		return (-1);
@@ -104,7 +104,7 @@ int ConvertEU4ToV2(const std::string& EU4SaveFileName)
 	map<string, string> possibleMods; // name, path
 	LOG(LogLevel::Debug) << "Get EU4 Mod Directory";
 	string EU4DocumentsLoc = Configuration::getEU4DocumentsPath();	// the EU4 My Documents location as stated in the configuration file
-	if (!boost::filesystem::exists(EU4ModLoc))
+	if (!boost::filesystem::is_directory(EU4DocumentsLoc))
 	{
 		LOG(LogLevel::Error) << "No Europa Universalis 4 documents directory was specified in configuration.txt, or the path was invalid";
 		return (-1);
@@ -149,7 +149,7 @@ int ConvertEU4ToV2(const std::string& EU4SaveFileName)
 	// Get CK2 Export directory
 	LOG(LogLevel::Debug) << "Get CK2 Export Directory";
 	string CK2ExportLoc = Configuration::getCK2ExportPath();		// the CK2 converted mods location as stated in the configuration file
-	if (!boost::filesystem::exists(CK2ExportLoc))
+	if (!boost::filesystem::is_directory(CK2ExportLoc))
 	{
 		LOG(LogLevel::Warning) << "No Crusader Kings 2 mod directory was specified in configuration.txt, or the path was invalid - this will cause problems with CK2 converted saves";
 	}
@@ -312,32 +312,30 @@ int ConvertEU4ToV2(const std::string& EU4SaveFileName)
 
 	// Read EU4 common\countries
 	LOG(LogLevel::Info) << "Reading EU4 common\\countries";
+	
+	boost::filesystem::path CommonCountriesPath(Configuration::getEU4Path());
+	CommonCountriesPath /= "common";
+	CommonCountriesPath /= "country_tags";
+	CommonCountriesPath /= "00_countries.txt";
+	ifstream commonCountries(CommonCountriesPath.c_str());
+	sourceWorld.readCommonCountries(commonCountries, Configuration::getEU4Path());
+	for (vector<string>::iterator itr = fullModPaths.begin(); itr != fullModPaths.end(); itr++)
 	{
-		boost::filesystem::path CommonCountriesPath(Configuration::getEU4Path());
-		CommonCountriesPath /= "common";
-		CommonCountriesPath /= "country_tags";
-		CommonCountriesPath /= "00_countries.txt";
-		ifstream commonCountries(CommonCountriesPath.c_str());
-		sourceWorld.readCommonCountries(commonCountries, Configuration::getEU4Path());
-		for (vector<string>::iterator itr = fullModPaths.begin(); itr != fullModPaths.end(); itr++)
-		{
-			set<string> fileNames;
-			WinUtils::GetAllFilesInFolder(*itr + "\\common\\country_tags\\", fileNames);
-			boost::filesystem::path convertedCommonCountriesPath(Configuration::getEU4Path());
-			convertedCommonCountriesPath /= "common";
-			convertedCommonCountriesPath /= "country_tags";
-			convertedCommonCountriesPath /= "converted_countries.txt";
-			ifstream convertedCommonCountries(convertedCommonCountriesPath.c_str());
-				sourceWorld.readCommonCountries(convertedCommonCountries, *itr);
-			boost::filesystem::path specialCommonCountriesPath(Configuration::getEU4Path());
-			specialCommonCountriesPath /= "common";
-			specialCommonCountriesPath /= "country_tags";
-			specialCommonCountriesPath /= "01_special_tags.txt";
-			ifstream specialCommonCountries(specialCommonCountriesPath.c_str());
-			}
-		}
+		set<string> fileNames;
+		WinUtils::GetAllFilesInFolder(*itr + "\\common\\country_tags\\", fileNames);
+		boost::filesystem::path convertedCommonCountriesPath(Configuration::getEU4Path());
+		convertedCommonCountriesPath /= "common";
+		convertedCommonCountriesPath /= "country_tags";
+		convertedCommonCountriesPath /= "converted_countries.txt";
+		ifstream convertedCommonCountries(convertedCommonCountriesPath.c_str());
+			sourceWorld.readCommonCountries(convertedCommonCountries, *itr);
+		boost::filesystem::path specialCommonCountriesPath(Configuration::getEU4Path());
+		specialCommonCountriesPath /= "common";
+		specialCommonCountriesPath /= "country_tags";
+		specialCommonCountriesPath /= "01_special_tags.txt";
+		ifstream specialCommonCountries(specialCommonCountriesPath.c_str());
 	}
-
+	
 	sourceWorld.setLocalisations(localisation);
 
 	// Resolve unit types
@@ -555,7 +553,7 @@ int ConvertEU4ToV2(const std::string& EU4SaveFileName)
 						LOG(LogLevel::Error) << "Failed to parse cultures file";
 						return 1;
 					}
-					initUnionCultures(obj, unionCultures);
+					initUnionCultures(obj, unionCultures, inverseUnionCultures);
 				}
 			}
 		}
@@ -765,36 +763,23 @@ int ConvertEU4ToV2(const std::string& EU4SaveFileName)
 	countryMap.readEU4Regions(obj);
 	for (vector<string>::iterator itr = fullModPaths.begin(); itr != fullModPaths.end(); itr++)
 	{
-		struct _finddata_t	fileData;				// the file data info
-		intptr_t					fileListing = NULL;	// the file listing info
-		if ((fileListing = _findfirst(string(*itr + "\\common\\colonial_regions\\*").c_str(), &fileData)) != -1L)
+		for (boost::filesystem::directory_iterator directoryItr(*itr + "\\common\\colonial_regions\\");
+			directoryItr != boost::filesystem::directory_iterator();
+			++directoryItr)
 		{
-			do
+			if (false == boost::filesystem::is_regular_file(*directoryItr))
 			{
-				if (strcmp(fileData.name, ".") == 0 || strcmp(fileData.name, "..") == 0)
-				{
-					continue;
-				}
-				else if (fileData.attrib & _A_SUBDIR)
-				{
-					continue;
-				}
-				else
-				{
-					string modRegionsFile(*itr + "\\common\\colonial_regions\\" + fileData.name);	// the path and name of the colonial regions file in this mod
-					if ((_stat(modRegionsFile.c_str(), &st) == 0))
-					{
-						obj = doParseFile(modRegionsFile.c_str());
-						if (obj == NULL)
-						{
-							LOG(LogLevel::Error) << "Could not parse file " << modRegionsFile;
-							exit(-1);
-						}
-						countryMap.readEU4Regions(obj);
-					}
-				}
-			} while (_findnext(fileListing, &fileData) == 0);
-			_findclose(fileListing);
+				continue;
+			}
+
+			string modRegionsFile(directoryItr->path().string());	// the path and name of the colonial regions file in this mod
+			obj = doParseFile(modRegionsFile.c_str());
+			if (obj == NULL)
+			{
+				LOG(LogLevel::Error) << "Could not parse file " << modRegionsFile;
+				exit(-1);
+			}
+			countryMap.readEU4Regions(obj);
 		}
 	}
 

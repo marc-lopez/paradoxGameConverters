@@ -39,6 +39,11 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 #include "V2World/V2Country.h"
 #include "V2World/V2Province.h"
 #include "Log.h"
+#include "Parsers\Parser.h"
+
+#ifndef WIN32
+#define strcpy_s strcpy
+#endif
 
 bool CountryMapping::ReadRules(const std::string& fileName)
 {
