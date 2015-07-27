@@ -5,7 +5,7 @@
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{C9DD9F19-3F25-452E-9C1D-EDEB1B57E4B7}</ProjectGuid>
+    <ProjectGuid>{A887A82F-6C7B-484A-923B-2B797FE72F2B}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Converter.UI</RootNamespace>
@@ -220,7 +220,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>..\..\..\CopyUIFiles.bat</PostBuildEvent>
+    <PostBuildEvent>..\..\..\CopyUIFiles ..\..\..</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

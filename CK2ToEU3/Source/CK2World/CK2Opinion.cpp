@@ -87,6 +87,10 @@ CK2Opinion::CK2Opinion(Object* obj) : value(0), multiplier(1)
 
 void CK2Opinion::initOpinions(Object* root)
 {
+	if (root == NULL)
+	{
+		return;
+	}
 	vector<Object*> opinions = root->getLeaves();
 	for (vector<Object*>::iterator itr = opinions.begin(); itr != opinions.end(); ++itr)
 	{

@@ -164,7 +164,37 @@ void CK2World::init(Object* obj, const cultureGroupMapping& cultureGroupMap)
 	for (unsigned int i = 0; i < leaves.size(); i++)
 	{
 		string key = leaves[i]->getKey();
-		if ( (key.substr(0, 2) == "e_") || (key.substr(0, 2) == "k_") || (key.substr(0, 2) == "d_") || (key.substr(0, 2) == "c_") || (key.substr(0, 2) == "b_") )
+		if ( (key == "title") )
+		{
+			vector<Object*> titleList = leaves[i]->getLeaves();
+			for (vector<Object*>::iterator itr = titleList.begin() ; itr != titleList.end(); ++itr)
+			{
+				key = (*itr)->getKey();
+				if (key == "k_seljuk_turks")
+				{
+					key = "e_seljuk_turks";
+				}
+				map<string, CK2Title*>::iterator titleItr = potentialTitles.find(key);
+				if (titleItr == potentialTitles.end())
+				{
+					int color[3] = {0,0,0};
+					CK2Title* dynTitle = new CK2Title(key, color);
+					dynTitle->init(*itr, characters, buildingFactory);
+					if (!dynTitle->isDynamic())
+					{
+						log("\t\tWarning: tried to create title %s, but it is neither a potential title nor a dynamic title.\n", key.c_str());
+						continue;
+					}
+					titles.insert( make_pair(dynTitle->getTitleString(), dynTitle) );
+				}
+				else
+				{
+					titleItr->second->init(*itr, characters, buildingFactory);
+					titles.insert( make_pair(titleItr->second->getTitleString(), titleItr->second) );
+				}
+			}
+		}
+		else if ( (key.substr(0, 2) == "e_") || (key.substr(0, 2) == "k_") || (key.substr(0, 2) == "d_") || (key.substr(0, 2) == "c_") || (key.substr(0, 2) == "b_") )
 		{
 			map<string, CK2Title*>::iterator titleItr = potentialTitles.find(key);
 			if (titleItr == potentialTitles.end())
@@ -342,12 +372,19 @@ void CK2World::init(Object* obj, const cultureGroupMapping& cultureGroupMap)
 
 void CK2World::addBuildingTypes(Object* obj)
 {
-	CK2BuildingFactory::addBuildingTypes(obj);
+	if (obj != NULL)
+	{
+		CK2BuildingFactory::addBuildingTypes(obj);
+	}
 }
 
 
 void CK2World::addDynasties(Object* obj)
 {
+	if (obj == NULL)
+	{
+		return;
+	}
 	vector<Object*> dynastyLeaves = obj->getLeaves();
 	for (unsigned int i = 0; i < dynastyLeaves.size(); i++)
 	{
@@ -360,6 +397,10 @@ void CK2World::addDynasties(Object* obj)
 
 void CK2World::addTraits(Object* obj)
 {
+	if (obj == NULL)
+	{
+		return;
+	}
 	vector<Object*> traitLeaves = obj->getLeaves();
 	int offset = traits.size() + 1;
 	for (unsigned int i = 0; i < traitLeaves.size(); i++)
@@ -372,6 +413,10 @@ void CK2World::addTraits(Object* obj)
 
 void CK2World::addPotentialTitles(Object* obj)
 {
+	if (obj == NULL)
+	{
+		return;
+	}
 	vector<Object*> leaves = obj->getLeaves();
 	for (vector<Object*>::iterator itr = leaves.begin(); itr < leaves.end(); itr++)
 	{
