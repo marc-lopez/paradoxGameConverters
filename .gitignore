@@ -1,0 +1,6 @@
+# Usual destination for CMake builds
+CK2ToEU3/build
+
+CK2ToEU3/UI/bin
+CK2ToEU3/UI/obj
+CK2ToEU3/testresults.zip

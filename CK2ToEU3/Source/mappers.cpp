@@ -356,6 +356,10 @@ string determineEU3Culture(string CK2Culture, const cultureMapping& cultureMap, 
 
 void addCultureGroupMappings(Object* obj, cultureGroupMapping& map)
 {
+	if (obj == NULL)
+	{
+		return;
+	}
 	vector<Object*> groups = obj->getLeaves();
 	for (vector<Object*>::iterator groupsItr = groups.begin(); groupsItr < groups.end(); groupsItr++)
 	{

@@ -30,6 +30,10 @@ map<string, CK2Religion*> CK2Religion::all_religions;
 
 void CK2Religion::parseReligions(Object* obj)
 {
+	if (obj == NULL)
+	{
+		return;
+	}
 	vector<Object*> groups = obj->getLeaves();
 	for (vector<Object*>::iterator groupsItr = groups.begin(); groupsItr < groups.end(); groupsItr++)
 	{
