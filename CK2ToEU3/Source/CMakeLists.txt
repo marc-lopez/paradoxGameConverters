@@ -57,18 +57,6 @@ add_custom_command(TARGET CK2ToEU3
 	COMMAND Copy_Files ${CMAKE_CURRENT_BINARY_DIR}/Release
 	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
 
-# Add UI target
-include_external_msproject(
-	UI ${PROJECT_SOURCE_DIR}/UI/UI.csproj
-	TYPE FAE04EC0-301F-11D3-BF4B-00C04F79EFBC)
-
-add_custom_target(build-ui)
-add_dependencies(build-ui UI)
-add_custom_command(TARGET build-ui
-	POST_BUILD
-	COMMAND CopyUIFiles ${CMAKE_CURRENT_BINARY_DIR}/Release
-	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
-
 # Add build to archive target
 add_custom_target(build-to-archive)
 add_custom_command(TARGET build-to-archive
