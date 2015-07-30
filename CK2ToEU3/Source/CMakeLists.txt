@@ -1,12 +1,14 @@
 # Include required CMake packages
 include(ExternalProject)
 
+set(BOOST_BINARY_DIR ${CMAKE_BINARY_DIR}/Dependencies/boost)
+
 # Build Boost
 ExternalProject_Add(
     boost
     URL http://downloads.sourceforge.net/project/boost/boost/1.58.0/boost_1_58_0.7z
     URL_HASH SHA1=d9abe6c6b1888dc33cbc872437a11bcbe1468183
-    PREFIX ${CMAKE_CURRENT_BINARY_DIR}/boost
+    PREFIX ${BOOST_BINARY_DIR}
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
     INSTALL_COMMAND ""
@@ -14,7 +16,7 @@ ExternalProject_Add(
 
 ExternalProject_Get_Property(boost source_dir)
 include_directories("${source_dir}")
-link_directories("${CMAKE_CURRENT_BINARY_DIR}/boost/src/boost/stage/lib")
+link_directories("${BOOST_BINARY_DIR}/src/boost/stage/lib")
 
 add_custom_target(boost-bootstrap
    COMMAND bootstrap
@@ -29,7 +31,7 @@ add_custom_target(boost-b2
 add_dependencies(boost-bootstrap boost)
 add_dependencies(boost-b2 boost-bootstrap)
 
-# Get Sources
+# Get sources
 file(GLOB SRC *.cpp)
 file(GLOB CK2World CK2World/*.cpp)
 file(GLOB EU3World EU3World/*.cpp)
@@ -57,7 +59,7 @@ add_custom_command(TARGET CK2ToEU3
 	COMMAND Copy_Files ${CMAKE_CURRENT_BINARY_DIR}/Release
 	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
 
-# Add build to archive target
+# Add "build to archive" target
 add_custom_target(build-to-archive)
 add_custom_command(TARGET build-to-archive
 	POST_BUILD
