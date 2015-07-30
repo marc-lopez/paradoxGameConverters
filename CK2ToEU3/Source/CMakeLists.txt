@@ -17,17 +17,16 @@ ExternalProject_Add(
 set_target_properties(boost PROPERTIES EXCLUDE_FROM_ALL TRUE)
 
 ExternalProject_Get_Property(boost source_dir)
-include_directories("${source_dir}")
+set(BOOST_INCLUDE_DIR ${source_dir})
+include_directories("${BOOST_INCLUDE_DIR}")
 link_directories("${BOOST_BINARY_DIR}/src/boost/stage/lib")
 
-add_custom_target(boost-bootstrap
-   EXCLUDE_FROM_ALL
+add_custom_target(boost-bootstrap EXCLUDE_FROM_ALL
    COMMAND bootstrap
    WORKING_DIRECTORY = ${source_dir}
 )
 
-add_custom_target(boost-b2
-   EXCLUDE_FROM_ALL
+add_custom_target(boost-b2 EXCLUDE_FROM_ALL
    COMMAND b2.exe --build-dir=..
    WORKING_DIRECTORY = ${source_dir}
 )
@@ -49,14 +48,20 @@ source_group("Source Files\\EU3World" FILES ${EU3World})
 source_group("Source Files\\ModWorld" FILES ${ModWorld})
 source_group("Source Files\\Parsers" FILES ${Parsers})
 
+# Make sublibraries
+list(REMOVE_ITEM SRC "Log.cpp")
+add_library(Log Log.cpp)
+add_library(Parser ${Parsers})
+
 # Make executable
 add_executable(
 	CK2ToEU3
 	${SRC}
 	${CK2World}
 	${EU3World}
-	${ModWorld}
-	${Parsers})
+	${ModWorld})
+
+target_link_libraries(CK2ToEU3 Log Parser)
 
 add_custom_command(TARGET CK2ToEU3
 	POST_BUILD

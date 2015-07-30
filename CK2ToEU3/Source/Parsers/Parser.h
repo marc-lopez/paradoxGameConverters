@@ -53,5 +53,6 @@ Object*	getTopLevel();
 void	clearStack(); 
 void	initParser();
 Object* doParseFile(const char* filename);
+bool	validateBuffer(std::istream& buffer);
 
 #endif	// PARSER_H

@@ -1,16 +1,24 @@
+#include <sstream>
 #include "CppUnitTest.h"
+#include "Parsers/Parser.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace UnitTests
 {		
-	TEST_CLASS(UnitTest1)
+	TEST_CLASS(ParserTests)
 	{
 	public:
 		
-		TEST_METHOD(TestMethod1)
+		TEST_METHOD(ParserShouldRecognizeUnicodeSWithCaronInNestedAssignments)
 		{
-			// TODO: Your test code here
+			initParser();
+
+			std::istringstream buffer("e_scandinavia = {\n\
+	ugricbaltic = Ikškila\n\
+}");
+
+			Assert::IsTrue(validateBuffer(buffer));
 		}
 
 	};

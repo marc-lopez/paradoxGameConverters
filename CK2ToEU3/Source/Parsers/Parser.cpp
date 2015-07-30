@@ -133,7 +133,7 @@ struct Parser : public qi::grammar<Iterator, SkipComment<Iterator> > {
 		tolleaf = raw[+(~iso8859_1::char_("\"{}= \t\r\n") | lit(0x80) | lit(0x81) | lit(0x82) | lit(0x83) | lit(0x84) | lit(0x85) | lit(0x86) | lit(0x87) | lit(0x88) | lit(0x89) | lit(0x8A) | lit(0x8B) | lit(0x8C) | lit(0x8D) | lit(0x8E) | lit(0x8F) | lit(0x90) | lit(0x91) | lit(0x92) | lit(0x93) | lit(0x94) | lit(0x95) | lit(0x96) | lit(0x97) | lit(0x98) | lit(0x99) | lit(0x9A) | lit(0x9B) | lit(0x9C) | lit(0x9D) | lit(0x9E) | lit(0x9F) | lit('–'))];
 
 		// a strict string without quotes
-		leaf    = raw[+(iso8859_1::alnum | iso8859_1::char_("-._:") | lit(0x80) | lit(0x81) | lit(0x82) | lit(0x83) | lit(0x84) | lit(0x85) | lit(0x86) | lit(0x87) | lit(0x88) | lit(0x89) | lit(0x8A) | lit(0x8B) | lit(0x8C) | lit(0x8D) | lit(0x8E) | lit(0x8F) | lit(0x90) | lit(0x91) | lit(0x92) | lit(0x93) | lit(0x94) | lit(0x95) | lit(0x96) | lit(0x97) | lit(0x98) | lit(0x99) | lit(0x9A) | lit(0x9B) | lit(0x9C) | lit(0x9D) | lit(0x9E) | lit(0x9F) | lit('–'))];
+		leaf    = raw[+(iso8859_1::alnum | iso8859_1::char_("-._:š") | lit(0x80) | lit(0x81) | lit(0x82) | lit(0x83) | lit(0x84) | lit(0x85) | lit(0x86) | lit(0x87) | lit(0x88) | lit(0x89) | lit(0x8A) | lit(0x8B) | lit(0x8C) | lit(0x8D) | lit(0x8E) | lit(0x8F) | lit(0x90) | lit(0x91) | lit(0x92) | lit(0x93) | lit(0x94) | lit(0x95) | lit(0x96) | lit(0x97) | lit(0x98) | lit(0x99) | lit(0x9A) | lit(0x9B) | lit(0x9C) | lit(0x9D) | lit(0x9E) | lit(0x9F) | lit('–'))];
 
 		// a list of strings within brackets
 		taglist = lit('{') >> omit[*(iso8859_1::space)] >> lexeme[( ( str | skip[tolleaf] ) % *(iso8859_1::space) )] >> omit[*(iso8859_1::space)] >> lit('}');
@@ -189,7 +189,7 @@ void initParser()
 }
 
 
-string bufferOneObject(ifstream& read)
+string bufferOneObject(istream& read)
 {
 	int openBraces = 0;				// the number of braces deep we are
 	string currObject, buffer;		// the current object and the tect under consideration
@@ -280,32 +280,9 @@ bool readFile(ifstream& read)
 		read.read(bitBucket, 3);
 	}
 
-	/* - it turns out that the current implementation of spirit::istream_iterator is ungodly slow...
-	static Parser<boost::spirit::istream_iterator> p;
-	static SkipComment<boost::spirit::istream_iterator> s;
-
-	boost::spirit::istream_iterator begin(read);
-	boost::spirit::istream_iterator end;
-
-	return qi::phrase_parse(begin, end, p, s);
-	*/
-
-	const static Parser<string::iterator> p;
-	const static SkipComment<string::iterator> s;
-
-	/* buffer and parse one object at a time */
-	while (read.good())
-	{
-		string currObject = bufferOneObject(read);	// the object under consideration
-		if (!qi::phrase_parse(currObject.begin(), currObject.end(), p, s))
-		{
-			clearStack();
-			return false;
-		}
-	}
-
+	bool result = validateBuffer(read);
 	clearStack();
-	return true;
+	return result;
 }
 
 
@@ -444,4 +421,22 @@ Object* doParseFile(const char* filename)
 	read.clear();
 
 	return obj;
+}
+
+bool validateBuffer(std::istream& buffer)
+{
+	const static Parser<string::iterator> p;
+	const static SkipComment<string::iterator> s;
+	debugme = true;
+
+	while (buffer.good())
+	{
+		string currObject = bufferOneObject(buffer);
+		if (!qi::phrase_parse(currObject.begin(), currObject.end(), p, s))
+		{
+			return false;
+		}
+	}
+
+	return true;
 }

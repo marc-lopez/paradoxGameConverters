@@ -1,3 +1,6 @@
+# Include sources
+include_directories(${PROJECT_SOURCE_DIR}/Source)
+
 # Get tests
 file(GLOB TEST *.cpp)
 file(GLOB CK2World CK2World/*.cpp)
@@ -37,4 +40,4 @@ add_library(
 	${ModWorld}
 	${Parsers})
 
-target_link_libraries(UnitTests "${VS_DIR}/VC/UnitTest/lib/Microsoft.VisualStudio.TestTools.CppUnitTestFramework.lib")
+target_link_libraries(UnitTests Log Parser "${VS_DIR}/VC/UnitTest/lib/Microsoft.VisualStudio.TestTools.CppUnitTestFramework.lib")
