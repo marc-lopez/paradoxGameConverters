@@ -14,16 +14,20 @@ ExternalProject_Add(
     INSTALL_COMMAND ""
 )
 
+set_target_properties(boost PROPERTIES EXCLUDE_FROM_ALL TRUE)
+
 ExternalProject_Get_Property(boost source_dir)
 include_directories("${source_dir}")
 link_directories("${BOOST_BINARY_DIR}/src/boost/stage/lib")
 
 add_custom_target(boost-bootstrap
+   EXCLUDE_FROM_ALL
    COMMAND bootstrap
    WORKING_DIRECTORY = ${source_dir}
 )
 
 add_custom_target(boost-b2
+   EXCLUDE_FROM_ALL
    COMMAND b2.exe --build-dir=..
    WORKING_DIRECTORY = ${source_dir}
 )
@@ -60,14 +64,14 @@ add_custom_command(TARGET CK2ToEU3
 	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
 
 # Add "build to archive" target
-add_custom_target(build-to-archive)
+add_custom_target(build-to-archive EXCLUDE_FROM_ALL)
 add_custom_command(TARGET build-to-archive
 	POST_BUILD
 	COMMAND build_to_archive ${CMAKE_CURRENT_BINARY_DIR}/Release
 	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
 
 # Add integration testing target
-add_custom_target(test-all-configs)
+add_custom_target(test-all-configs EXCLUDE_FROM_ALL)
 add_custom_command(TARGET test-all-configs
 	PRE_BUILD
 	COMMAND test_all_configs ${CMAKE_CURRENT_BINARY_DIR}/Release
