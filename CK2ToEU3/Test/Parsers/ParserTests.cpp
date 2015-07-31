@@ -31,5 +31,16 @@ namespace UnitTests
 			Assert::IsTrue(validateBuffer(buffer));
 		}
 
+		TEST_METHOD(ParserShouldRecognizeUnicodeZWithCaronInNestedAssignments)
+		{
+			initParser();
+
+			std::istringstream buffer("e_scandinavia = {\n\
+	polish = Limbaži\n\
+}");
+			
+			Assert::IsTrue(validateBuffer(buffer));
+		}
+
 	};
 }
