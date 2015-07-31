@@ -19,6 +19,17 @@ namespace UnitTests
 
 			Assert::ExpectException<std::domain_error>(boost::bind(&validateBuffer, boost::ref(buffer)));
 		}
+
+	};
+
+	TEST_CLASS(InitializedParserTests)
+	{
+	public:
+
+		TEST_CLASS_INITIALIZE(SetUp)
+		{
+			initParser();
+		}
 		
 		TEST_METHOD(ParserShouldRecognizeUnicodeSWithCaronInNestedAssignments)
 		{
@@ -41,6 +52,5 @@ namespace UnitTests
 			
 			Assert::IsTrue(validateBuffer(buffer));
 		}
-
 	};
 }
