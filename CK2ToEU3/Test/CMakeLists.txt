@@ -1,3 +1,8 @@
+# Include test dependencies
+ExternalProject_Get_Property(boost source_dir)
+set(BOOST_INCLUDE_DIR ${source_dir})
+include_directories("${BOOST_INCLUDE_DIR}")
+
 # Include sources
 include_directories(${PROJECT_SOURCE_DIR}/Source)
 

@@ -300,9 +300,18 @@ void clearStack()
 	stack.clear();
 }
 
+void checkIfParserInitialized()
+{
+	if (topLevel == NULL)
+	{
+		throw std::domain_error("Parser is not yet initialized, initParser() must be called");
+	}
+}
 
 void setLHS(string key)
 {
+	checkIfParserInitialized();
+
 	//LOG(LogLevel::Debug) << "Setting LHS : " << key;
 	Object* p = new Object(key);
 	if (0 == stack.size())
@@ -312,7 +321,6 @@ void setLHS(string key)
 	stack.push_back(p);
 	epsilon = false;
 }
-
 
 void pushObj()
 {
