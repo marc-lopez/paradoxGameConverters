@@ -20,38 +20,20 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 #ifndef LOG_H
 #define LOG_H
 
-#include <sstream>
 #include <string>
+#include "LogBase.h"
 
 #define LOG(LOG_LEVEL) Log(LOG_LEVEL)
 
-enum class LogLevel
-{
-	Error,		// to display errors. Bold and Red
-	Warning,		// to display warnings. Bold and Yellow.
-	Info,			// to display useful information. Bold and White.
-	Debug			// to display debug data. White.
-};
-
-class Log
+class Log : public LogBase
 {
 public:
 	Log(LogLevel);
-	~Log();
-
-	template<class T>
-	Log& operator<<(T t)
-	{
-		logMessageStream << t;
-		return *this;
-	}
+	virtual ~Log();
 
 private:
 	static void WriteToConsole(LogLevel, const std::string& logMessage);
 	static void WriteToFile(LogLevel, const std::string& logMessage);
-
-	LogLevel logLevel;							// the current log level
-	std::ostringstream logMessageStream;	// the output stream to the log file
 };
 
 // DEPRECATED

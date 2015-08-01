@@ -28,6 +28,7 @@
 #include <vector>
 #include <map>
 #include "..\Date.h"
+#include "..\LogBase.h"
 #include "..\Mappers.h"
 using namespace std;
 
@@ -50,13 +51,15 @@ class CK2Version;
 class CK2World
 {
 	public:
-		CK2World();
+		CK2World(LogBase&);
 		void							init(Object*, const cultureGroupMapping& cultureGroupMap);
 		void							addBuildingTypes(Object*);
 		void							addDynasties(Object*);
 		void							addTraits(Object*);
 		void							addPotentialTitles(Object*);
+		void							addTitle(pair<string, CK2Title*>);
 		void							mergeTitles();
+		void							removeDeadTitles();
 
 		CK2Version*					getVersion()				const	{ return version; };
 		date							getEndDate()				const { return endDate; };
@@ -68,6 +71,7 @@ class CK2World
 
 		vector<double>				getAverageTechLevels(CK2Version& version) const;
 	private:
+		LogBase					logOutput;
 		CK2BuildingFactory*		buildingFactory;
 
 		CK2Version*					version;

@@ -27,7 +27,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 #include <Windows.h>
 
 Log::Log(LogLevel level)
-: logLevel(level)
+: LogBase(level)
 {
 	static bool logFileCreated = false;	// whether or not the log file has been created this run of the converter
 	if (!logFileCreated)
@@ -39,8 +39,8 @@ Log::Log(LogLevel level)
 
 Log::~Log()
 {
-	logMessageStream << std::endl;
-	std::string logMessage = logMessageStream.str();
+	*logMessageStream << std::endl;
+	std::string logMessage = logMessageStream->str();
 	WriteToConsole(logLevel, logMessage);
 	WriteToFile(logLevel, logMessage);
 }

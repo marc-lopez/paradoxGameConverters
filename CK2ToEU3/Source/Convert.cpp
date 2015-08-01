@@ -141,7 +141,8 @@ int main(int argc, char * argv[])
 
 	// Input CK2 Data
 	inform("Getting CK2 data.");
-	CK2World srcWorld;
+	Log logger(LogLevel::Info);
+	CK2World srcWorld(logger);
 
 	inform("\tGetting building types.");
 	if (Configuration::getCK2Mod() != "")

@@ -38,7 +38,7 @@
 
 
 
-CK2World::CK2World()
+CK2World::CK2World(LogBase& logger) : logOutput(logger)
 {
 	buildingFactory = NULL;
 
@@ -308,34 +308,7 @@ void CK2World::init(Object* obj, const cultureGroupMapping& cultureGroupMap)
 	}
 	independentTitles.swap(newIndependentTitles);
 
-	// remove de jure titles with no de jure territory and no de jure liege
-	map<string, CK2Title*> newTitles;
-	newIndependentTitles.clear();
-	map<string, CK2Title*> newHreMembers;
-	for (map<string, CK2Title*>::iterator titleItr = titles.begin(); titleItr != titles.end(); titleItr++)
-	{
-		if ((titleItr->second->getVassals().size() == 0) && (titleItr->second->getDeJureLiege() == NULL) && (titleItr->second->getDeJureVassals().size() == 0))
-		{
-			log("\tRemoving dead title %s\n", titleItr->first.c_str());
-		}
-		else
-		{
-			newTitles.insert(*titleItr);
-			map<string, CK2Title*>::iterator independentItr = independentTitles.find(titleItr->first);
-			if (independentItr != independentTitles.end())
-			{
-				newIndependentTitles.insert(*titleItr);
-			}
-			map<string, CK2Title*>::iterator hreItr = hreMembers.find(titleItr->first);
-			if (hreItr != hreMembers.end())
-			{
-				newHreMembers.insert(*titleItr);
-			}
-		}
-	}
-	titles.swap(newTitles);
-	independentTitles.swap(newIndependentTitles);
-	hreMembers.swap(newHreMembers);
+	removeDeadTitles();
 
 	// determine heirs
 	printf("\tDetermining heirs\n");
@@ -369,6 +342,39 @@ void CK2World::init(Object* obj, const cultureGroupMapping& cultureGroupMap)
 	log("\tThere are a total of %d hre members\n", hreMembers.size());
 }
 
+void CK2World::removeDeadTitles()
+{
+	map<string, CK2Title*> newTitles;
+	map<string, CK2Title*> newIndependentTitles;
+	map<string, CK2Title*> newHreMembers;
+
+	for (map<string, CK2Title*>::iterator titleItr = titles.begin(); titleItr != titles.end(); titleItr++)
+	{
+		if (((titleItr->second->getVassals().size() == 0) && (titleItr->second->getDeJureLiege() == NULL) &&
+			(titleItr->second->getDeJureVassals().size() == 0)) || ((titleItr->second->getHolder() == NULL) &&
+			(titleItr->second->getHistory().empty())))
+		{
+			logOutput << "\tRemoving dead title %s\n" << titleItr->first.c_str();
+		}
+		else
+		{
+			newTitles.insert(*titleItr);
+			map<string, CK2Title*>::iterator independentItr = independentTitles.find(titleItr->first);
+			if (independentItr != independentTitles.end())
+			{
+				newIndependentTitles.insert(*titleItr);
+			}
+			map<string, CK2Title*>::iterator hreItr = hreMembers.find(titleItr->first);
+			if (hreItr != hreMembers.end())
+			{
+				newHreMembers.insert(*titleItr);
+			}
+		}
+	}
+	titles.swap(newTitles);
+	independentTitles.swap(newIndependentTitles);
+	hreMembers.swap(newHreMembers);
+}
 
 void CK2World::addBuildingTypes(Object* obj)
 {
@@ -443,6 +449,10 @@ void CK2World::addPotentialTitles(Object* obj)
 	}
 }
 
+void CK2World::addTitle(pair<string, CK2Title*> titleInfo)
+{
+	titles.insert(titleInfo);
+}
 
 void CK2World::mergeTitles()
 {

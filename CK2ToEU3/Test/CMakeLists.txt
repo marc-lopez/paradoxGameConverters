@@ -2,6 +2,7 @@
 ExternalProject_Get_Property(boost source_dir)
 set(BOOST_INCLUDE_DIR ${source_dir})
 include_directories("${BOOST_INCLUDE_DIR}")
+link_directories("${BOOST_BINARY_DIR}/src/boost/stage/lib")
 
 # Include sources
 include_directories(${PROJECT_SOURCE_DIR}/Source)
@@ -35,14 +36,17 @@ message(STATUS "The Visual Studio install directory is: " ${VS_DIR})
 
 include_directories("${VS_DIR}/VC/UnitTest/include")
 
-# Add unit testing target
+# Add unit testing targets
+add_library(ParserTests SHARED ${Parsers})
+
 add_library(
-	UnitTests
+	CK2ToEU3Tests
 	SHARED
 	${TEST}
 	${CK2World}
 	${EU3World}
-	${ModWorld}
-	${Parsers})
+	${ModWorld})
 
-target_link_libraries(UnitTests Log Parser "${VS_DIR}/VC/UnitTest/lib/Microsoft.VisualStudio.TestTools.CppUnitTestFramework.lib")
+target_link_libraries(ParserTests Common Parser "${VS_DIR}/VC/UnitTest/lib/Microsoft.VisualStudio.TestTools.CppUnitTestFramework.lib")
+
+target_link_libraries(CK2ToEU3Tests CK2ToEU3 "${VS_DIR}/VC/UnitTest/lib/Microsoft.VisualStudio.TestTools.CppUnitTestFramework.lib")
