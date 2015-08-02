@@ -20,7 +20,8 @@
  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 
-
+#include <boost\bind.hpp>
+#include <boost\foreach.hpp>
 #include "CK2World.h"
 #include "..\Log.h"
 #include "..\Configuration.h"
@@ -308,7 +309,7 @@ void CK2World::init(Object* obj, const cultureGroupMapping& cultureGroupMap)
 	}
 	independentTitles.swap(newIndependentTitles);
 
-	removeDeadTitles();
+	TitleFilter(this).removeDeadTitles();
 
 	// determine heirs
 	printf("\tDetermining heirs\n");
@@ -340,40 +341,6 @@ void CK2World::init(Object* obj, const cultureGroupMapping& cultureGroupMap)
 	log("\tThere are a total of %d titles\n", titles.size());
 	log("\tThere are a total of %d independent titles\n", independentTitles.size());
 	log("\tThere are a total of %d hre members\n", hreMembers.size());
-}
-
-void CK2World::removeDeadTitles()
-{
-	map<string, CK2Title*> newTitles;
-	map<string, CK2Title*> newIndependentTitles;
-	map<string, CK2Title*> newHreMembers;
-
-	for (map<string, CK2Title*>::iterator titleItr = titles.begin(); titleItr != titles.end(); titleItr++)
-	{
-		if (((titleItr->second->getVassals().size() == 0) && (titleItr->second->getDeJureLiege() == NULL) &&
-			(titleItr->second->getDeJureVassals().size() == 0)) || ((titleItr->second->getHolder() == NULL) &&
-			(titleItr->second->getHistory().empty())))
-		{
-			logOutput << "\tRemoving dead title %s\n" << titleItr->first.c_str();
-		}
-		else
-		{
-			newTitles.insert(*titleItr);
-			map<string, CK2Title*>::iterator independentItr = independentTitles.find(titleItr->first);
-			if (independentItr != independentTitles.end())
-			{
-				newIndependentTitles.insert(*titleItr);
-			}
-			map<string, CK2Title*>::iterator hreItr = hreMembers.find(titleItr->first);
-			if (hreItr != hreMembers.end())
-			{
-				newHreMembers.insert(*titleItr);
-			}
-		}
-	}
-	titles.swap(newTitles);
-	independentTitles.swap(newIndependentTitles);
-	hreMembers.swap(newHreMembers);
 }
 
 void CK2World::addBuildingTypes(Object* obj)
@@ -531,4 +498,63 @@ vector<double> CK2World::getAverageTechLevels(CK2Version& version) const
 	}
 
 	return avgTechLevels;
+}
+
+void CK2World::setAllTitles(title_map_t* newTitles)
+{
+	titles.swap(*newTitles);
+}
+
+void CK2World::setIndependentTitles(title_map_t* newTitles)
+{
+	independentTitles.swap(*newTitles);
+}
+
+void CK2World::setHREMembers(title_map_t* newMembers)
+{
+	hreMembers.swap(*newMembers);
+}
+
+TitleFilter::TitleFilter(CK2World* world) : world(world), newTitles(), newIndependentTitles(),
+	newHreMembers()
+{
+}
+
+void TitleFilter::removeDeadTitles()
+{
+	BOOST_FOREACH(const title_map_t::value_type &title, world->getAllTitles())
+	{
+		CK2Title *titleInfo = title.second;
+		if (!titleInfo->hasMapImpact() && !titleInfo->hasHolders())
+		{
+			world->getLogger() << "\tRemoving dead title %s\n" << title.first.c_str();
+			continue;
+		}
+		insertUsedTitle(title);
+	}
+	saveTitles();
+}
+
+void TitleFilter::insertUsedTitle(const title_map_t::value_type &title)
+{
+	newTitles.insert(title);
+	insertToMappingIfPresent(title, boost::bind(&CK2World::getIndependentTitles, world),
+		&newIndependentTitles);
+	insertToMappingIfPresent(title, boost::bind(&CK2World::getHREMembers, world), &newHreMembers);
+}
+
+void TitleFilter::insertToMappingIfPresent(const title_map_t::value_type &title,
+	const boost::function<title_map_t()>& searchedTitleGetter, title_map_t* listToBeAppended)
+{
+	if (world->getAllTitles().find(title.first) != searchedTitleGetter().end())
+	{
+		listToBeAppended->insert(title);
+	}
+}
+
+void TitleFilter::saveTitles()
+{
+	world->setAllTitles(&newTitles);
+	world->setIndependentTitles(&newIndependentTitles);
+	world->setHREMembers(&newHreMembers);
 }

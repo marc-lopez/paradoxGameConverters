@@ -12,7 +12,7 @@ namespace UnitTests
 	{
 	public:
 
-		TEST_METHOD(CK2WorldShouldConsiderTitlesWithoutCurrentHolderAndHistoryAsDead)
+		TEST_METHOD(TitleFilterShouldRemoveTitlesWithoutCurrentHolderAndHistory)
 		{
 			int COLOR[3] = {0, 0, 0};
 			const string TITLE_NAME = "k_sample";
@@ -29,7 +29,7 @@ namespace UnitTests
 
 			world.addTitle(make_pair(TITLE_NAME, newTitle));
 
-			world.removeDeadTitles();
+			TitleFilter(&world).removeDeadTitles();
 
 			Assert::IsNull(world.getAllTitles()[TITLE_NAME]);
 		}

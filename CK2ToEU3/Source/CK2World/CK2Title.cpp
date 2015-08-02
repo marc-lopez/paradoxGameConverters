@@ -662,6 +662,16 @@ bool CK2Title::hasAllianceWith(CK2Title* other) const
 	return (this->holder->isAlliedWith(other->holder));
 }
 
+bool CK2Title::hasHolders() const
+{
+	return ((getHolder() != NULL) || !getHistory().empty());
+}
+
+bool CK2Title::hasMapImpact() const
+{
+	return (!getVassals().empty() || (getDeJureLiege() != NULL) && !getDeJureVassals().empty());
+}
+
 int CK2Title::getRelationsWith(CK2Title* other, CK2Version& version) const
 {
 	// FIXME: forum suggests taking vassal relations into account too

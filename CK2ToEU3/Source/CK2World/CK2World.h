@@ -27,12 +27,13 @@
 
 #include <vector>
 #include <map>
+#include <boost\function.hpp>
 #include "..\Date.h"
 #include "..\LogBase.h"
 #include "..\Mappers.h"
 using namespace std;
 
-
+typedef map<string, CK2Title*> title_map_t;
 
 class Object;
 class CK2BuildingFactory;
@@ -58,9 +59,12 @@ class CK2World
 		void							addTraits(Object*);
 		void							addPotentialTitles(Object*);
 		void							addTitle(pair<string, CK2Title*>);
+		void							setIndependentTitles(title_map_t*);
+		void							setAllTitles(title_map_t*);
+		void							setHREMembers(title_map_t*);
 		void							mergeTitles();
-		void							removeDeadTitles();
 
+		LogBase						getLogger()					const	{ return logOutput; };
 		CK2Version*					getVersion()				const	{ return version; };
 		date							getEndDate()				const { return endDate; };
 		map<string, CK2Title*>	getIndependentTitles()	const { return independentTitles; };
@@ -68,6 +72,7 @@ class CK2World
 		CK2Title*					getHRETitle()				const { return hreTitle; };
 		map<int, CK2Province*>	getProvinces()				const { return provinces; };
 		map<string, CK2Title*>	getHREMembers()			const { return hreMembers; };
+
 
 		vector<double>				getAverageTechLevels(CK2Version& version) const;
 	private:
@@ -87,6 +92,24 @@ class CK2World
 		map<int, CK2Province*>	provinces;
 		map<string, CK2Barony*>	baronies;
 		vector<CK2War*>			wars;
+};
+
+class TitleFilter
+{
+public:
+	TitleFilter(CK2World *);
+	void removeDeadTitles();
+
+private:
+	void insertUsedTitle(const title_map_t::value_type&);
+	void insertToMappingIfPresent(const title_map_t::value_type&,
+		const boost::function<title_map_t()>&, title_map_t*);
+	void saveTitles();
+
+	CK2World * world;
+	title_map_t newTitles;
+	title_map_t newIndependentTitles;
+	title_map_t newHreMembers;
 };
 
 
