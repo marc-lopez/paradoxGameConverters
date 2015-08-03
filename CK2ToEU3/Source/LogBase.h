@@ -50,9 +50,8 @@ public:
 	}
 
 protected:
-	LogBase(LogLevel level): logLevel(level)
+	LogBase(LogLevel level): logLevel(level), logMessageStream()
 	{
-		logMessageStream = boost::make_shared<std::ostringstream>();
 	}
 
 	LogLevel logLevel;

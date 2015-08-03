@@ -45,12 +45,13 @@ class CK2Title
 		CK2Title(string _titleString, int* color);
 		void	init(Object*, map<int, CK2Character*>&, const CK2BuildingFactory* buildingFactory);
 
+		void						setDeJureLiege(const map<string, CK2Title*>& titles);
 		void						setLiege(CK2Title*);
+		void						setHolder(CK2Character*);
 		void						addToHRE();
 		void						determineHeir(map<int, CK2Character*>&);
 		void						setHeir(CK2Character*);
 		void						setSuccessionLaw(string _successionLaw);
-		void						setDeJureLiege(const map<string, CK2Title*>& titles);
 		void						addDeJureVassals(vector<Object*>, map<string, CK2Title*>& titles, CK2World* world);
 		void						removeDeJureVassal(CK2Title* vassal);
 

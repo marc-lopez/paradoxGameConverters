@@ -52,7 +52,7 @@ class CK2Version;
 class CK2World
 {
 	public:
-		CK2World(LogBase&);
+		CK2World(const LogBase&);
 		void							init(Object*, const cultureGroupMapping& cultureGroupMap);
 		void							addBuildingTypes(Object*);
 		void							addDynasties(Object*);

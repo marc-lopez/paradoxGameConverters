@@ -39,7 +39,7 @@
 
 
 
-CK2World::CK2World(LogBase& logger) : logOutput(logger)
+CK2World::CK2World(const LogBase& logger) : logOutput(logger)
 {
 	buildingFactory = NULL;
 
@@ -546,7 +546,8 @@ void TitleFilter::insertUsedTitle(const title_map_t::value_type &title)
 void TitleFilter::insertToMappingIfPresent(const title_map_t::value_type &title,
 	const boost::function<title_map_t()>& searchedTitleGetter, title_map_t* listToBeAppended)
 {
-	if (world->getAllTitles().find(title.first) != searchedTitleGetter().end())
+	title_map_t titlesList = searchedTitleGetter();
+	if (titlesList.find(title.first) != titlesList.end())
 	{
 		listToBeAppended->insert(title);
 	}

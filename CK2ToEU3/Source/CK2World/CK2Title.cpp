@@ -308,6 +308,14 @@ void CK2Title::setSuccessionLaw(string _successionLaw)
 	}
 }
 
+void CK2Title::setHolder(CK2Character* newHolder)
+{
+	holder = newHolder;
+	if (holder != NULL)
+	{
+		holder->addTitle(this);
+	}
+}
 
 void CK2Title::setDeJureLiege(const map<string, CK2Title*>& titles)
 {
