@@ -14,56 +14,51 @@ namespace UnitTests
 	{
 	public:
 
-		TEST_METHOD(TitleFilterShouldRemoveTitlesWithoutCurrentHolderAndHistory)
+		CK2WorldTests() : world(LogBase()), TITLE_NAME("k_sample"), DE_JURE_LIEGE_TITLE_NAME("e_sample")
 		{
-			int COLOR[3] = {0, 0, 0};
-			const string TITLE_NAME = "k_sample";
-			const string DE_JURE_LIEGE_TITLE_NAME = "e_sample";
+		}
 
-			LogBase loggerDummy;
-			CK2World world(loggerDummy);
-			map<string, CK2Title*> sampleDeJureLieges;
-			CK2Title* sampleDeJureLiege = new CK2Title(DE_JURE_LIEGE_TITLE_NAME, COLOR);
+		TEST_METHOD_INITIALIZE(Initialize)
+		{
+			sampleDeJureLiege = new CK2Title(DE_JURE_LIEGE_TITLE_NAME, COLOR);
 			sampleDeJureLieges.insert(make_pair(DE_JURE_LIEGE_TITLE_NAME, sampleDeJureLiege));
-
-			CK2Title* newTitle = new CK2Title(TITLE_NAME, COLOR);
+			newTitle = new CK2Title(TITLE_NAME, COLOR);
 			newTitle->setDeJureLiege(sampleDeJureLieges);
 
 			world.addTitle(make_pair(TITLE_NAME, newTitle));
+		}
 
-			TitleFilter(&world).removeDeadTitles();
-
-			Assert::IsNull(world.getAllTitles()[TITLE_NAME]);
+		TEST_METHOD_CLEANUP(Cleanup)
+		{
 			delete newTitle;
 			delete sampleDeJureLiege;
 		}
 
+		TEST_METHOD(TitleFilterShouldRemoveTitlesWithoutCurrentHolderAndHistory)
+		{
+			TitleFilter(&world).removeDeadTitles();
+
+			Assert::IsNull(world.getAllTitles()[TITLE_NAME]);
+		}
+
 		TEST_METHOD(TitleFilterShouldNotFailWhilePassingUsedTitleToWorld)
 		{
-			int COLOR[3] = {0, 0, 0};
-			const string TITLE_NAME = "k_sample";
-			const string DE_JURE_LIEGE_TITLE_NAME = "e_sample";
-
-			LogBase loggerDummy;
-			CK2World world(loggerDummy);
-			map<string, CK2Title*> sampleDeJureLieges;
-			CK2Title* sampleDeJureLiege = new CK2Title(DE_JURE_LIEGE_TITLE_NAME, COLOR);
-			sampleDeJureLieges.insert(make_pair(DE_JURE_LIEGE_TITLE_NAME, sampleDeJureLiege));
-
-			CK2Title* newTitle = new CK2Title(TITLE_NAME, COLOR);
-			newTitle->setDeJureLiege(sampleDeJureLieges);
 			CK2Character* holder = new CK2Character();
 			newTitle->setHolder(holder);
-
-			world.addTitle(make_pair(TITLE_NAME, newTitle));
 
 			TitleFilter(&world).removeDeadTitles();
 
 			Assert::IsNotNull(world.getAllTitles()[TITLE_NAME]);
 			delete holder;
-			delete newTitle;
-			delete sampleDeJureLiege;
 		}
 
+	protected:
+		int COLOR[3];
+		string TITLE_NAME;
+		string DE_JURE_LIEGE_TITLE_NAME;
+		title_map_t sampleDeJureLieges;
+		CK2Title* sampleDeJureLiege;
+		CK2Title* newTitle;
+		CK2World world;
 	};
 }

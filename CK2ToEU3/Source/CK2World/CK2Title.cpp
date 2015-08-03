@@ -73,11 +73,7 @@ void CK2Title::init(Object* obj,  map<int, CK2Character*>& characters, const CK2
 	vector<Object*> holderObjs = obj->getValue("holder");
 	if (holderObjs.size() > 0)
 	{
-		holder = characters[ atoi( holderObjs[0]->getLeaf().c_str() ) ];
-		if (holder != NULL)
-		{
-			holder->addTitle(this);
-		}
+		setHolder(characters[ atoi( holderObjs[0]->getLeaf().c_str() ) ]);
 	}
 	heir = NULL;
 	successionLaw = obj->getLeaf("succession");
