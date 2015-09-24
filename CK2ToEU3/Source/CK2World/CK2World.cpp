@@ -532,7 +532,7 @@ void TitleFilter::removeDeadTitles()
 		else
 		{
 			boost::shared_ptr<LogBase> logger = world->getLogger();
-			(*logger) << "\tRemoving dead title " << titleInfo->getTitleString() << logger->endl();
+			(*logger) << "\tRemoving dead title " << title.first << logger->endl();
 		}
 	}
 	saveTitles();
