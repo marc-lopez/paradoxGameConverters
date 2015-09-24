@@ -30,6 +30,7 @@ class Log : public LogBase
 public:
 	Log(LogLevel);
 	virtual ~Log();
+	virtual void Write();
 
 private:
 	static void WriteToConsole(LogLevel, const std::string& logMessage);

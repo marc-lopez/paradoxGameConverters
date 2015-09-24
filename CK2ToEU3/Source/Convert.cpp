@@ -77,8 +77,6 @@ bool doParseDirectoryContents(const std::string& directory, std::function<void(O
 
 int main(int argc, char * argv[])
 {
-	initLog();
-
 	Object*	obj;				// generic object
 
 	//Get CK2 install location
@@ -141,8 +139,7 @@ int main(int argc, char * argv[])
 
 	// Input CK2 Data
 	inform("Getting CK2 data.");
-	Log logger(LogLevel::Info);
-	CK2World srcWorld(logger);
+	CK2World srcWorld(boost::make_shared<Log>(LogLevel::Info));
 
 	inform("\tGetting building types.");
 	if (Configuration::getCK2Mod() != "")
@@ -677,6 +674,5 @@ int main(int argc, char * argv[])
 
 	log("Complete.\n");
 	printf("Complete.\n");
-	closeLog();
 	return 0;
 }

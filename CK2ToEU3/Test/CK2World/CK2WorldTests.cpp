@@ -14,7 +14,7 @@ namespace UnitTests
 	{
 	public:
 
-		CK2WorldTests() : world(LogBase()), TITLE_NAME("k_sample"), DE_JURE_LIEGE_TITLE_NAME("e_sample")
+		CK2WorldTests() : world(NULL), TITLE_NAME("k_sample"), DE_JURE_LIEGE_TITLE_NAME("e_sample")
 		{
 		}
 
@@ -25,7 +25,7 @@ namespace UnitTests
 			newTitle = new CK2Title(TITLE_NAME, COLOR);
 			newTitle->setDeJureLiege(sampleDeJureLieges);
 
-			world.addTitle(make_pair(TITLE_NAME, newTitle));
+			world.addTitle(std::make_pair(TITLE_NAME, newTitle));
 		}
 
 		TEST_METHOD_CLEANUP(Cleanup)

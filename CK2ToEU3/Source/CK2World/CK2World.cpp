@@ -39,7 +39,7 @@
 
 
 
-CK2World::CK2World(const LogBase& logger) : logOutput(logger)
+CK2World::CK2World(boost::shared_ptr<LogBase> logger) : logOutput(logger)
 {
 	buildingFactory = NULL;
 
@@ -525,12 +525,15 @@ void TitleFilter::removeDeadTitles()
 	BOOST_FOREACH(const title_map_t::value_type &title, world->getAllTitles())
 	{
 		CK2Title *titleInfo = title.second;
-		if (!titleInfo->hasMapImpact() && !titleInfo->hasHolders())
+		if (titleInfo->hasMapImpact() || titleInfo->hasHolders())
 		{
-			world->getLogger() << "\tRemoving dead title %s\n" << title.first.c_str();
-			continue;
+			insertUsedTitle(title);
 		}
-		insertUsedTitle(title);
+		else
+		{
+			boost::shared_ptr<LogBase> logger = world->getLogger();
+			(*logger) << "\tRemoving dead title " << titleInfo->getTitleString() << logger->endl();
+		}
 	}
 	saveTitles();
 }
@@ -540,7 +543,7 @@ void TitleFilter::insertUsedTitle(const title_map_t::value_type &title)
 	newTitles.insert(title);
 	insertToMappingIfPresent(title, boost::bind(&CK2World::getIndependentTitles, world),
 		&newIndependentTitles);
-	insertToMappingIfPresent(title, boost::bind(&CK2World::getHREMembers, world), &newHreMembers);
+	//insertToMappingIfPresent(title, boost::bind(&CK2World::getHREMembers, world), &newHreMembers);
 }
 
 void TitleFilter::insertToMappingIfPresent(const title_map_t::value_type &title,

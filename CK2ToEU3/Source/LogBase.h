@@ -38,9 +38,12 @@ public:
 	{
 		logMessageStream = boost::make_shared<std::ostringstream>();
 	}
+
 	virtual ~LogBase()
 	{
 	}
+
+	virtual void Write() = 0;
 
 	template<class T>
 	LogBase& operator<<(T t)
@@ -49,9 +52,17 @@ public:
 		return *this;
 	}
 
-protected:
-	LogBase(LogLevel level): logLevel(level), logMessageStream()
+	std::string endl()
 	{
+		*logMessageStream << "\n";
+		Write();
+		return std::string();
+	}
+
+protected:
+	LogBase(LogLevel level): logLevel(level)
+	{
+		logMessageStream = boost::make_shared<std::ostringstream>();
 	}
 
 	LogLevel logLevel;

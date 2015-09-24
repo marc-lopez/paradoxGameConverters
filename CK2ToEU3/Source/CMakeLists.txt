@@ -62,7 +62,8 @@ target_link_libraries(CK2ToEU3 Common Parser)
 # Make executable
 add_executable(
 	ConverterApp
-	${SRC})
+	Convert.cpp
+	Temp.cpp)
 
 target_link_libraries(ConverterApp CK2ToEU3)
 

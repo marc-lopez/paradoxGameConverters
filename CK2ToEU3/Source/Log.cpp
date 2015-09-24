@@ -39,8 +39,12 @@ Log::Log(LogLevel level)
 
 Log::~Log()
 {
-	*logMessageStream << std::endl;
+}
+
+void Log::Write()
+{
 	std::string logMessage = logMessageStream->str();
+	logMessageStream->str(std::string());
 	WriteToConsole(logLevel, logMessage);
 	WriteToFile(logLevel, logMessage);
 }
@@ -145,7 +149,7 @@ static bool newline;
 
 void initLog()
 {
-	if (fopen_s(&logFile, "log.txt", "w") != 0)
+	if (fopen_s(&logFile, "log.txt", "a") != 0)
 	{
 		printf("Could not open log file\n");
 	}
@@ -154,6 +158,7 @@ void initLog()
 
 int log(const char* format, ...)
 {
+	initLog();
 	int numWritten = 0;
 
 	if (newline)
@@ -174,7 +179,7 @@ int log(const char* format, ...)
 	newline = (last_char == '\n');
 
 	fflush(logFile);
-
+	closeLog();
 	return numWritten;
 }
 
