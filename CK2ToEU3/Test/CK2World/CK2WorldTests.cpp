@@ -5,6 +5,7 @@
 #include "CK2World\CK2Character.h"
 #include "CK2World\CK2Title.h"
 #include "CK2World\CK2World.h"
+#include "Mocks\LoggerMock.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -14,8 +15,9 @@ namespace UnitTests
 	{
 	public:
 
-		CK2WorldTests() : world(NULL), TITLE_NAME("k_sample"), DE_JURE_LIEGE_TITLE_NAME("e_sample")
+		CK2WorldTests() : TITLE_NAME("k_sample"), DE_JURE_LIEGE_TITLE_NAME("e_sample")
 		{
+			world = boost::make_shared<CK2World>(boost::make_shared<LoggerMock>());
 		}
 
 		TEST_METHOD_INITIALIZE(Initialize)
@@ -25,7 +27,7 @@ namespace UnitTests
 			newTitle = new CK2Title(TITLE_NAME, COLOR);
 			newTitle->setDeJureLiege(sampleDeJureLieges);
 
-			world.addTitle(std::make_pair(TITLE_NAME, newTitle));
+			world->addTitle(std::make_pair(TITLE_NAME, newTitle));
 		}
 
 		TEST_METHOD_CLEANUP(Cleanup)
@@ -36,9 +38,9 @@ namespace UnitTests
 
 		TEST_METHOD(TitleFilterShouldRemoveTitlesWithoutCurrentHolderAndHistory)
 		{
-			TitleFilter(&world).removeDeadTitles();
+			TitleFilter(&(*world)).removeDeadTitles();
 
-			Assert::IsNull(world.getAllTitles()[TITLE_NAME]);
+			Assert::IsNull(world->getAllTitles()[TITLE_NAME]);
 		}
 
 		TEST_METHOD(TitleFilterShouldNotFailWhilePassingUsedTitleToWorld)
@@ -46,9 +48,9 @@ namespace UnitTests
 			CK2Character* holder = new CK2Character();
 			newTitle->setHolder(holder);
 
-			TitleFilter(&world).removeDeadTitles();
+			TitleFilter(&(*world)).removeDeadTitles();
 
-			Assert::IsNotNull(world.getAllTitles()[TITLE_NAME]);
+			Assert::IsNotNull(world->getAllTitles()[TITLE_NAME]);
 			delete holder;
 		}
 
@@ -59,6 +61,6 @@ namespace UnitTests
 		title_map_t sampleDeJureLieges;
 		CK2Title* sampleDeJureLiege;
 		CK2Title* newTitle;
-		CK2World world;
+		boost::shared_ptr<CK2World> world;
 	};
 }
