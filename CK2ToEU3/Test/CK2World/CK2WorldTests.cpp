@@ -20,68 +20,70 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #include <map>
-#include "CppUnitTest.h"
 #include "LogBase.h"
 #include "Parsers\Object.h"
 #include "Mocks\LoggerMock.h"
-#include "CK2World\Character\CK2Character.h"
 #include "CK2World\CK2Title.h"
 #include "CK2World\CK2World.h"
+#include "CK2World\Character\CK2Character.h"
 
-using namespace Microsoft::VisualStudio::CppUnitTestFramework;
+using namespace testing;
 
-namespace UnitTests
-{		
-	TEST_CLASS(CK2WorldTests)
+namespace ck2
+{
+namespace unittests
+{	
+	
+class CK2WorldShould : public Test
+{
+protected:
+	CK2WorldShould() : titleName("k_sample"), deJureLIegeTitleName("e_sample"), color(),
+		world(new CK2World(boost::make_shared<LoggerMock>()))
 	{
-	public:
+	}
 
-		CK2WorldTests() : TITLE_NAME("k_sample"), DE_JURE_LIEGE_TITLE_NAME("e_sample")
-		{
-			world = boost::make_shared<CK2World>(boost::make_shared<LoggerMock>());
-		}
+	virtual void SetUp()
+	{
+		sampleDeJureLiege = new CK2Title(deJureLIegeTitleName, color);
+		sampleDeJureLieges.insert(make_pair(deJureLIegeTitleName, sampleDeJureLiege));
+		newTitle = new CK2Title(titleName, color);
+		newTitle->setDeJureLiege(sampleDeJureLieges);
 
-		TEST_METHOD_INITIALIZE(Initialize)
-		{
-			sampleDeJureLiege = new CK2Title(DE_JURE_LIEGE_TITLE_NAME, COLOR);
-			sampleDeJureLieges.insert(make_pair(DE_JURE_LIEGE_TITLE_NAME, sampleDeJureLiege));
-			newTitle = new CK2Title(TITLE_NAME, COLOR);
-			newTitle->setDeJureLiege(sampleDeJureLieges);
+		world->addTitle(std::make_pair(titleName, newTitle));
+	}
 
-			world->addTitle(std::make_pair(TITLE_NAME, newTitle));
-		}
+	virtual void TearDown()
+	{
+		delete newTitle;
+		delete sampleDeJureLiege;
+	}
 
-		TEST_METHOD_CLEANUP(Cleanup)
-		{
-			delete newTitle;
-			delete sampleDeJureLiege;
-		}
+	int color[3];
+	string titleName;
+	string deJureLIegeTitleName;
+	title_map_t sampleDeJureLieges;
+	CK2Title* sampleDeJureLiege;
+	CK2Title* newTitle;
+	boost::shared_ptr<CK2World> world;
+};
 
-		TEST_METHOD(TitleFilterShouldRemoveTitlesWithoutCurrentHolderAndHistory)
-		{
-			TitleFilter(&(*world)).removeDeadTitles();
+TEST_F(CK2WorldShould, RemoveTitlesWithoutCurrentHolderAndHistory)
+{
+	TitleFilter(&(*world)).removeDeadTitles();
 
-			Assert::IsNull(world->getAllTitles()[TITLE_NAME]);
-		}
-
-		TEST_METHOD(TitleFilterShouldNotFailWhilePassingUsedTitleToWorld)
-		{
-			CK2Character* holder = new CK2Character();
-			newTitle->setHolder(holder);
-
-			TitleFilter(&(*world)).removeDeadTitles();
-
-			Assert::IsNotNull(world->getAllTitles()[TITLE_NAME]);
-			delete holder;
-		}
-
-	protected:
-		int COLOR[3];
-		string TITLE_NAME;
-		string DE_JURE_LIEGE_TITLE_NAME;
-		title_map_t sampleDeJureLieges;
-		CK2Title* sampleDeJureLiege;
-		CK2Title* newTitle;
-		boost::shared_ptr<CK2World> world;
-	};
+	ASSERT_THAT(world->getAllTitles()[titleName], IsNull());
 }
+
+TEST_F(CK2WorldShould, NotFailWhilePassingUsedTitleToWorld)
+{
+	CK2Character* holder = new CK2Character();
+	newTitle->setHolder(holder);
+
+	TitleFilter(&(*world)).removeDeadTitles();
+
+	ASSERT_THAT(world->getAllTitles()[titleName], NotNull());
+	delete holder;
+}
+
+} // namespace unittests
+} // namespace ck2

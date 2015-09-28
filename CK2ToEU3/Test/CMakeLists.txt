@@ -123,6 +123,17 @@ add_library(
 	${ModWorld}
 	)
 
-target_link_libraries(ParserTests Common Parser "${VS_DIR}/VC/UnitTest/lib/Microsoft.VisualStudio.TestTools.CppUnitTestFramework.lib")
+target_link_libraries(ParserTests Common Parser libgmock)
 
-target_link_libraries(CK2ToEU3Tests CK2ToEU3 libgmock "${VS_DIR}/VC/UnitTest/lib/Microsoft.VisualStudio.TestTools.CppUnitTestFramework.lib")
+target_link_libraries(CK2ToEU3Tests CK2ToEU3 libgmock)
+
+# Make test executable
+add_executable(
+    ConverterTests
+    ${TEST}
+    ${CK2World}
+    ${CK2World_Character}
+    ${EU3World}
+    ${ModWorld})
+
+target_link_libraries(ConverterTests CK2ToEU3Tests ParserTests)

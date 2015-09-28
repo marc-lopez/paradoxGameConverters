@@ -20,7 +20,6 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #include <map>
-#include "CppUnitTest.h"
 #include "Configuration.h"
 #include "Parsers\Object.h"
 #include "Mocks\ObjectMock.h"
@@ -28,79 +27,72 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 #include "CK2World\CK2Title.h"
 
 using namespace testing;
-using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
-namespace UnitTests
-{		
-	TEST_CLASS(CK2CharacterTests)
+namespace ck2
+{
+namespace unittests
+{
+
+class CK2CharacterShould : public Test
+{
+protected:
+	CK2CharacterShould() : SAMPLE_TITLE_NAME("e_sample")
 	{
-	public:
+	}
 
-		CK2CharacterTests()
-		{
-			SAMPLE_TITLE_NAME = "e_sample";
-		}
+	std::vector<IObject*> getSampleDemsneData()
+	{
+		Object *primaryTitleInnerObj = new Object("title");
+		primaryTitleInnerObj->setValue("e_abyssinia");
+		Object *primaryTitleObj = new Object("primary");
+		primaryTitleObj->setValue(primaryTitleInnerObj);
+		Object *demesneObj = new Object("demesne");
+		demesneObj->setValue(primaryTitleObj);
+		std::vector<IObject*> demesneCollection;
+		demesneCollection.push_back(demesneObj);
 
-		TEST_METHOD_INITIALIZE(Initialize)
-		{
-		}
+		return demesneCollection;
+	}
 
-		TEST_METHOD_CLEANUP(Cleanup)
-		{
-		}
+	const std::string SAMPLE_TITLE_NAME;
+};
 
-		TEST_METHOD(CK2Character_ShouldSetVersion2Point2SaveFormatPrimaryTitle)
-		{
-			map<int, CK2Dynasty*> dynasties;
-			map<int, CK2Trait*> traits;
+TEST_F(CK2CharacterShould, SetVersion2Point2SaveFormatPrimaryTitle)
+{
+	map<int, CK2Dynasty*> dynasties;
+	map<int, CK2Trait*> traits;
 
-			int color[3];
-			CK2Title* sampleTitle = new CK2Title(SAMPLE_TITLE_NAME, color);
+	int color[3];
+	CK2Title* sampleTitle = new CK2Title(SAMPLE_TITLE_NAME, color);
 
-			map<string, CK2Title*> titleMap;
-			titleMap.insert(std::pair<string, CK2Title*>(SAMPLE_TITLE_NAME, sampleTitle));
+	map<string, CK2Title*> titleMap;
+	titleMap.insert(std::pair<string, CK2Title*>(SAMPLE_TITLE_NAME, sampleTitle));
 
-			std::vector<IObject*> demesneData = getSampleDemsneData();
+	std::vector<IObject*> demesneData = getSampleDemsneData();
 
-			ObjectMock *configurationMock = new ObjectMock();
-			ObjectMock *saveDataMock = new ObjectMock();
+	ObjectMock *configurationMock = new ObjectMock();
+	ObjectMock *saveDataMock = new ObjectMock();
 			
-			ON_CALL(*configurationMock, getLeaf(_)).WillByDefault(Return(std::string()));
-			ON_CALL(*saveDataMock, getLeaf(_)).WillByDefault(Return(std::string()));
-			ON_CALL(*saveDataMock, getValue(_)).WillByDefault(Return(std::vector<IObject*>()));
-			EXPECT_CALL(*saveDataMock, getValue("demesne")).WillOnce(Return(demesneData));
+	EXPECT_CALL(*configurationMock, getLeaf(_)).WillRepeatedly(Return(std::string()));
+	EXPECT_CALL(*saveDataMock, getLeaf(_)).WillRepeatedly(Return(std::string()));
+	EXPECT_CALL(*saveDataMock, getValue(_)).WillRepeatedly(Return(std::vector<IObject*>()));
+	EXPECT_CALL(*saveDataMock, getValue("demesne")).WillRepeatedly(Return(demesneData));
 			
-			Configuration::setConfiguration(configurationMock);
-			CK2Character* emperor = new CK2Character(saveDataMock, dynasties, traits, date());
-			sampleTitle->setHolder(emperor);
-			emperor->setPrimaryTitle(titleMap);
-			CK2Title* calculatedPrimaryTitle = emperor->getPrimaryTitle(); 
-			Assert::IsNotNull(calculatedPrimaryTitle);
-			Assert::AreEqual(calculatedPrimaryTitle->getTitleString(), std::string(SAMPLE_TITLE_NAME));
+	Configuration::setConfiguration(configurationMock);
+	CK2Character* sampleCharacter = new CK2Character(saveDataMock, dynasties, traits, date());
+	sampleTitle->setHolder(sampleCharacter);
+	sampleCharacter->setPrimaryTitle(titleMap);
+	CK2Title* calculatedPrimaryTitle = sampleCharacter->getPrimaryTitle();
 
-			delete sampleTitle;
-			delete emperor;
-			delete demesneData[0];
-			delete configurationMock;
-			delete saveDataMock;
-		}
+	ASSERT_THAT(calculatedPrimaryTitle, NotNull());
+	ASSERT_EQ(SAMPLE_TITLE_NAME, calculatedPrimaryTitle->getTitleString());
 
-		std::vector<IObject*> getSampleDemsneData()
-		{
-			Object *primaryTitleInnerObj = new Object("title");
-			primaryTitleInnerObj->setValue("e_abyssinia");
-			Object *primaryTitleObj = new Object("primary");
-			primaryTitleObj->setValue(primaryTitleInnerObj);
-			Object *demesneObj = new Object("demesne");
-			demesneObj->setValue(primaryTitleObj);
-			std::vector<IObject*> demesneCollection;
-			demesneCollection.push_back(demesneObj);
-
-			return demesneCollection;
-		}
-
-	protected:
-		
-		std::string SAMPLE_TITLE_NAME;
-	};
+	delete sampleTitle;
+	delete sampleCharacter;
+	delete demesneData[0];
+	delete configurationMock;
+	delete saveDataMock;
 }
+
+} //namespace unittests
+} //namespace ck2

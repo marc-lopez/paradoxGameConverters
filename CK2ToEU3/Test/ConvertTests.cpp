@@ -19,58 +19,12 @@ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
-#include <sstream>
-#include <string>
-#include "boost\bind.hpp"
-#include "boost\ref.hpp"
 #include "gtest\gtest.h"
-#include "Parsers\Parser.h"
 
 using namespace testing;
 
-namespace ck2
+int main(int argc, char * argv[])
 {
-namespace unittests
-{
-
-class ParserShould : public Test
-{
-};
-
-TEST_F(ParserShould, ThrowExceptionIfBufferIsValidatedWithoutParserBeingInitialized)
-{
-	std::istringstream buffer("sample");
-
-	ASSERT_THROW(boost::bind(&validateBuffer, boost::ref(buffer)), std::domain_error);
+	InitGoogleTest(&argc, argv);
+	return RUN_ALL_TESTS();
 }
-
-class InitializedParserShould : public Test
-{
-protected:
-
-	virtual void SetUp()
-	{
-		initParser();
-	}
-};
-
-TEST_F(InitializedParserShould, RecognizeUnicodeSWithCaronInNestedAssignments)
-{
-	std::istringstream buffer("e_scandinavia = {\n\
-	ugricbaltic = Ikškila\n\
-}");
-
-	ASSERT_TRUE(validateBuffer(buffer));
-}
-
-TEST_F(InitializedParserShould, RecognizeUnicodeZWithCaronInNestedAssignments)
-{
-	std::istringstream buffer("e_scandinavia = {\n\
-	polish = Limbaži\n\
-}");
-
-	ASSERT_TRUE(validateBuffer(buffer));
-}
-
-} //namespace unittests
-} //namespace ck2
