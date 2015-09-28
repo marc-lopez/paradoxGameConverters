@@ -74,6 +74,7 @@ TEST_F(CK2CharacterShould, SetVersion2Point2SaveFormatPrimaryTitle)
 	ObjectMock *saveDataMock = new ObjectMock();
 			
 	EXPECT_CALL(*configurationMock, getLeaf(_)).WillRepeatedly(Return(std::string()));
+	EXPECT_CALL(*saveDataMock, getKey()).WillRepeatedly(Return(std::string()));
 	EXPECT_CALL(*saveDataMock, getLeaf(_)).WillRepeatedly(Return(std::string()));
 	EXPECT_CALL(*saveDataMock, getValue(_)).WillRepeatedly(Return(std::vector<IObject*>()));
 	EXPECT_CALL(*saveDataMock, getValue("demesne")).WillRepeatedly(Return(demesneData));
