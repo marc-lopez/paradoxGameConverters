@@ -134,6 +134,7 @@ add_executable(
     ${CK2World}
     ${CK2World_Character}
     ${EU3World}
-    ${ModWorld})
+    ${ModWorld}
+    ${Parsers})
 
 target_link_libraries(ConverterTests CK2ToEU3Tests ParserTests)

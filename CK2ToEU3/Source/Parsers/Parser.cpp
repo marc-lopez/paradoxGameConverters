@@ -435,7 +435,6 @@ bool validateBuffer(std::istream& buffer)
 {
 	const static Parser<string::iterator> p;
 	const static SkipComment<string::iterator> s;
-	debugme = true;
 
 	while (buffer.good())
 	{

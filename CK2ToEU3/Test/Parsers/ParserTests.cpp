@@ -33,18 +33,7 @@ namespace ck2
 namespace unittests
 {
 
-class ParserShould : public Test
-{
-};
-
-TEST_F(ParserShould, ThrowExceptionIfBufferIsValidatedWithoutParserBeingInitialized)
-{
-	std::istringstream buffer("sample");
-
-	ASSERT_THROW(boost::bind(&validateBuffer, boost::ref(buffer)), std::domain_error);
-}
-
-class InitializedParserShould : public Test
+class ParserShould : public TestWithParam<const char*>
 {
 protected:
 
@@ -54,23 +43,17 @@ protected:
 	}
 };
 
-TEST_F(InitializedParserShould, RecognizeUnicodeSWithCaronInNestedAssignments)
-{
-	std::istringstream buffer("e_scandinavia = {\n\
-	ugricbaltic = Ikškila\n\
-}");
-
-	ASSERT_TRUE(validateBuffer(buffer));
+TEST_P(ParserShould, RecognizeUnicodeCharactersInNestedAssignments) {
+  ASSERT_TRUE(validateBuffer(std::istringstream(GetParam())));
 }
 
-TEST_F(InitializedParserShould, RecognizeUnicodeZWithCaronInNestedAssignments)
-{
-	std::istringstream buffer("e_scandinavia = {\n\
-	polish = Limbaži\n\
-}");
-
-	ASSERT_TRUE(validateBuffer(buffer));
-}
+INSTANTIATE_TEST_CASE_P(UnicodeCharacters, ParserShould, Values(
+	"c_sample = {\n\
+	culture = Ikškila\n\
+}",
+	"c_sample = {\n\
+	culture = Limbaži\n\
+}"));
 
 } //namespace unittests
 } //namespace ck2
