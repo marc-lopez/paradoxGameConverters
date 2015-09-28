@@ -97,6 +97,7 @@ include_directories(${PROJECT_SOURCE_DIR}/Test)
 # Get tests
 file(GLOB TEST *.cpp)
 file(GLOB CK2World CK2World/*.cpp)
+file(GLOB CK2World_Character CK2World/Character/*.cpp)
 file(GLOB EU3World EU3World/*.cpp)
 file(GLOB ModWorld ModWorld/*.cpp)
 file(GLOB Parsers Parsers/*.cpp)
@@ -104,6 +105,7 @@ file(GLOB Parsers Parsers/*.cpp)
 # Group tests
 source_group("Source Files" FILES ${TEST})
 source_group("Source Files\\CK2World" FILES ${CK2World})
+source_group("Source Files\\CK2World\\Character" FILES ${CK2World_Character})
 source_group("Source Files\\EU3World" FILES ${EU3World})
 source_group("Source Files\\ModWorld" FILES ${ModWorld})
 source_group("Source Files\\Parsers" FILES ${Parsers})
@@ -116,6 +118,7 @@ add_library(
 	SHARED
 	${TEST}
 	${CK2World}
+    ${CK2World_Character}
 	${EU3World}
 	${ModWorld}
 	)

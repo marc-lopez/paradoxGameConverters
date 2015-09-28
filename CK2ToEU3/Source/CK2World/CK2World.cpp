@@ -26,12 +26,13 @@
 #include "..\Log.h"
 #include "..\Configuration.h"
 #include "..\Parsers\Object.h"
+#include "Date.h"
 #include "CK2Building.h"
 #include "CK2Version.h"
 #include "CK2Title.h"
 #include "CK2Province.h"
 #include "CK2Barony.h"
-#include "CK2Character.h"
+#include "CK2World\Character\CK2Character.h"
 #include "CK2Dynasty.h"
 #include "CK2Trait.h"
 #include "CK2Techs.h"
@@ -533,8 +534,7 @@ void TitleFilter::removeDeadTitles()
 		}
 		else
 		{
-			boost::shared_ptr<LogBase> logger = world->getLogger();
-			(*logger) << "\tRemoving dead title " << title.first << "\n";
+			LOG(LogLevel::Debug) << "\tRemoving dead title " << title.first << "\n";
 		}
 	}
 	saveTitles();

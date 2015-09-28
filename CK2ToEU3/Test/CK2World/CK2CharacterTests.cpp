@@ -24,7 +24,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 #include "Configuration.h"
 #include "Parsers\Object.h"
 #include "Mocks\ObjectMock.h"
-#include "CK2World\CK2Character.h"
+#include "CK2World\Character\CK2Character.h"
 #include "CK2World\CK2Title.h"
 
 using namespace testing;
