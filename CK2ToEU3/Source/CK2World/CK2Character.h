@@ -31,6 +31,7 @@
 #include <vector>
 #include "..\Date.h"
 #include "..\Mappers.h"
+#include "Parsers\IObject.h"
 #include "CK2Opinion.h"
 using namespace std;
 
@@ -62,7 +63,7 @@ class CK2Character
 {
 	public:
 		CK2Character() {};
-		CK2Character(Object*, const map<int, CK2Dynasty*>&, const map<int, CK2Trait*>&, date theDate);
+		CK2Character(IObject*, const map<int, CK2Dynasty*>&, const map<int, CK2Trait*>&, date theDate);
 		void							readOpinionModifiers(Object* obj);
 	
 		void							addTitle(CK2Title*);
@@ -125,7 +126,8 @@ class CK2Character
 		vector<CK2Character*>	getGavelkindHeirs(string);
 
 		void							addChild(CK2Character*);
-		void							addAdvisor(CK2Character*, advisorTypes);
+		void							addAdvisor(CK2Character*, advisorTypes);		
+		void							parseDemesneData(IObject*);
 
 		int					num;
 		string				name;

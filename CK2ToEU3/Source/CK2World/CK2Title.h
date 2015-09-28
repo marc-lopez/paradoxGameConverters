@@ -24,7 +24,7 @@
 #ifndef CK2TITLE_H_
 #define CK2TITLE_H_
 
-
+#include "Parsers\IObject.h"
 #include "..\mappers.h"
 #include <vector>
 #include <map>
@@ -52,7 +52,7 @@ class CK2Title
 		void						determineHeir(map<int, CK2Character*>&);
 		void						setHeir(CK2Character*);
 		void						setSuccessionLaw(string _successionLaw);
-		void						addDeJureVassals(vector<Object*>, map<string, CK2Title*>& titles, CK2World* world);
+		void						addDeJureVassals(vector<IObject*>, map<string, CK2Title*>& titles, CK2World* world);
 		void						removeDeJureVassal(CK2Title* vassal);
 
 		void						getCultureWeights(map<string, int>& cultureWeights, const cultureMapping& cultureMap) const;

@@ -30,7 +30,7 @@
 CK2Dynasty::CK2Dynasty(Object* obj)
 {
 	num = atoi( obj->getKey().c_str() );
-	vector<Object*> nameLeaves = obj->getValue("name");
+	vector<IObject*> nameLeaves = obj->getValue("name");
 	if (nameLeaves.size() > 0)
 	{
 		name = nameLeaves[0]->getLeaf();

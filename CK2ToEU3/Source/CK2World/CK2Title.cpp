@@ -70,7 +70,7 @@ void CK2Title::init(Object* obj,  map<int, CK2Character*>& characters, const CK2
 {
 	titleString = obj->getKey();
 	holder = NULL;
-	vector<Object*> holderObjs = obj->getValue("holder");
+	vector<IObject*> holderObjs = obj->getValue("holder");
 	if (holderObjs.size() > 0)
 	{
 		setHolder(characters[ atoi( holderObjs[0]->getLeaf().c_str() ) ]);
@@ -79,12 +79,12 @@ void CK2Title::init(Object* obj,  map<int, CK2Character*>& characters, const CK2
 	successionLaw = obj->getLeaf("succession");
 	genderLaw = obj->getLeaf("gender");
 
-	vector<Object*> leavesObj = obj->getLeaves();
+	vector<IObject*> leavesObj = obj->getLeaves();
 	for (unsigned int i = 0; i < leavesObj.size(); i++)
 	{
 		if (leavesObj[i]->getKey() == "nomination")
 		{
-			vector<Object*> nomineeObj = leavesObj[i]->getValue("nominee");
+			vector<IObject*> nomineeObj = leavesObj[i]->getValue("nominee");
 			int nomineeId = atoi( nomineeObj[0]->getLeaf("id").c_str() );
 
 			bool nomineeMarked = false;
@@ -107,7 +107,7 @@ void CK2Title::init(Object* obj,  map<int, CK2Character*>& characters, const CK2
 	feudalContract	= 0;
 	templeContract	= 0;
 	cityContract	= 0;
-	vector<Object*> lawObj = obj->getValue("law");
+	vector<IObject*> lawObj = obj->getValue("law");
 	for (unsigned int i = 0; i < lawObj.size(); i++)
 	{
 		if (lawObj[i]->getLeaf().substr(0, 14) == "centralization")
@@ -128,18 +128,18 @@ void CK2Title::init(Object* obj,  map<int, CK2Character*>& characters, const CK2
 		}
 	}
 
-	vector<Object*> historyObjs = obj->getValue("history");
+	vector<IObject*> historyObjs = obj->getValue("history");
 	if (historyObjs.size() > 0)
 	{
 		historyObjs = historyObjs[0]->getLeaves();
 		for (unsigned int i = 0; i < historyObjs.size(); i++)
 		{
-			CK2History* newHistory = new CK2History(historyObjs[i], characters);
+			CK2History* newHistory = new CK2History(static_cast<Object*>(historyObjs[i]), characters);
 			history.push_back(newHistory);
 		}
 	}
 
-	vector<Object*> liegeObjs = obj->getValue("liege");
+	vector<IObject*> liegeObjs = obj->getValue("liege");
 	if (liegeObjs.size() > 0)
 	{
 		liegeString = liegeObjs[0]->getLeaf();
@@ -148,7 +148,7 @@ void CK2Title::init(Object* obj,  map<int, CK2Character*>& characters, const CK2
 
 	vassals.clear();
 
-	vector<Object*> deJureLiegeObjs = obj->getValue("de_jure_liege");
+	vector<IObject*> deJureLiegeObjs = obj->getValue("de_jure_liege");
 	if (deJureLiegeObjs.size() > 0)
 	{
 		deJureLiegeString = deJureLiegeObjs[0]->getLeaf();
@@ -163,24 +163,24 @@ void CK2Title::init(Object* obj,  map<int, CK2Character*>& characters, const CK2
 	}
 
 	active = true;
-	vector<Object*> activeObjs = obj->getValue("active");
+	vector<IObject*> activeObjs = obj->getValue("active");
 	if (activeObjs.size() > 0)
 	{
 		if (activeObjs[0]->getLeaf() == "no")
 			active = false;
 	}
 
-	vector<Object*> dynObjs = obj->getValue("dynamic");
+	vector<IObject*> dynObjs = obj->getValue("dynamic");
 	if (dynObjs.size() > 0)
 	{
 		if (dynObjs[0]->getLeaf() == "yes")
 			dynamic = true;
 	}
 
-	vector<Object*> settlementObjs = obj->getValue("settlement");
+	vector<IObject*> settlementObjs = obj->getValue("settlement");
 	if (settlementObjs.size() > 0)
 	{
-		settlement = new CK2Barony(settlementObjs[0], this, NULL, buildingFactory);
+		settlement = new CK2Barony(static_cast<Object*>(settlementObjs[0]), this, NULL, buildingFactory);
 		if (holder != NULL)
 		{
 			holder->addHolding(settlement);
@@ -346,9 +346,10 @@ void CK2Title::setDeJureLiege(CK2Title* _deJureLiege)
 }
 
 
-void CK2Title::addDeJureVassals(vector<Object*> obj, map<string, CK2Title*>& titles, CK2World* world)
+void CK2Title::addDeJureVassals(vector<IObject*> obj, map<string, CK2Title*>& titles, CK2World* world)
 {
-	for (vector<Object*>::iterator itr = obj.begin(); itr < obj.end(); itr++)
+
+	for (vector<IObject*>::iterator itr = obj.begin(); itr < obj.end(); itr++)
 	{
 		string substr = (*itr)->getKey().substr(0, 2);
 		if ( (substr != "e_") && (substr != "k_") && (substr != "d_") && (substr != "c_") && (substr != "b_") )
@@ -359,7 +360,7 @@ void CK2Title::addDeJureVassals(vector<Object*> obj, map<string, CK2Title*>& tit
 		if (titleItr == titles.end())
 		{
 			int color[3] = {0, 0, 0};
-			vector<Object*> colorObjs = (*itr)->getValue("color");
+			vector<IObject*> colorObjs = (*itr)->getValue("color");
 			if (colorObjs.size() > 0)
 			{
 				color[0] = atoi(colorObjs[0]->getTokens()[0].c_str() );

@@ -65,7 +65,7 @@ static void setAssign					();
 
 static Object*		topLevel		= NULL;  // a top level object
 vector<Object*>	stack;					// a stack of objects
-vector<Object*>	objstack;				// a stack of objects
+vector<IObject*>	objstack;				// a stack of objects
 bool					epsilon		= false;	// if we've tried an episilon for an assign
 
 
@@ -294,7 +294,7 @@ void clearStack()
 		logOutput << "Clearing stack size " << stack.size() << " - this should not happen in normal operation\n";
 		for (vector<Object*>::iterator i = stack.begin(); i != stack.end(); ++i)
 		{
-			logOutput << **i << '\n';
+			logOutput << *static_cast<Object*>(*i) << '\n';
 		}
 	}
 	stack.clear();

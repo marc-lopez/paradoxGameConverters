@@ -23,6 +23,7 @@
 
 #include "CK2Character.h"
 #include <algorithm>
+#include "boost\foreach.hpp"
 #include "..\log.h"
 #include "..\Configuration.h"
 #include "..\Parsers\Object.h"
@@ -39,14 +40,16 @@
 
 
 
-CK2Character::CK2Character(Object* obj, const map<int, CK2Dynasty*>& dynasties, const map<int, CK2Trait*>& traitTypes, date theDate)
+CK2Character::CK2Character(IObject* obj, const map<int, CK2Dynasty*>& dynasties,
+						   const map<int, CK2Trait*>& traitTypes, date theDate) :
+	capitalString(""), primaryTitleString(""), capital(NULL), primaryTitle(NULL)
 {
 	num			= atoi( obj->getKey().c_str() );
 	name			= obj->getLeaf("birth_name");
 	religion		= CK2Religion::getReligion(obj->getLeaf("religion"));
 	culture		= obj->getLeaf("culture");
 
-	vector<Object*> pobjs = obj->getValue("prestige");
+	vector<IObject*> pobjs = obj->getValue("prestige");
 	if (pobjs.size() > 0)
 		prestige = atof(pobjs[0]->getLeaf().c_str());
 	else
@@ -77,7 +80,7 @@ CK2Character::CK2Character(Object* obj, const map<int, CK2Dynasty*>& dynasties, 
 	}
 	birthDate	= obj->getLeaf("birth_date");
 	age			= theDate.diffInYears(birthDate);
-	vector<Object*> deathObj = obj->getValue("death_date");
+	vector<IObject*> deathObj = obj->getValue("death_date");
 	if (deathObj.size() > 0)
 	{
 		dead			= true;
@@ -88,7 +91,7 @@ CK2Character::CK2Character(Object* obj, const map<int, CK2Dynasty*>& dynasties, 
 		dead			= false;
 		deathDate	= (string)"1.1.1";
 	}
-	vector<Object*> femaleObj = obj->getValue("female");
+	vector<IObject*> femaleObj = obj->getValue("female");
 	if (femaleObj.size() > 0)
 	{
 		female = ( femaleObj[0]->getLeaf() == "yes" );
@@ -97,7 +100,7 @@ CK2Character::CK2Character(Object* obj, const map<int, CK2Dynasty*>& dynasties, 
 	{
 		female = false;
 	}
-	vector<Object*> bastardObj = obj->getValue("is_bastard");
+	vector<IObject*> bastardObj = obj->getValue("is_bastard");
 	if (bastardObj.size() > 0)
 	{
 		bastard = ( bastardObj[0]->getLeaf() == "yes" );
@@ -108,7 +111,7 @@ CK2Character::CK2Character(Object* obj, const map<int, CK2Dynasty*>& dynasties, 
 	}
 	titles.clear();
 
-	vector<Object*> fatherObj = obj->getValue("father");
+	vector<IObject*> fatherObj = obj->getValue("father");
 	if (fatherObj.size() > 0)
 	{
 		fatherNum = atoi( fatherObj[0]->getLeaf().c_str() );
@@ -118,7 +121,7 @@ CK2Character::CK2Character(Object* obj, const map<int, CK2Dynasty*>& dynasties, 
 		fatherNum = -1;
 	}
 	father = NULL;
-	vector<Object*> motherObj = obj->getValue("mother");
+	vector<IObject*> motherObj = obj->getValue("mother");
 	if (motherObj.size() > 0)
 	{
 		motherNum = atoi( motherObj[0]->getLeaf().c_str() );
@@ -129,14 +132,14 @@ CK2Character::CK2Character(Object* obj, const map<int, CK2Dynasty*>& dynasties, 
 	}
 	mother = NULL;
 
-	vector<Object*> spouseObj = obj->getValue("spouse");
-	for (vector<Object*>::iterator itr = spouseObj.begin(); itr != spouseObj.end(); ++itr)
+	vector<IObject*> spouseObj = obj->getValue("spouse");
+	for (vector<IObject*>::iterator itr = spouseObj.begin(); itr != spouseObj.end(); ++itr)
 	{
 		spouseNums.push_back(atoi((*itr)->getLeaf().c_str()));
 	}
 
 	children.clear();
-	vector<Object*> guardianObj = obj->getValue("guardian");
+	vector<IObject*> guardianObj = obj->getValue("guardian");
 	if (guardianObj.size() > 0)
 	{
 		guardianNum = atoi( guardianObj[0]->getLeaf().c_str() );
@@ -146,7 +149,7 @@ CK2Character::CK2Character(Object* obj, const map<int, CK2Dynasty*>& dynasties, 
 		guardianNum = -1;
 	}
 	guardian = NULL;
-	vector<Object*> regentObj = obj->getValue("regent");
+	vector<IObject*> regentObj = obj->getValue("regent");
 	if (regentObj.size() > 0)
 	{
 		regentNum = atoi( regentObj[0]->getLeaf().c_str() );
@@ -158,7 +161,7 @@ CK2Character::CK2Character(Object* obj, const map<int, CK2Dynasty*>& dynasties, 
 	regent = NULL;
 
 	memset(advisors, 0, sizeof(advisors));
-	vector<Object*> employerObj = obj->getValue("employer");
+	vector<IObject*> employerObj = obj->getValue("employer");
 	if (employerObj.size() > 0)
 	{
 		employerNum = atoi( employerObj[0]->getLeaf().c_str() );
@@ -168,7 +171,7 @@ CK2Character::CK2Character(Object* obj, const map<int, CK2Dynasty*>& dynasties, 
 		employerNum = -1;
 	}
 	jobType = NONE;
-	vector<Object*> jobObj = obj->getValue("job_title");
+	vector<IObject*> jobObj = obj->getValue("job_title");
 	if (jobObj.size() > 0)
 	{
 		string jobTitle = jobObj[0]->getLeaf();
@@ -193,7 +196,7 @@ CK2Character::CK2Character(Object* obj, const map<int, CK2Dynasty*>& dynasties, 
 			jobType = CHAPLAIN;
 		}
 	}
-	vector<Object*> actionObj = obj->getValue("action");
+	vector<IObject*> actionObj = obj->getValue("action");
 	if (actionObj.size() > 0)
 	{
 		action = actionObj[0]->getLeaf();
@@ -202,7 +205,7 @@ CK2Character::CK2Character(Object* obj, const map<int, CK2Dynasty*>& dynasties, 
 	{
 		action = "";
 	}
-	vector<Object*> hostObj = obj->getValue("host");
+	vector<IObject*> hostObj = obj->getValue("host");
 	if (hostObj.size() > 0)
 	{
 		hostNum = atoi( hostObj[0]->getLeaf().c_str() );
@@ -212,38 +215,9 @@ CK2Character::CK2Character(Object* obj, const map<int, CK2Dynasty*>& dynasties, 
 		hostNum = -1;
 	}
 	locationNum				= -2;
-	capitalString			= "";
-	primaryTitleString		= "";
-	vector<Object*> demesneObj = obj->getValue("demesne");
-	if (demesneObj.size() > 0)
-	{
-		vector<Object*> capitalObj = demesneObj[0]->getValue("capital");
-		if (capitalObj.size() > 0)
-		{
-			capitalString = capitalObj[0]->getLeaf();
-		}
-		vector<Object*> primaryObj = demesneObj[0]->getValue("primary");
-		if (primaryObj.size() > 0)
-		{
-			primaryTitleString = primaryObj[0]->getLeaf();
-		}
-		vector<Object*> armyObjs = demesneObj[0]->getValue("army");
-		for (unsigned int i = 0; i < armyObjs.size(); i++)
-		{
-			CK2Army* newArmy = new CK2Army(armyObjs[i]);
-			armies.push_back(newArmy);
-		}
-		vector<Object*> navyObjs = demesneObj[0]->getValue("navy");
-		for (unsigned int i = 0; i < navyObjs.size(); i++)
-		{
-			CK2Army* newNavy = new CK2Army(navyObjs[i]);
-			navies.push_back(newNavy);
-		}
-	}
-	capital = NULL;
-	primaryTitle = NULL;
+	parseDemesneData(obj);
 
-	vector<Object*> attributesObj = obj->getValue("attributes");
+	vector<IObject*> attributesObj = obj->getValue("attributes");
 	if (attributesObj.size() > 0)
 	{
 		vector<string> attributeTokens = attributesObj[0]->getTokens();
@@ -263,7 +237,7 @@ CK2Character::CK2Character(Object* obj, const map<int, CK2Dynasty*>& dynasties, 
 		stats[LEARNING]		= 0;
 	}
 
-	vector<Object*> traitsObj = obj->getValue("traits");
+	vector<IObject*> traitsObj = obj->getValue("traits");
 	if (traitsObj.size() > 0)
 	{
 		vector<string> traitsStrings = traitsObj[0]->getTokens();
@@ -306,19 +280,56 @@ CK2Character::CK2Character(Object* obj, const map<int, CK2Dynasty*>& dynasties, 
 	primaryHolding = NULL;
 }
 
+void CK2Character::parseDemesneData(IObject* obj)
+{
+	vector<IObject*> demesneObj = obj->getValue("demesne");
+	if (demesneObj.empty())
+	{
+		return;
+	}
+
+	vector<IObject*> capitalObj = demesneObj[0]->getValue("capital");
+	if (!capitalObj.empty())
+	{
+		capitalString = capitalObj[0]->getLeaf();
+	}
+
+	vector<IObject*> primaryObj = demesneObj[0]->getValue("primary");
+	if (!primaryObj.empty())
+	{
+		vector<IObject*> primaryObjInnerValueObj = primaryObj[0]->getValue("title");
+		if (primaryObjInnerValueObj.empty())
+		{
+			primaryTitleString = primaryObj[0]->getLeaf();
+		}
+		else
+		{
+			primaryTitleString = primaryObjInnerValueObj[0]->getLeaf();
+		}
+	}
+
+	BOOST_FOREACH(IObject* armyObj, demesneObj[0]->getValue("army"))
+	{
+		armies.push_back(new CK2Army(static_cast<Object*>(armyObj)));
+	}
+	BOOST_FOREACH(IObject* navyObj, demesneObj[0]->getValue("navy"))
+	{
+		navies.push_back(new CK2Army(static_cast<Object*>(navyObj)));
+	}
+}
 
 void CK2Character::readOpinionModifiers(Object* obj)
 {
-	vector<Object*> leaves = obj->getLeaves();
-	for (vector<Object*>::iterator itr = leaves.begin(); itr != leaves.end(); ++itr)
+	vector<IObject*> leaves = obj->getLeaves();
+	for (vector<IObject*>::iterator itr = leaves.begin(); itr != leaves.end(); ++itr)
 	{
 		int charId = atoi((*itr)->getKey().c_str());
 		if (charId == 0)
 			continue;  // shouldn't happen
-		vector<Object*> modifiers = (*itr)->getLeaves();
-		for (vector<Object*>::iterator mitr = modifiers.begin(); mitr != modifiers.end(); ++mitr)
+		vector<IObject*> modifiers = (*itr)->getLeaves();
+		for (vector<IObject*>::iterator mitr = modifiers.begin(); mitr != modifiers.end(); ++mitr)
 		{
-			CK2Opinion opinion(*mitr);
+			CK2Opinion opinion(static_cast<Object*>(*mitr));
 			opinionMods[charId].push_back(opinion);
 		}
 	}

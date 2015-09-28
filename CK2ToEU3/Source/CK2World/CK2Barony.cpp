@@ -40,8 +40,8 @@ CK2Barony::CK2Barony(Object* obj, CK2Title* newTitle, CK2Province* newProvince, 
 	
 	qualityBuildings = 0;
 	buildings.clear();
-	vector<Object*> leaves = obj->getLeaves();
-	for (vector<Object*>::iterator i = leaves.begin(); i < leaves.end(); i++)
+	vector<IObject*> leaves = obj->getLeaves();
+	for (vector<IObject*>::iterator i = leaves.begin(); i < leaves.end(); i++)
 	{
 		string key = (*i)->getKey();
 		if ( (key.substr(0, 3) == "ca_") || (key.substr(0, 3) == "ct_") || (key.substr(0, 3) == "tp_") )
@@ -123,7 +123,7 @@ CK2Barony::CK2Barony(Object* obj, CK2Title* newTitle, CK2Province* newProvince, 
 	maxShips			= 0;
 	freeTroops		= 0.0F;
 	serfTroops		= 0.0F;
-	vector<Object*> levyObjs = obj->getValue("levy")[0]->getLeaves();
+	vector<IObject*> levyObjs = obj->getValue("levy")[0]->getLeaves();
 	for (unsigned int i = 0; i < levyObjs.size(); i++)
 	{
 		if (levyObjs[i]->getKey() == "light_infantry")

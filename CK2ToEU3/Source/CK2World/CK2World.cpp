@@ -64,7 +64,7 @@ void CK2World::init(Object* obj, const cultureGroupMapping& cultureGroupMap)
 	buildingFactory = new CK2BuildingFactory(&cultureGroupMap);
 
 	// get version
-	vector<Object*> versionObj = obj->getValue("version");
+	vector<IObject*> versionObj = obj->getValue("version");
 	if (versionObj.size() > 0)
 	{
 		version = new CK2Version( versionObj[0]->getLeaf() );
@@ -77,7 +77,7 @@ void CK2World::init(Object* obj, const cultureGroupMapping& cultureGroupMap)
 	}
 
 	// get conversion date
-	vector<Object*> dateObj = obj->getValue("date");
+	vector<IObject*> dateObj = obj->getValue("date");
 	if (dateObj.size() > 0)
 	{
 		date newDate( dateObj[0]->getLeaf() );
@@ -90,12 +90,12 @@ void CK2World::init(Object* obj, const cultureGroupMapping& cultureGroupMap)
 
 	// get dynasties
 	printf("\tGetting dynasties from save\n");
-	vector<Object*> dynastyLeaves = obj->getValue("dynasties");
+	vector<IObject*> dynastyLeaves = obj->getValue("dynasties");
 	dynastyLeaves = dynastyLeaves[0]->getLeaves();
 	for (unsigned int i = 0; i < dynastyLeaves.size(); i++)
 	{
 		int number = atoi( dynastyLeaves[i]->getKey().c_str() );
-		CK2Dynasty* newDynasty = new CK2Dynasty(dynastyLeaves[i]);
+		CK2Dynasty* newDynasty = new CK2Dynasty(static_cast<Object*>(dynastyLeaves[i]));
 		dynasties.insert( make_pair(number, newDynasty) );
 	}
 	CK2Dynasty* newDynasty = new CK2Dynasty(0, "Lowborn");
@@ -103,12 +103,13 @@ void CK2World::init(Object* obj, const cultureGroupMapping& cultureGroupMap)
 
 	// get characters
 	printf("\tGetting characters\n");
-	vector<Object*> characterLeaves = obj->getValue("character");
+	vector<IObject*> characterLeaves = obj->getValue("character");
 	characterLeaves = characterLeaves[0]->getLeaves();
 	for (unsigned int i = 0; i < characterLeaves.size(); i++)
 	{
 		int number = atoi( characterLeaves[i]->getKey().c_str() );
-		CK2Character* newCharacter = new CK2Character(characterLeaves[i], dynasties, traits, endDate);
+		CK2Character* newCharacter = new CK2Character(static_cast<Object*>(characterLeaves[i]), dynasties,
+			traits, endDate);
 		characters.insert( make_pair(number, newCharacter) );
 	}
 
@@ -119,8 +120,8 @@ void CK2World::init(Object* obj, const cultureGroupMapping& cultureGroupMap)
 	}
 
 	printf("\tGetting opinion modifiers\n");
-	vector<Object*> leaves = obj->getLeaves();
-	for (vector<Object*>::iterator itr = leaves.begin(); itr != leaves.end(); ++itr)
+	vector<IObject*> leaves = obj->getLeaves();
+	for (vector<IObject*>::iterator itr = leaves.begin(); itr != leaves.end(); ++itr)
 	{
 		string key = (*itr)->getKey();
 		if (key.substr(0, 4) == "rel_")
@@ -132,18 +133,18 @@ void CK2World::init(Object* obj, const cultureGroupMapping& cultureGroupMap)
 				log("%s bad LHS character ID %d\n", key.c_str(), charId);
 				continue;
 			}
-			chitr->second->readOpinionModifiers(*itr);
+			chitr->second->readOpinionModifiers(static_cast<Object*>(*itr));
 		}
 	}
 
 	printf("\tGetting wars\n");
 	leaves = obj->getLeaves();
-	for (vector<Object*>::iterator itr = leaves.begin(); itr != leaves.end(); ++itr)
+	for (vector<IObject*>::iterator itr = leaves.begin(); itr != leaves.end(); ++itr)
 	{
 		string key = (*itr)->getKey();
 		if (key == "active_war")
 		{
-			CK2War* war = new CK2War(*itr);
+			CK2War* war = new CK2War(static_cast<Object*>(*itr));
 			wars.push_back(war);
 			for (vector<int>::iterator witr = war->attackers.begin(); witr != war->attackers.end(); ++witr)
 			{
@@ -167,8 +168,8 @@ void CK2World::init(Object* obj, const cultureGroupMapping& cultureGroupMap)
 		string key = leaves[i]->getKey();
 		if ( (key == "title") )
 		{
-			vector<Object*> titleList = leaves[i]->getLeaves();
-			for (vector<Object*>::iterator itr = titleList.begin() ; itr != titleList.end(); ++itr)
+			vector<IObject*> titleList = leaves[i]->getLeaves();
+			for (vector<IObject*>::iterator itr = titleList.begin() ; itr != titleList.end(); ++itr)
 			{
 				key = (*itr)->getKey();
 				if (key == "k_seljuk_turks")
@@ -180,7 +181,7 @@ void CK2World::init(Object* obj, const cultureGroupMapping& cultureGroupMap)
 				{
 					int color[3] = {0,0,0};
 					CK2Title* dynTitle = new CK2Title(key, color);
-					dynTitle->init(*itr, characters, buildingFactory);
+					dynTitle->init(static_cast<Object*>(*itr), characters, buildingFactory);
 					if (!dynTitle->isDynamic())
 					{
 						log("\t\tWarning: tried to create title %s, but it is neither a potential title nor a dynamic title.\n", key.c_str());
@@ -190,7 +191,7 @@ void CK2World::init(Object* obj, const cultureGroupMapping& cultureGroupMap)
 				}
 				else
 				{
-					titleItr->second->init(*itr, characters, buildingFactory);
+					titleItr->second->init(static_cast<Object*>(*itr), characters, buildingFactory);
 					titles.insert( make_pair(titleItr->second->getTitleString(), titleItr->second) );
 				}
 			}
@@ -202,7 +203,7 @@ void CK2World::init(Object* obj, const cultureGroupMapping& cultureGroupMap)
 			{
 				int color[3] = {0,0,0};
 				CK2Title* dynTitle = new CK2Title(key, color);
-				dynTitle->init(leaves[i], characters, buildingFactory);
+				dynTitle->init(static_cast<Object*>(leaves[i]), characters, buildingFactory);
 				if (!dynTitle->isDynamic())
 				{
 					log("\t\tWarning: tried to create title %s, but it is neither a potential title nor a dynamic title.\n", key.c_str());
@@ -212,7 +213,7 @@ void CK2World::init(Object* obj, const cultureGroupMapping& cultureGroupMap)
 			}
 			else
 			{
-				titleItr->second->init(leaves[i], characters, buildingFactory);
+				titleItr->second->init(static_cast<Object*>(leaves[i]), characters, buildingFactory);
 				titles.insert( make_pair(titleItr->second->getTitleString(), titleItr->second) );
 			}
 		}
@@ -232,7 +233,8 @@ void CK2World::init(Object* obj, const cultureGroupMapping& cultureGroupMap)
 		string key = leaves[i]->getKey();
 		if (atoi(key.c_str()) > 0)
 		{
-			CK2Province* newProvince = new CK2Province(leaves[i], titles, characters, buildingFactory, *version);
+			CK2Province* newProvince = new CK2Province(static_cast<Object*>(leaves[i]), titles, characters,
+				buildingFactory, *version);
 			provinces.insert( make_pair(atoi(key.c_str()), newProvince) );
 
 			vector<CK2Barony*> newBaronies = newProvince->getBaronies();
@@ -358,11 +360,11 @@ void CK2World::addDynasties(Object* obj)
 	{
 		return;
 	}
-	vector<Object*> dynastyLeaves = obj->getLeaves();
+	vector<IObject*> dynastyLeaves = obj->getLeaves();
 	for (unsigned int i = 0; i < dynastyLeaves.size(); i++)
 	{
 		int number = atoi( dynastyLeaves[i]->getKey().c_str() );
-		CK2Dynasty* newDynasty = new CK2Dynasty(dynastyLeaves[i]);
+		CK2Dynasty* newDynasty = new CK2Dynasty(static_cast<Object*>(dynastyLeaves[i]));
 		dynasties.insert( make_pair(number, newDynasty) );
 	}
 }
@@ -374,11 +376,11 @@ void CK2World::addTraits(Object* obj)
 	{
 		return;
 	}
-	vector<Object*> traitLeaves = obj->getLeaves();
+	vector<IObject*> traitLeaves = obj->getLeaves();
 	int offset = traits.size() + 1;
 	for (unsigned int i = 0; i < traitLeaves.size(); i++)
 	{
-		CK2Trait* newTrait = new CK2Trait(traitLeaves[i]);
+		CK2Trait* newTrait = new CK2Trait(static_cast<Object*>(traitLeaves[i]));
 		traits.insert( make_pair(i + offset, newTrait) );
 	}
 }
@@ -390,14 +392,14 @@ void CK2World::addPotentialTitles(Object* obj)
 	{
 		return;
 	}
-	vector<Object*> leaves = obj->getLeaves();
-	for (vector<Object*>::iterator itr = leaves.begin(); itr < leaves.end(); itr++)
+	vector<IObject*> leaves = obj->getLeaves();
+	for (vector<IObject*>::iterator itr = leaves.begin(); itr < leaves.end(); itr++)
 	{
 		map<string, CK2Title*>::iterator titleItr = potentialTitles.find( (*itr)->getKey() );
 		if (titleItr == potentialTitles.end())
 		{
 			int color[3] = {0, 0, 0};
-			vector<Object*> colorObjs = (*itr)->getValue("color");
+			vector<IObject*> colorObjs = (*itr)->getValue("color");
 			if (colorObjs.size() > 0)
 			{
 				color[0] = atoi(colorObjs[0]->getTokens()[0].c_str() );
@@ -532,7 +534,7 @@ void TitleFilter::removeDeadTitles()
 		else
 		{
 			boost::shared_ptr<LogBase> logger = world->getLogger();
-			(*logger) << "\tRemoving dead title " << title.first << logger->endl();
+			(*logger) << "\tRemoving dead title " << title.first << "\n";
 		}
 	}
 	saveTitles();

@@ -486,7 +486,7 @@ int main(int argc, char * argv[])
 		return 1;
 	}
 	cultureMapping cultureMap;
-	cultureMap = initCultureMap(obj->getLeaves()[0]);
+	cultureMap = initCultureMap(static_cast<Object*>(obj->getLeaves()[0]));
 
 	// Get religion mappings
 	log("Parsing religion mappings.\n");
@@ -513,7 +513,7 @@ int main(int argc, char * argv[])
 		return 1;
 	}
 	religionMapping religionMap;
-	religionMap = initReligionMap(obj->getLeaves()[0]);
+	religionMap = initReligionMap(static_cast<Object*>(obj->getLeaves()[0]));
 
 	// Get continents
 	log("Parsing continents.\n");

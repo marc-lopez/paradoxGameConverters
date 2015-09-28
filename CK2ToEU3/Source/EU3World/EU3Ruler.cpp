@@ -33,7 +33,7 @@
 
 EU3Ruler::EU3Ruler(Object* obj)
 {
-	vector<Object*> nameObjs = obj->getValue("name");
+	vector<IObject*> nameObjs = obj->getValue("name");
 	if (nameObjs.size() > 0)
 	{
 		name = nameObjs[0]->getLeaf().c_str();
@@ -44,7 +44,7 @@ EU3Ruler::EU3Ruler(Object* obj)
 	}
 	regnalNum = -1;
 
-	vector<Object*> dipObjs = obj->getValue("DIP");
+	vector<IObject*> dipObjs = obj->getValue("DIP");
 	if (dipObjs.size() > 0)
 	{
 		diplomacy = atoi( dipObjs[0]->getLeaf().c_str() );
@@ -58,7 +58,7 @@ EU3Ruler::EU3Ruler(Object* obj)
 		diplomacy = 1;
 	}
 
-	vector<Object*> admObjs = obj->getValue("ADM");
+	vector<IObject*> admObjs = obj->getValue("ADM");
 	if (admObjs.size() > 0)
 	{
 		administration = atoi( admObjs[0]->getLeaf().c_str() );
@@ -72,7 +72,7 @@ EU3Ruler::EU3Ruler(Object* obj)
 		administration = 1;
 	}
 
-	vector<Object*> milObjs = obj->getValue("MIL");
+	vector<IObject*> milObjs = obj->getValue("MIL");
 	if (milObjs.size() > 0)
 	{
 		military = atoi( milObjs[0]->getLeaf().c_str() );
@@ -88,7 +88,7 @@ EU3Ruler::EU3Ruler(Object* obj)
 
 	id = Configuration::getID();
 
-	vector<Object*> dynastyObjs = obj->getValue("dynasty");
+	vector<IObject*> dynastyObjs = obj->getValue("dynasty");
 	if (dynastyObjs.size() > 0)
 	{
 		dynasty = dynastyObjs[0]->getLeaf();
@@ -98,7 +98,7 @@ EU3Ruler::EU3Ruler(Object* obj)
 		dynasty = "";
 	}
 
-	vector<Object*> birthdateObjs = obj->getValue("birth_Date");
+	vector<IObject*> birthdateObjs = obj->getValue("birth_Date");
 	if (birthdateObjs.size() > 0)
 	{
 		birthDate = birthdateObjs[0]->getLeaf();
@@ -108,7 +108,7 @@ EU3Ruler::EU3Ruler(Object* obj)
 		birthDate = (string)"1.1.1";
 	}
 
-	vector<Object*> deathdateObjs = obj->getValue("death_Date");
+	vector<IObject*> deathdateObjs = obj->getValue("death_Date");
 	if (deathdateObjs.size() > 0)
 	{
 		deathDate = deathdateObjs[0]->getLeaf();
@@ -118,7 +118,7 @@ EU3Ruler::EU3Ruler(Object* obj)
 		deathDate = (string)"1.1.1";
 	}
 
-	vector<Object*> claimObjs = obj->getValue("claim");
+	vector<IObject*> claimObjs = obj->getValue("claim");
 	if (claimObjs.size() > 0)
 	{
 		claim = atoi( claimObjs[0]->getLeaf().c_str() );
@@ -128,7 +128,7 @@ EU3Ruler::EU3Ruler(Object* obj)
 		claim = 100;
 	}
 
-	vector<Object*> monarchNameObjs = obj->getValue("monarch_name");
+	vector<IObject*> monarchNameObjs = obj->getValue("monarch_name");
 	if (monarchNameObjs.size() > 0)
 	{
 		monarchName = monarchNameObjs[0]->getLeaf();
@@ -138,7 +138,7 @@ EU3Ruler::EU3Ruler(Object* obj)
 		monarchName = "";
 	}
 
-	vector<Object*> femaleObjs = obj->getValue("female");
+	vector<IObject*> femaleObjs = obj->getValue("female");
 	if (femaleObjs.size() > 0)
 	{
 		female = (femaleObjs[0]->getLeaf() == "yes");

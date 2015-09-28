@@ -75,14 +75,14 @@ Object::~Object() {
 }
 
 
-Object::Object(Object* other) :
+Object::Object(IObject* other) :
 objects(),
-strVal(other->strVal),
-leaf(other->leaf),
-isObjList(other->isObjList)
+strVal(other->getLeaf()),
+leaf(other->isLeaf()),
+isObjList(other->isList())
 {
-	key = other->key;
-	for (vector<Object*>::iterator i = other->objects.begin(); i != other->objects.end(); ++i)
+	key = other->getKey();
+	for (vector<IObject*>::iterator i = other->getLeaves().begin(); i != other->getLeaves().end(); ++i)
 	{
 		objects.push_back(new Object(*i));
 	}
@@ -125,7 +125,7 @@ void Object::setLeaf(string key, string val)
 }
 
 
-void Object::setValue(vector<Object*> val)
+void Object::setValue(vector<IObject*> val)
 {
 	objects = val;
 }
@@ -168,10 +168,10 @@ void Object::addToList(vector<string>::iterator begin, vector<string>::iterator 
 }
 
 
-vector<Object*> Object::getValue(string key) const
+vector<IObject*> Object::getValue(string key) const
 {
-	vector<Object*> ret;	// the objects to return
-	for (vector<Object*>::const_iterator i = objects.begin(); i != objects.end(); ++i)
+	vector<IObject*> ret;	// the objects to return
+	for (vector<IObject*>::const_iterator i = objects.begin(); i != objects.end(); ++i)
 	{
 		if ((*i)->getKey() != key)
 		{
@@ -213,7 +213,7 @@ int Object::numTokens()
 
 vector<string> Object::getKeys() {
 	vector<string> ret;	// the keys to return
-	for (vector<Object*>::iterator i = objects.begin(); i != objects.end(); ++i)
+	for (vector<IObject*>::iterator i = objects.begin(); i != objects.end(); ++i)
 	{
 		string curr = (*i)->getKey();	// the current key
 		if (find(ret.begin(), ret.end(), curr) != ret.end())
@@ -228,7 +228,7 @@ vector<string> Object::getKeys() {
 
 string Object::getLeaf(string leaf) const
 {
-	vector<Object*> leaves = getValue(leaf); // the objects to return
+	vector<IObject*> leaves = getValue(leaf); // the objects to return
 	if (0 == leaves.size())
 	{
 		cout << "Error: Cannot find leaf " << leaf << " in object " << endl << *this;
@@ -237,50 +237,51 @@ string Object::getLeaf(string leaf) const
 	return leaves[0]->getLeaf();
 }
 
-
-ostream& operator<< (ostream& os, const Object& obj)
+string Object::print() const
 {
+	stringstream stringBuilder;
+
 	static int indent = 0; // the level of indentation to output to
 	for (int i = 0; i < indent; i++)
 	{
-		os << "\t";
+		stringBuilder << "\t";
 	}
-	if (obj.leaf) {
-		os << obj.key << "=" << obj.strVal << "\n";
-		return os;
+	if (leaf) {
+		stringBuilder << key << "=" << strVal << "\n";
+		return stringBuilder.str();
 	}
-	if (obj.isObjList)
+	if (isObjList)
 	{
-		os << obj.key << "={" << obj.strVal << " }\n";
-		return os;
+		stringBuilder << key << "={" << strVal << " }\n";
+		return stringBuilder.str();
 	}
 
-	if (&obj != getTopLevel())
+	if (this != getTopLevel())
 	{
-		os << obj.key << "=\n";
+		stringBuilder << key << "=\n";
 		for (int i = 0; i < indent; i++)
 		{
-			os << "\t";
+			stringBuilder << "\t";
 		}
-		os << "{\n";
+		stringBuilder << "{\n";
 		indent++;
 	}
-	for (vector<Object*>::const_iterator i = obj.objects.begin(); i != obj.objects.end(); ++i)
+	for (vector<IObject*>::const_iterator i = objects.begin(); i != objects.end(); ++i)
 	{
-		os << *(*i);
+		stringBuilder << *(*i);
 	}
-	if (&obj != getTopLevel())
+	if (this != getTopLevel())
 	{
 		indent--;
 		for (int i = 0; i < indent; i++)
 		{
-			os << "\t";
+			stringBuilder << "\t";
 		}
-		os << "}\n";
+		stringBuilder << "}\n";
 	}
-	return os;
-}
 
+	return stringBuilder.str();
+}
 
 void Object::keyCount()
 {
@@ -326,10 +327,10 @@ void Object::keyCount()
 
 void Object::keyCount(map<string, int>& counter)
 {
-	for (vector<Object*>::iterator i = objects.begin(); i != objects.end(); ++i)
+	for (vector<IObject*>::iterator i = objects.begin(); i != objects.end(); ++i)
 	{
-		counter[(*i)->key]++;
-		if ((*i)->leaf)
+		counter[(*i)->getKey()]++;
+		if ((*i)->isLeaf())
 		{
 			continue;
 		}
@@ -340,16 +341,16 @@ void Object::keyCount(map<string, int>& counter)
 
 void Object::printTopLevel()
 {
-	for (vector<Object*>::iterator i = objects.begin(); i != objects.end(); ++i)
+	for (vector<IObject*>::iterator i = objects.begin(); i != objects.end(); ++i)
 	{
-		cout << (*i)->key << endl;
+		cout << (*i)->getKey() << endl;
 	}
 }
 
 
 void Object::removeObject(Object* target)
 {
-	vector<Object*>::iterator pos = find(objects.begin(), objects.end(), target);	// the position of the object to be removed
+	vector<IObject*>::iterator pos = find(objects.begin(), objects.end(), target);	// the position of the object to be removed
 	if (pos == objects.end())
 	{
 		return;
@@ -365,7 +366,7 @@ void Object::addObject(Object* target)
 
 void Object::addObjectAfter(Object* target, string key)
 {
-	vector<Object*>::iterator i;
+	vector<IObject*>::iterator i;
 
 	for (i = objects.begin(); i != objects.end(); ++i)
 	{
@@ -451,7 +452,7 @@ int Object::safeGetInt(string k, const int def)
 	return atoi(vec[0]->getLeaf().c_str());
 }
 
-Object* Object::safeGetObject(string k, Object* def)
+IObject* Object::safeGetObject(string k, IObject* def)
 {
 	objvec vec = getValue(k);	// the objects with the objects to be returned 
 	if (0 == vec.size())
@@ -468,4 +469,3 @@ string Object::toString() const
 	blah << *(this);
 	return blah.str();
 }
-

@@ -595,15 +595,16 @@ void EU3World::getCultureRules()
 		exit(-1);
 	}
 
-	vector<Object*> objectList = obj->getLeaves();
+	vector<IObject*> objectList = obj->getLeaves();
 
 	if (objectList.size() >0)
 	{
-		vector<Object*> cultureRuleObj = objectList[0]->getLeaves(); // Get culture rules
+		vector<IObject*> cultureRuleObj = objectList[0]->getLeaves(); // Get culture rules
 		for (unsigned int i = 0; i < cultureRuleObj.size(); i++) // Loop through each culture rule
 		{
 			//initialize culture rule
-			ModCultureRule* newCultureRule = new ModCultureRule(cultureRuleObj[i]->getKey(), cultureRuleObj[i]);
+			ModCultureRule* newCultureRule = new ModCultureRule(cultureRuleObj[i]->getKey(),
+				static_cast<Object*>(cultureRuleObj[i]));
 
 			//add to culture rules list
 			cultureRules.insert( make_pair(cultureRuleObj[i]->getKey(), newCultureRule) );
@@ -842,10 +843,10 @@ void EU3World::convertProvinces(provinceMapping& provinceMap, map<int, CK2Provin
 	}
 
 	//find all coastal provinces
-	vector<Object*> provPositionObj = positionObj->getLeaves();
+	vector<IObject*> provPositionObj = positionObj->getLeaves();
 	for (unsigned int i = 0; i < provPositionObj.size(); i++)
 	{
-		vector<Object*> portObjs = provPositionObj[i]->getValue("port");
+		vector<IObject*> portObjs = provPositionObj[i]->getValue("port");
 		if (portObjs.size() > 0)
 		{
 			map<int, EU3Province*>::iterator provItr = provinces.find( atoi(provPositionObj[i]->getKey().c_str()) );
@@ -1048,10 +1049,10 @@ void EU3World::convertAdvisors(inverseProvinceMapping& inverseProvinceMap, provi
 			exit(-1);
 		}
 
-		vector<Object*> advisorsObj = obj->getLeaves();
+		vector<IObject*> advisorsObj = obj->getLeaves();
 		for (unsigned int i = 0; i < advisorsObj.size(); i++)
 		{
-			EU3Advisor* newAdvisor = new EU3Advisor(advisorsObj[i], provinces);
+			EU3Advisor* newAdvisor = new EU3Advisor(static_cast<Object*>(advisorsObj[i]), provinces);
 			if ( (newAdvisor->getStartDate() < startDate) && (startDate < newAdvisor->getDeathDate()) )
 			{
 				vector<int> srcLocationNums = provinceMap[newAdvisor->getLocation()];
@@ -1833,18 +1834,18 @@ int EU3World::matchTags(Object* rulesObj, vector<string>& blockedNations, const 
 	}
 
 	// get rules
-	vector<Object*> leaves = rulesObj->getLeaves();
+	vector<IObject*> leaves = rulesObj->getLeaves();
 	if (leaves.size() < 1)
 	{
 		log ("Error: No country mapping definitions loaded.\n");
 		printf("Error: No country mapping definitions loaded.\n");
 		return -1;
 	}
-	vector<Object*> rules = leaves[0]->getLeaves();
+	vector<IObject*> rules = leaves[0]->getLeaves();
 	// match titles and nations
 	for (unsigned int i = 0; i < rules.size(); ++i)
 	{
-		vector<Object*> rule = rules[i]->getLeaves();
+		vector<IObject*> rule = rules[i]->getLeaves();
 		string			rCK2Title;
 		vector<string>	rEU3Tags;
 		for (unsigned int j = 0; j < rule.size(); j++)
@@ -2477,18 +2478,18 @@ void EU3World::addModCountries(const vector<EU3Country*>& modCountries, set<stri
 		exit(-1);
 	}
 
-	vector<Object*> cultureRuleOverrideObj = obj->getValue("culture_rule_override");
+	vector<IObject*> cultureRuleOverrideObj = obj->getValue("culture_rule_override");
 	cultureRuleOverrideMapping croMap; // Culture Rule Override Mapping
 	if (cultureRuleOverrideObj.size() > 0)
 	{
-		croMap = initCultureRuleOverrideMap(cultureRuleOverrideObj[0],cultureRules);
+		croMap = initCultureRuleOverrideMap(static_cast<Object*>(cultureRuleOverrideObj[0]),cultureRules);
 	}
 	
-	vector<Object*> localeOverrideObj = obj->getValue("locale_override");
+	vector<IObject*> localeOverrideObj = obj->getValue("locale_override");
 	localeOverrideMapping locMap; // Locale Override Mapping
 	if (localeOverrideObj.size() > 0)
 	{
-		locMap = initLocaleOverrideMap(localeOverrideObj[0]);
+		locMap = initLocaleOverrideMap(static_cast<Object*>(localeOverrideObj[0]));
 	}
 
 	// Initialize RNG

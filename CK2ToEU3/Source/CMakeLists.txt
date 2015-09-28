@@ -38,6 +38,9 @@ set_target_properties(boost-b2 PROPERTIES EXCLUDE_FROM_ALL TRUE)
 add_dependencies(boost-bootstrap boost)
 add_dependencies(boost-b2 boost-bootstrap)
 
+# Include directory this file is located on
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
 # Get sources
 file(GLOB SRC *.cpp)
 file(GLOB CK2World CK2World/*.cpp)

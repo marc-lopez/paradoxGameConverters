@@ -81,7 +81,7 @@ date& date::operator=(const date& _rhs)
 
 date::date(const Object* _init)
 {
-	vector<Object*> dateSubObj = _init->getValue("year");
+	vector<IObject*> dateSubObj = _init->getValue("year");
 	if (dateSubObj.size() > 0)
 	{
 		// date specified by year=, month=, day=
