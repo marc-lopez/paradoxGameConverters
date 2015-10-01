@@ -24,7 +24,7 @@
 #ifndef CK2TITLE_H_
 #define CK2TITLE_H_
 
-
+#include "Parsers\IObject.h"
 #include "..\mappers.h"
 #include <vector>
 #include <map>
@@ -45,13 +45,14 @@ class CK2Title
 		CK2Title(string _titleString, int* color);
 		void	init(Object*, map<int, CK2Character*>&, const CK2BuildingFactory* buildingFactory);
 
+		void						setDeJureLiege(const map<string, CK2Title*>& titles);
 		void						setLiege(CK2Title*);
+		void						setHolder(CK2Character*);
 		void						addToHRE();
 		void						determineHeir(map<int, CK2Character*>&);
 		void						setHeir(CK2Character*);
 		void						setSuccessionLaw(string _successionLaw);
-		void						setDeJureLiege(const map<string, CK2Title*>& titles);
-		void						addDeJureVassals(vector<Object*>, map<string, CK2Title*>& titles, CK2World* world);
+		void						addDeJureVassals(vector<IObject*>, map<string, CK2Title*>& titles, CK2World* world);
 		void						removeDeJureVassal(CK2Title* vassal);
 
 		void						getCultureWeights(map<string, int>& cultureWeights, const cultureMapping& cultureMap) const;
@@ -87,6 +88,8 @@ class CK2Title
 		bool						hasUnionWith(CK2Title* other, bool& otherDominant /* out */) const;
 		bool						hasRMWith(CK2Title* other) const;
 		bool						hasAllianceWith(CK2Title* other) const;
+		bool						hasHolders() const;
+		bool						hasMapImpact() const;
 		int						getRelationsWith(CK2Title* other, CK2Version& version) const;
 
 	private:

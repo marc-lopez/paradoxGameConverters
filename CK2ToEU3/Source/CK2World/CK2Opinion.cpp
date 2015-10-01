@@ -66,7 +66,7 @@ CK2Opinion::CK2Opinion(Object* obj) : value(0), multiplier(1)
 	}
 	else // opinion modifier
 	{
-		vector<Object*> modifierObjs = obj->getValue("modifier");
+		vector<IObject*> modifierObjs = obj->getValue("modifier");
 		if (modifierObjs.size() > 0)
 		{
 			value = getBaseValue(modifierObjs[0]->getLeaf());
@@ -76,7 +76,7 @@ CK2Opinion::CK2Opinion(Object* obj) : value(0), multiplier(1)
 			log("\tError: bad relationship modifier in %s\n", obj->getKey().c_str());
 		}
 
-		vector<Object*> multObjs = obj->getValue("multiplier");
+		vector<IObject*> multObjs = obj->getValue("multiplier");
 		if (multObjs.size() > 0)
 		{
 			multiplier = atoi(multObjs[0]->getLeaf().c_str());
@@ -91,11 +91,11 @@ void CK2Opinion::initOpinions(Object* root)
 	{
 		return;
 	}
-	vector<Object*> opinions = root->getLeaves();
-	for (vector<Object*>::iterator itr = opinions.begin(); itr != opinions.end(); ++itr)
+	vector<IObject*> opinions = root->getLeaves();
+	for (vector<IObject*>::iterator itr = opinions.begin(); itr != opinions.end(); ++itr)
 	{
 		string name = (*itr)->getKey();
-		vector<Object*> opinionObjs = (*itr)->getValue("opinion");
+		vector<IObject*> opinionObjs = (*itr)->getValue("opinion");
 		int value = 0;
 		if (opinionObjs.size() > 0)
 		{

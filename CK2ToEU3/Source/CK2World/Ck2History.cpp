@@ -29,7 +29,7 @@
 CK2History::CK2History(Object* obj, map<int, CK2Character*>& characters)
 {
 	when = obj->getKey();
-	vector<Object*> historyObj = obj->getLeaves();
+	vector<IObject*> historyObj = obj->getLeaves();
 
 	holder = NULL;
 	for (unsigned int i = 0; i < historyObj.size(); i++)

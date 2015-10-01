@@ -38,7 +38,7 @@ CK2Subunit::CK2Subunit(const Object* obj)
 	currentShips			= 0.0F;
 	maxShips					= 0.0F;
 
-	vector<Object*> troopsObjs = obj->getValue("troops")[0]->getLeaves();
+	vector<IObject*> troopsObjs = obj->getValue("troops")[0]->getLeaves();
 	for (unsigned int i = 0; i < troopsObjs.size(); i++)
 	{
 		if (troopsObjs[i]->getKey() == "light_infantry")
@@ -96,13 +96,13 @@ CK2Subunit::CK2Subunit(const Object* obj)
 CK2Army::CK2Army(const Object* obj)
 {
 	name = obj->getLeaf("name");
-	vector<Object*> subunitObjs = obj->getValue("sub_unit");
+	vector<IObject*> subunitObjs = obj->getValue("sub_unit");
 	for (unsigned int i = 0; i < subunitObjs.size(); i++)
 	{
-		CK2Subunit* newSubunit = new CK2Subunit(subunitObjs[i]);
+		CK2Subunit* newSubunit = new CK2Subunit(static_cast<Object*>(subunitObjs[i]));
 		subunits.push_back(newSubunit);
 	}
-	vector<Object*> movementObj = obj->getValue("movement_progress");
+	vector<IObject*> movementObj = obj->getValue("movement_progress");
 	if (movementObj.size() > 0)
 	{
 		movementProgress = atof( movementObj[0]->getLeaf().c_str() );
@@ -112,7 +112,7 @@ CK2Army::CK2Army(const Object* obj)
 		movementProgress = 0.0F;
 	}
 	
-	vector<Object*> pathObj = obj->getValue("path");
+	vector<IObject*> pathObj = obj->getValue("path");
 	if (pathObj.size() > 0)
 	{
 		vector<string> pathStrs = pathObj[0]->getTokens();
@@ -125,10 +125,10 @@ CK2Army::CK2Army(const Object* obj)
 	location = atoi( obj->getLeaf("location").c_str() );
 
 	transportedArmies.clear();
-	vector<Object*> armyObjs = obj->getValue("army");
+	vector<IObject*> armyObjs = obj->getValue("army");
 	for (unsigned int i = 0; i < armyObjs.size(); i++)
 	{
-		CK2Army* newArmy = new CK2Army(armyObjs[i]);
+		CK2Army* newArmy = new CK2Army(static_cast<Object *>(armyObjs[i]));
 		transportedArmies.push_back(newArmy);
 	}
 

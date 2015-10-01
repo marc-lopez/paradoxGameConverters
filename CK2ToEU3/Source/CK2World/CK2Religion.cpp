@@ -34,14 +34,14 @@ void CK2Religion::parseReligions(Object* obj)
 	{
 		return;
 	}
-	vector<Object*> groups = obj->getLeaves();
-	for (vector<Object*>::iterator groupsItr = groups.begin(); groupsItr < groups.end(); groupsItr++)
+	vector<IObject*> groups = obj->getLeaves();
+	for (vector<IObject*>::iterator groupsItr = groups.begin(); groupsItr < groups.end(); groupsItr++)
 	{
-		vector<Object*> religions = (*groupsItr)->getLeaves();
+		vector<IObject*> religions = (*groupsItr)->getLeaves();
 		string group = (*groupsItr)->getKey();
-		for (vector<Object*>::iterator religionsItr = religions.begin(); religionsItr < religions.end(); religionsItr++)
+		for (vector<IObject*>::iterator religionsItr = religions.begin(); religionsItr < religions.end(); religionsItr++)
 		{
-			CK2Religion* religion = new CK2Religion((*religionsItr), group);
+			CK2Religion* religion = new CK2Religion(static_cast<Object*>(*religionsItr), group);
 			all_religions[religion->name] = religion;
 		}
 	}
@@ -53,7 +53,7 @@ CK2Religion::CK2Religion(Object* obj, string _group)
 	group = _group;
 	name = obj->getKey();
 
-	vector<Object*> parentObjs = obj->getValue("parent");
+	vector<IObject*> parentObjs = obj->getValue("parent");
 	if (parentObjs.size() > 0)
 	{
 		parent = parentObjs[0]->getLeaf();

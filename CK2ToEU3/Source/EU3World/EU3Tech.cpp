@@ -37,8 +37,8 @@ enum techCategory
 
 EU3Tech::EU3Tech(date startDate, Object* mainObj, Object* governmentObj, Object* productionObj, Object* tradeObj, Object* navalObj, Object* landObj)
 {
-	vector<Object*> groupsObjs = mainObj->getValue("groups")[0]->getLeaves();
-	for(vector<Object*>::iterator groupItr = groupsObjs.begin(); groupItr != groupsObjs.end(); groupItr++)
+	vector<IObject*> groupsObjs = mainObj->getValue("groups")[0]->getLeaves();
+	for(vector<IObject*>::iterator groupItr = groupsObjs.begin(); groupItr != groupsObjs.end(); groupItr++)
 	{
 		string	name			= (*groupItr)->getKey();
 		int		startLevel	= atoi( (*groupItr)->getLeaf("start_level").c_str() );
@@ -46,45 +46,45 @@ EU3Tech::EU3Tech(date startDate, Object* mainObj, Object* governmentObj, Object*
 		groups.insert(make_pair(name, make_pair(startLevel, modifier) ));
 	}
 
-	vector<Object*> governmentObjs = governmentObj->getLeaves();
+	vector<IObject*> governmentObjs = governmentObj->getLeaves();
 	governmentYears.resize(governmentObjs.size());
-	for (vector<Object*>::iterator techItr = governmentObjs.begin(); techItr != governmentObjs.end(); techItr++)
+	for (vector<IObject*>::iterator techItr = governmentObjs.begin(); techItr != governmentObjs.end(); techItr++)
 	{
 		int level	= atoi( (*techItr)->getLeaf("id").c_str() );
 		int year		= atoi( (*techItr)->getLeaf("average_year").c_str() );
 		governmentYears[level] = year;
 	}
 
-	vector<Object*> productionObjs = productionObj->getLeaves();
+	vector<IObject*> productionObjs = productionObj->getLeaves();
 	productionYears.resize(productionObjs.size());
-	for (vector<Object*>::iterator techItr = productionObjs.begin(); techItr != productionObjs.end(); techItr++)
+	for (vector<IObject*>::iterator techItr = productionObjs.begin(); techItr != productionObjs.end(); techItr++)
 	{
 		int level	= atoi( (*techItr)->getLeaf("id").c_str() );
 		int year		= atoi( (*techItr)->getLeaf("average_year").c_str() );
 		productionYears[level] = year;
 	}
 
-	vector<Object*> tradeObjs = tradeObj->getLeaves();
+	vector<IObject*> tradeObjs = tradeObj->getLeaves();
 	tradeYears.resize(tradeObjs.size());
-	for (vector<Object*>::iterator techItr = tradeObjs.begin(); techItr != tradeObjs.end(); techItr++)
+	for (vector<IObject*>::iterator techItr = tradeObjs.begin(); techItr != tradeObjs.end(); techItr++)
 	{
 		int level	= atoi( (*techItr)->getLeaf("id").c_str() );
 		int year		= atoi( (*techItr)->getLeaf("average_year").c_str() );
 		tradeYears[level] = year;
 	}
 
-	vector<Object*> navalObjs = navalObj->getLeaves();
+	vector<IObject*> navalObjs = navalObj->getLeaves();
 	navalYears.resize(navalObjs.size());
-	for (vector<Object*>::iterator techItr = navalObjs.begin(); techItr != navalObjs.end(); techItr++)
+	for (vector<IObject*>::iterator techItr = navalObjs.begin(); techItr != navalObjs.end(); techItr++)
 	{
 		int level	= atoi( (*techItr)->getLeaf("id").c_str() );
 		int year		= atoi( (*techItr)->getLeaf("average_year").c_str() );
 		navalYears[level] = year;
 	}
 
-	vector<Object*> landObjs = landObj->getLeaves();
+	vector<IObject*> landObjs = landObj->getLeaves();
 	landYears.resize(landObjs.size());
-	for (vector<Object*>::iterator techItr = landObjs.begin(); techItr != landObjs.end(); techItr++)
+	for (vector<IObject*>::iterator techItr = landObjs.begin(); techItr != landObjs.end(); techItr++)
 	{
 		int level	= atoi( (*techItr)->getLeaf("id").c_str() );
 		int year		= atoi( (*techItr)->getLeaf("average_year").c_str() );

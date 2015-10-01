@@ -28,18 +28,18 @@
 
 CK2War::CK2War(Object* obj)
 {
-	vector<Object*> nameObjs = obj->getValue("name");
+	vector<IObject*> nameObjs = obj->getValue("name");
 	if (nameObjs.size() > 0)
 		name = nameObjs[0]->getLeaf();
 
-	vector<Object*> attackerObjs = obj->getValue("attacker");
-	for (vector<Object*>::iterator itr = attackerObjs.begin(); itr != attackerObjs.end(); ++itr)
+	vector<IObject*> attackerObjs = obj->getValue("attacker");
+	for (vector<IObject*>::iterator itr = attackerObjs.begin(); itr != attackerObjs.end(); ++itr)
 	{
 		attackers.push_back(atoi((*itr)->getLeaf().c_str()));
 	}
 
-	vector<Object*> defenderObjs = obj->getValue("defender");
-	for (vector<Object*>::iterator itr = defenderObjs.begin(); itr != defenderObjs.end(); ++itr)
+	vector<IObject*> defenderObjs = obj->getValue("defender");
+	for (vector<IObject*>::iterator itr = defenderObjs.begin(); itr != defenderObjs.end(); ++itr)
 	{
 		defenders.push_back(atoi((*itr)->getLeaf().c_str()));
 	}
