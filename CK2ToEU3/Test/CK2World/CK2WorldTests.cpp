@@ -32,12 +32,12 @@ using namespace testing;
 namespace ck2
 {
 namespace unittests
-{	
-	
+{
+
 class CK2WorldShould : public Test
 {
 protected:
-	CK2WorldShould() : titleName("k_sample"), deJureLIegeTitleName("e_sample"), color(),
+	CK2WorldShould() : color(), titleName("k_sample"), deJureLIegeTitleName("e_sample"),
 		world(new CK2World(boost::make_shared<LoggerMock>()))
 	{
 	}

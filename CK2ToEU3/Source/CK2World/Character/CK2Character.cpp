@@ -1,5 +1,5 @@
 /*Copyright (c) 2013 The CK2 to EU3 Converter Project
- 
+
  Permission is hereby granted, free of charge, to any person obtaining
  a copy of this software and associated documentation files (the
  "Software"), to deal in the Software without restriction, including
@@ -7,10 +7,10 @@
  distribute, sublicense, and/or sell copies of the Software, and to
  permit persons to whom the Software is furnished to do so, subject to
  the following conditions:
- 
+
  The above copyright notice and this permission notice shall be included
  in all copies or substantial portions of the Software.
- 
+
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
@@ -42,7 +42,7 @@
 
 CK2Character::CK2Character(IObject* obj, const map<int, CK2Dynasty*>& dynasties,
 						   const map<int, CK2Trait*>& traitTypes, date theDate) :
-	demesne(new ck2::character::Demesne(obj->getValue("demesne"))), capital(NULL), primaryTitle(NULL)
+	capital(NULL), primaryTitle(NULL), demesne(new ck2::character::Demesne(obj->getValue("demesne")))
 {
 	num			= atoi( obj->getKey().c_str() );
 	name			= obj->getLeaf("birth_name");
@@ -499,7 +499,7 @@ CK2Character* CK2Character::getPrimogenitureHeir(string genderLaw, CK2Character*
 	{
 		if (	( (*i) != currentHolder ) &&
 			   ( !(*i)->isDead() ) && !(*i)->isBastard() &&
-				( !(*i)->isFemale() || (genderLaw == "true_cognatic") ) 
+				( !(*i)->isFemale() || (genderLaw == "true_cognatic") )
 			)
 		{
 			heir = *i;
@@ -568,7 +568,7 @@ CK2Character* CK2Character::getUltimogenitureHeir(string genderLaw, CK2Character
 	{
 		if (	( (*i) != currentHolder ) &&
 			   ( !(*i)->isDead() ) && !(*i)->isBastard() &&
-				( !(*i)->isFemale() || (genderLaw == "true_cognatic") ) 
+				( !(*i)->isFemale() || (genderLaw == "true_cognatic") )
 			)
 		{
 			heir = *i;
@@ -638,7 +638,7 @@ vector<CK2Character*> CK2Character::getPotentialOpenHeirs(string genderLaw, CK2C
 	{
 		if (	( (*i) != currentHolder ) &&
 			   ( !(*i)->isDead() ) && !(*i)->isBastard() &&
-				( !(*i)->isFemale() || (genderLaw == "true_cognatic") ) 
+				( !(*i)->isFemale() || (genderLaw == "true_cognatic") )
 			)
 		{
 			potentialHeirs.push_back(*i);
@@ -825,7 +825,7 @@ vector<CK2Character*> CK2Character::getGavelkindHeirs(string genderLaw)
 	{
 		for (list<CK2Character*>::iterator i = children.begin(); ( i != children.end() && heirs.size() <= 0 ); i++)
 		{
-			if (   !(*i)->isBastard() && 
+			if (   !(*i)->isBastard() &&
 				  ( !(*i)->isFemale() || (genderLaw == "true_cognatic") )
 				)
 			{
@@ -1353,6 +1353,6 @@ int CK2Character::getDemesneCap(CK2Version& version) const
 		if (rulerTier == 5)
 			legalismBonus++;
 	}
-	
+
 	return (int)(floor( (rulerTier + stewardshipBonus) * successionFactor) + legalismBonus);
 }

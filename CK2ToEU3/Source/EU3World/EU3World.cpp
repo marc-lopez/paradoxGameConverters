@@ -1000,7 +1000,7 @@ void EU3World::convertAdvisors(inverseProvinceMapping& inverseProvinceMap, provi
 
 				vector<int>		provinceNums;
 				provinceNums.clear();
-				if (CK2Location != NULL)
+				if (CK2Location > 0)
 				{
 					provinceNums = inverseProvinceMap[CK2Location];
 				}
@@ -2827,7 +2827,6 @@ void EU3World::outputCountryFile(FILE* countryFile, EU3Country* country)
 	if (leaderNames.size() > 0)
 	{
 		fprintf(countryFile, "\nleader_names = {\n\t");
-		int dist = -1;
 		for (vector<string>::iterator itr = leaderNames.begin(); itr < leaderNames.end(); ++itr)
 		{
 			fprintf(countryFile, "%s ", (*itr).c_str() );
@@ -2843,7 +2842,6 @@ void EU3World::outputCountryFile(FILE* countryFile, EU3Country* country)
 	if (shipNames.size() > 0)
 	{
 		fprintf(countryFile, "\nship_names = {\n\t");
-		int dist = -1;
 		for (vector<string>::iterator itr = shipNames.begin(); itr < shipNames.end(); ++itr)
 		{
 			fprintf(countryFile, "%s ", (*itr).c_str() );
@@ -2859,7 +2857,6 @@ void EU3World::outputCountryFile(FILE* countryFile, EU3Country* country)
 	if (armyNames.size() > 0)
 	{
 		fprintf(countryFile, "\narmy_names = {\n\t");
-		int dist = -1;
 		for (vector<string>::iterator itr = armyNames.begin(); itr < armyNames.end(); ++itr)
 		{
 			fprintf(countryFile, "%s ", (*itr).c_str() );
@@ -2875,7 +2872,6 @@ void EU3World::outputCountryFile(FILE* countryFile, EU3Country* country)
 	if (fleetNames.size() > 0)
 	{
 		fprintf(countryFile, "\nfleet_names = {\n\t");
-		int dist = -1;
 		for (vector<string>::iterator itr = fleetNames.begin(); itr < fleetNames.end(); ++itr)
 		{
 			fprintf(countryFile, "%s ", (*itr).c_str() );

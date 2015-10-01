@@ -1,5 +1,5 @@
 /*Copyright (c) 2013 The CK2 to EU3 Converter Project
- 
+
  Permission is hereby granted, free of charge, to any person obtaining
  a copy of this software and associated documentation files (the
  "Software"), to deal in the Software without restriction, including
@@ -7,10 +7,10 @@
  distribute, sublicense, and/or sell copies of the Software, and to
  permit persons to whom the Software is furnished to do so, subject to
  the following conditions:
- 
+
  The above copyright notice and this permission notice shall be included
  in all copies or substantial portions of the Software.
- 
+
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
@@ -50,7 +50,7 @@ bool CK2War::areEnemies(int lhs, int rhs) const
 {
 	vector<int>::const_iterator lhs_attacking = find(attackers.begin(), attackers.end(), lhs);
 	vector<int>::const_iterator rhs_attacking = find(attackers.begin(), attackers.end(), rhs);
-	
+
 	// if neither or both are attacking, they're not enemies
 	if ((lhs_attacking == attackers.end()) == (rhs_attacking == attackers.end()))
 		return false;
@@ -59,8 +59,8 @@ bool CK2War::areEnemies(int lhs, int rhs) const
 	vector<int>::const_iterator rhs_defending = find(defenders.begin(), defenders.end(), rhs);
 
 	// if both sides are involved, and they passed the previous check, they're enemies
-	if ((lhs_attacking != attackers.end()) || (lhs_defending != defenders.end())
-	 && (rhs_attacking != attackers.end()) || (rhs_defending != defenders.end()))
+	if ((lhs_attacking != attackers.end()) || ((lhs_defending != defenders.end())
+	 && (rhs_attacking != attackers.end())) || (rhs_defending != defenders.end()))
 		return true;
 
 	// otherwise not

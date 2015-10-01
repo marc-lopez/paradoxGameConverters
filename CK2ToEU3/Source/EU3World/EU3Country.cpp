@@ -1512,9 +1512,6 @@ void EU3Country::determineStartingAgents()
 		return;
 	}
 
-	if (src->getTitleString() == "k_scotland")
-		holder = holder;
-
 	merchants		= min(holder->getStateStats()[STEWARDSHIP]	/ 15.0, 5.0);
 	colonists		= min(holder->getStateStats()[MARTIAL]		/ 15.0, 5.0);
 	diplomats		= min(holder->getStateStats()[DIPLOMACY]	/ 15.0, 5.0);

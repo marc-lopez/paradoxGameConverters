@@ -674,7 +674,7 @@ bool CK2Title::hasHolders() const
 
 bool CK2Title::hasMapImpact() const
 {
-	return (!getVassals().empty() || (getDeJureLiege() != NULL) && !getDeJureVassals().empty());
+	return (!getVassals().empty() || ((getDeJureLiege() != NULL) && !getDeJureVassals().empty()));
 }
 
 int CK2Title::getRelationsWith(CK2Title* other, CK2Version& version) const
