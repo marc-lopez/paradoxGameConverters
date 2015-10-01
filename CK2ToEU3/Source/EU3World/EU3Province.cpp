@@ -1,5 +1,5 @@
 /*Copyright (c) 2013 The CK2 to EU3 Converter Project
- 
+
  Permission is hereby granted, free of charge, to any person obtaining
  a copy of this software and associated documentation files (the
  "Software"), to deal in the Software without restriction, including
@@ -7,10 +7,10 @@
  distribute, sublicense, and/or sell copies of the Software, and to
  permit persons to whom the Software is furnished to do so, subject to
  the following conditions:
- 
+
  The above copyright notice and this permission notice shall be included
  in all copies or substantial portions of the Software.
- 
+
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
@@ -30,7 +30,7 @@
 #include "..\CK2World\CK2Barony.h"
 #include "..\CK2World\CK2Title.h"
 #include "..\CK2World\Ck2Province.h"
-#include "..\CK2World\CK2Character.h"
+#include "CK2World\Character\CK2Character.h"
 #include "..\CK2World\CK2Religion.h"
 #include <algorithm>
 
@@ -244,7 +244,7 @@ EU3Province::EU3Province(int _num, Object* obj, date _startDate)
 				if (populationObj.size() > 0)
 				{
 					population = atof( populationObj[0]->getLeaf().c_str() );
-					newHistory->population = population;					
+					newHistory->population = population;
 				}
 
 				vector<IObject*> manpowerObj = objectList[i]->getValue("manpower");
@@ -998,14 +998,14 @@ void EU3Province::determineGoodsDemand(const tradeGoodMapping& tradeGoodMap, con
 					//{
 						allConditions = false;
 					//}
-				} 
+				}
 				else if (*conditionItr == "not war")
 				{
 					//if (country->isAtWar()) TODO
 					//{
 					//	allConditions = false;
 					//}
-				} 
+				}
 				else if (conditionItr->substr(0, 13) == "stability is ")
 				{
 					int reqStability = atoi( conditionItr->substr(13, 2).c_str() );
@@ -1303,7 +1303,7 @@ double EU3Province::determineTax(const cultureGroupMapping& cultureGroups)
 	}
 
 	tax /= 12;
-	
+
 	if (population <= 1000)
 	{
 		tax *= 0.10 * (population / 10);
@@ -1360,7 +1360,7 @@ double EU3Province::determineTax(const cultureGroupMapping& cultureGroups)
 			(religion == "bektashi") ||
 			(religion == "druze") ||
 			(religion == "hurufi") ||
-			(religion == "shinto") 
+			(religion == "shinto")
 		)
 	{
 		tax *= 0.80;

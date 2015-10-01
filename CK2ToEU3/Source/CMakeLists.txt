@@ -6,8 +6,8 @@ set(BOOST_BINARY_DIR ${CMAKE_BINARY_DIR}/Dependencies/boost)
 # Build Boost
 ExternalProject_Add(
     boost
-    URL http://downloads.sourceforge.net/project/boost/boost/1.58.0/boost_1_58_0.7z
-    URL_HASH SHA1=d9abe6c6b1888dc33cbc872437a11bcbe1468183
+    URL http://downloads.sourceforge.net/project/boost/boost/1.59.0/boost_1_59_0.7z
+    URL_HASH SHA1=ea34e49d9e31d6e493620776e30f2cfe31e89b85
     PREFIX ${BOOST_BINARY_DIR}
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
@@ -15,24 +15,37 @@ ExternalProject_Add(
 )
 
 set_target_properties(boost PROPERTIES EXCLUDE_FROM_ALL TRUE)
+add_definitions(-DBOOST_USE_WINDOWS_H)
 
 ExternalProject_Get_Property(boost source_dir)
 set(BOOST_INCLUDE_DIR ${source_dir})
+set(BOOST_LIB_DIR ${BOOST_BINARY_DIR}/src/boost/stage/lib)
 include_directories("${BOOST_INCLUDE_DIR}")
 link_directories("${BOOST_BINARY_DIR}/src/boost/stage/lib")
 
-add_custom_target(boost-bootstrap
-   COMMAND bootstrap
-   WORKING_DIRECTORY = ${source_dir}
-)
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND WIN32)
+    add_custom_target(boost-bootstrap 
+       COMMAND bootstrap --with-toolset=clang --with-libraries=filesystem,system
+       WORKING_DIRECTORY = ${source_dir}
+    )
+    add_custom_target(boost-b2 
+       COMMAND b2.exe clean && b2.exe link=static toolset=clang cxxflags="-mmmx -std=c++11 -DBOOST_USE_WINDOWS_H" linkflags="-std=c++11" --build-dir=.. --layout=tagged
+       WORKING_DIRECTORY = ${source_dir}
+    )
+else()
+    add_custom_target(boost-bootstrap
+       COMMAND bootstrap
+       WORKING_DIRECTORY = ${source_dir}
+    )
+    add_custom_target(boost-b2
+       COMMAND b2.exe --build-dir=..
+       WORKING_DIRECTORY = ${source_dir}
+    )
+endif()
 
 set_target_properties(boost-bootstrap PROPERTIES EXCLUDE_FROM_ALL TRUE)
-
-add_custom_target(boost-b2
-   COMMAND b2.exe --build-dir=..
-   WORKING_DIRECTORY = ${source_dir}
-)
-
 set_target_properties(boost-b2 PROPERTIES EXCLUDE_FROM_ALL TRUE)
 
 add_dependencies(boost-bootstrap boost)
@@ -62,7 +75,13 @@ list(REMOVE_ITEM SRC "Configuration.cpp" "Date.cpp" "mappers.cpp" "Log.cpp")
 add_library(Common Configuration.cpp Date.cpp mappers.cpp Log.cpp)
 add_library(Parser ${Parsers})
 add_library(CK2ToEU3 ${CK2World} ${CK2World_Character} ${EU3World} ${ModWorld})
-target_link_libraries(CK2ToEU3 Common Parser)
+target_link_libraries(Parser Common)
+
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND WIN32)
+    target_link_libraries(CK2ToEU3 Parser "${BOOST_LIB_DIR}/libboost_filesystem-mt.lib" "${BOOST_LIB_DIR}/libboost_system-mt.lib")
+else()
+    target_link_libraries(CK2ToEU3 Parser)
+endif()
 
 # Make executable
 add_executable(

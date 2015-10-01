@@ -27,7 +27,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 #include <Windows.h>
 
 Log::Log(LogLevel level)
-: LogBase(level)
 {
 	static bool logFileCreated = false;	// whether or not the log file has been created this run of the converter
 	if (!logFileCreated)
@@ -144,7 +143,7 @@ void Log::WriteToFile(LogLevel level, const std::string& logMessage)
 
 static FILE* logFile;
 static char timeBuf[64];
-static tm timeInfo; 
+static tm timeInfo;
 static bool newline;
 
 void initLog()

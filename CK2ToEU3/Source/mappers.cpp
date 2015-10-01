@@ -1,5 +1,5 @@
 /*Copyright (c) 2013 The CK2 to EU3 Converter Project
- 
+
  Permission is hereby granted, free of charge, to any person obtaining
  a copy of this software and associated documentation files (the
  "Software"), to deal in the Software without restriction, including
@@ -7,10 +7,10 @@
  distribute, sublicense, and/or sell copies of the Software, and to
  permit persons to whom the Software is furnished to do so, subject to
  the following conditions:
- 
+
  The above copyright notice and this permission notice shall be included
  in all copies or substantial portions of the Software.
- 
+
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
@@ -426,7 +426,7 @@ tradeGoodMapping initTradeGoodMapping(Object* obj)
 		tradeGood newTradeGood;
 		string tradeGoodName = (*tradeItr)->getKey();
 		newTradeGood.basePrice = atoi( (*tradeItr)->getValue("base_price")[0]->getLeaf().c_str() );
-		
+
 		vector<IObject*> supplyObjs = (*tradeItr)->getValue("supply");
 		vector<IObject*> modifierObjs;
 		if (supplyObjs.size() > 0)
@@ -665,7 +665,7 @@ tradeGoodMapping initTradeGoodMapping(Object* obj)
 						}
 					}
 				}
-				else if ((*itr)->getKey() == "OR") 
+				else if ((*itr)->getKey() == "OR")
 				{
 					vector<IObject*> subObjs = (*itr)->getLeaves();
 					for(vector<IObject*>::iterator subItr = subObjs.begin(); subItr < subObjs.end(); subItr++)
@@ -793,7 +793,7 @@ localeOverrideMapping initLocaleOverrideMap(Object* obj)
 		string						portugese;
 		string						russian;
 		string						finnish;
-		string						default;
+		string						default_language;
 		stringstream				ss;
 		for (vector<IObject*>::iterator j = locales.begin(); j != locales.end(); j++)
 		{
@@ -854,37 +854,37 @@ localeOverrideMapping initLocaleOverrideMap(Object* obj)
 				finnish = (*j)->getLeaf();
 			}
 		}
-		default = code;
-		for (unsigned int i = 0; i<default.size(); i++) // c_country_name -> c_Country_Name
+		default_language = code;
+		for (unsigned int i = 0; i<default_language.size(); i++) // c_country_name -> c_Country_Name
 		{
-			if (default[i] == '_')
+			if (default_language[i] == '_')
 			{
-				default[i+1] = toupper(default[i+1]);
+				default_language[i+1] = toupper(default_language[i+1]);
 			}
 		}
-		default = default.substr(2); // c_Country_Name -> Country_Name
+		default_language = default_language.substr(2); // c_Country_Name -> Country_Name
 		const string adj = "_Adj";
-		if ( default != adj &&
-			 default.size() > adj.size() &&
-			 default.substr( default.size() - adj.size() ) == "_Adj" ) // Remove "_Adj" from default value;
+		if ( default_language != adj &&
+			 default_language.size() > adj.size() &&
+			 default_language.substr( default_language.size() - adj.size() ) == "_Adj" ) // Remove "_Adj" from default value;
 		{
-		   default = default.substr(0, default.size() - adj.size());
+		   default_language = default_language.substr(0, default_language.size() - adj.size());
 		}
 		if (english.size() == 0)
 		{
-			english = default;
+			english = default_language;
 		}
 		if (french.size() == 0)
 		{
-			french = default;
+			french = default_language;
 		}
 		if (german.size() == 0)
 		{
-			german = default;
+			german = default_language;
 		}
 		if (spanish.size() == 0)
 		{
-			spanish = default;
+			spanish = default_language;
 		}
 		ss << ";" << english;
 		ss << ";" << french;

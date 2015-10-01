@@ -42,7 +42,7 @@ if(MSVC_VERSION GREATER 1600)
 	    GIT_REPOSITORY https://github.com/google/googletest.git
 	    PREFIX ${GMOCK_BINARY_DIR}
 	    CONFIGURE_COMMAND ""
-	    BUILD_COMMAND ${CMAKE_CXX_COMPILER} /c /EHsc /MD /I ${GMOCK_BINARY_DIR}/src/gmock/googletest/include /I ${GMOCK_BINARY_DIR}/src/gmock/googletest /I ${GMOCK_BINARY_DIR}/src/gmock/googlemock/include /I ${GMOCK_BINARY_DIR}/src/gmock/googlemock /D_VARIADIC_MAX=10 ${GMOCK_BINARY_DIR}/src/gmock/googlemock/src/gmock-all.cc ${GMOCK_BINARY_DIR}/src/gmock/googletest/src/gtest-all.cc && lib gmock-all.obj gtest-all.obj /OUT:libgmock.a
+	    BUILD_COMMAND ${CMAKE_CXX_COMPILER} /c /EHsc /MD /I ${GMOCK_BINARY_DIR}/src/gmock/googletest/include /I ${GMOCK_BINARY_DIR}/src/gmock/googletest /I ${GMOCK_BINARY_DIR}/src/gmock/googlemock/include /I ${GMOCK_BINARY_DIR}/src/gmock/googlemock /D_VARIADIC_MAX=10 ${GMOCK_BINARY_DIR}/src/gmock/googlemock/src/gmock-all.cc ${GMOCK_BINARY_DIR}/src/gmock/googletest/src/gtest-all.cc && lib gmock-all.obj gtest-all.obj /OUT:gmock_main.a
 	    INSTALL_COMMAND ""
 	    CMAKE_ARGS ""
 	)
@@ -67,7 +67,7 @@ add_library(libgmock IMPORTED STATIC GLOBAL)
 add_dependencies(libgmock gmock)
 ExternalProject_Get_Property(gmock source_dir binary_dir)
 set_target_properties(libgmock PROPERTIES
-    "IMPORTED_LOCATION" "${binary_dir}/libgmock.a"
+    "IMPORTED_LOCATION" "${binary_dir}/gmock_main.a"
     "IMPORTED_LINK_INTERFACE_LIBRARIES" "${CMAKE_THREAD_LIBS_INIT}"
 )
 
@@ -79,8 +79,6 @@ else()
     include_directories("${source_dir}/include")
     include_directories("${source_dir}/gtest/include")
 endif()
-
-include_directories("${CMAKE_SOURCE_DIR}/src")
 
 #	boost
 ExternalProject_Get_Property(boost source_dir)
@@ -110,23 +108,6 @@ source_group("Source Files\\EU3World" FILES ${EU3World})
 source_group("Source Files\\ModWorld" FILES ${ModWorld})
 source_group("Source Files\\Parsers" FILES ${Parsers})
 
-# Add unit testing targets
-add_library(ParserTests SHARED ${Parsers})
-
-add_library(
-	CK2ToEU3Tests
-	SHARED
-	${TEST}
-	${CK2World}
-    ${CK2World_Character}
-	${EU3World}
-	${ModWorld}
-	)
-
-target_link_libraries(ParserTests Common Parser libgmock)
-
-target_link_libraries(CK2ToEU3Tests CK2ToEU3 libgmock)
-
 # Make test executable
 add_executable(
     ConverterTests
@@ -137,4 +118,4 @@ add_executable(
     ${ModWorld}
     ${Parsers})
 
-target_link_libraries(ConverterTests CK2ToEU3Tests ParserTests)
+target_link_libraries(ConverterTests CK2ToEU3 Parser Common libgmock)

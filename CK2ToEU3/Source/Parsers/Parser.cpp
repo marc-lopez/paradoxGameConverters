@@ -22,7 +22,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 
 /*Copyright (c) 2010 Rolf Andreassen
- 
+
  Permission is hereby granted, free of charge, to any person obtaining
  a copy of this software and associated documentation files (the
  "Software"), to deal in the Software without restriction, including
@@ -30,10 +30,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
  distribute, sublicense, and/or sell copies of the Software, and to
  permit persons to whom the Software is furnished to do so, subject to
  the following conditions:
- 
+
  The above copyright notice and this permission notice shall be included
  in all copies or substantial portions of the Software.
- 
+
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
@@ -84,7 +84,7 @@ struct SkipComment : qi::grammar<Iterator>
 static bool debugme = false;	// whether or not debugging should be on
 template <typename Iterator>
 struct Parser : public qi::grammar<Iterator, SkipComment<Iterator> > {
-	static Object* topLevel; 
+	static Object* topLevel;
 
 	// leaf: either left or right side of assignment.  unquoted keyword.
 	// example: leaf
@@ -146,7 +146,7 @@ struct Parser : public qi::grammar<Iterator, SkipComment<Iterator> > {
 
 		// an assignment. Left side is a string of some kind, right side is one of many allowed types
 		assign  = raw[(*(iso8859_1::space) >> ( leaf[&setLHS] | str[&setLHS] | eps[&setEpsilon] ) >> *(iso8859_1::space)
-			>>	lit('=')[&setAssign]	>> *(iso8859_1::space) 
+			>>	lit('=')[&setAssign]	>> *(iso8859_1::space)
 			>> ( leaf[&setRHSleaf] | str[&setRHSleaf] | taglist[&setRHStaglist] | objlist[&setRHSobjlist] | object[&setRHSobject] ) >> *(iso8859_1::space))];
 
 		// the root object (either an assignment, or something in braces)
@@ -251,15 +251,15 @@ string bufferOneObject(istream& read)
 
 		// Don't try to end an object that hasn't started properly;
 		// accounts for such constructions as
-		// object = 
-		// { 
-		// where openBraces is zero after the first line of the object. 
+		// object =
+		// {
+		// where openBraces is zero after the first line of the object.
 		// Not a problem for non-top-level objects since these will have
 		// nonzero openBraces anyway.
 		// But don't continue if the object was all on one line.
 		if (topLevel && !opened)
 		{
-			continue; 
+			continue;
 		}
 
 		break;
@@ -290,7 +290,7 @@ void clearStack()
 {
 	if (!stack.empty())
 	{
-		Log logOutput(LogLevel::Warning);	// a section in the log file that won't automatically be broken into lines
+		Log logOutput(Warning);	// a section in the log file that won't automatically be broken into lines
 		logOutput << "Clearing stack size " << stack.size() << " - this should not happen in normal operation\n";
 		for (vector<Object*>::iterator i = stack.begin(); i != stack.end(); ++i)
 		{
@@ -327,8 +327,8 @@ void pushObj()
 	//LOG(LogLevel::Debug) << "Pushing objlist";
 	string key("objlist");			// the key of the object list
 	Object* p = new Object(key);	// the object to hold the object list
-	p->setObjList(); 
-	objstack.push_back(p); 
+	p->setObjList();
+	objstack.push_back(p);
 }
 
 
@@ -336,12 +336,12 @@ void setRHSleaf(string val)
 {
 	//LOG(LogLevel::Debug) << "Setting RHSleaf : " << val;
 	Object* l = stack.back();	// the leaf object
-	stack.pop_back(); 
-	l->setValue(val); 
+	stack.pop_back();
+	l->setValue(val);
 	if (0 < stack.size())
 	{
 		Object* p = stack.back();	// the object holding the leaf
-		p->setValue(l); 
+		p->setValue(l);
 	}
 }
 
@@ -350,12 +350,12 @@ void setRHStaglist(vector<string> val)
 {
 	//LOG(LogLevel::Debug) << "Setting RHStaglist";
 	Object* l = stack.back();	// the object holding the list
-	stack.pop_back(); 
+	stack.pop_back();
 	l->addToList(val.begin(), val.end());
 	if (0 < stack.size())
 	{
 		Object* p = stack.back();	// the object holding the list container
-		p->setValue(l); 
+		p->setValue(l);
 	}
 }
 
@@ -363,13 +363,13 @@ void setRHStaglist(vector<string> val)
 void setRHSobject()
 {
 	//LOG(LogLevel::Debug) << "Setting RHSobject";
-	// No value is set, a bunch of leaves have been defined. 
+	// No value is set, a bunch of leaves have been defined.
 	Object* l = stack.back();
-	stack.pop_back(); 
+	stack.pop_back();
 	if (0 < stack.size())
 	{
 		Object* p = stack.back(); // the object holding the first leaf
-		p->setValue(l); 
+		p->setValue(l);
 	}
 }
 
@@ -379,11 +379,11 @@ void setRHSobjlist()
 	Object* l = stack.back();	// the object
 	l->setValue(objstack);
 	objstack.clear();
-	stack.pop_back(); 
+	stack.pop_back();
 	if (0 < stack.size())
 	{
 		Object* p = stack.back(); // the other object
-		p->setValue(l); 
+		p->setValue(l);
 	}
 }
 
@@ -419,12 +419,12 @@ Object* doParseFile(const char* filename)
 
 	initParser();
 	Object* obj = getTopLevel();	// the top level object
-	read.open(filename); 
+	read.open(filename);
 	if (!read.is_open())
 	{
 		return NULL;
 	}
-	readFile(read);  
+	readFile(read);
 	read.close();
 	read.clear();
 

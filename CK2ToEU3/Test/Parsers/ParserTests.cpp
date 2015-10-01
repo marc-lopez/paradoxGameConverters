@@ -44,7 +44,8 @@ protected:
 };
 
 TEST_P(ParserShould, RecognizeUnicodeCharactersInNestedAssignments) {
-  ASSERT_TRUE(validateBuffer(std::istringstream(GetParam())));
+    std::istringstream buffer(GetParam());
+    ASSERT_TRUE(validateBuffer(buffer));
 }
 
 INSTANTIATE_TEST_CASE_P(UnicodeCharacters, ParserShould, Values(

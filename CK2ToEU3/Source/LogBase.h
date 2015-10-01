@@ -23,7 +23,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 #include <boost\make_shared.hpp>
 #include <boost\shared_ptr.hpp>
 
-enum class LogLevel
+enum LogLevel
 {
 	Error,
 	Warning,
@@ -34,8 +34,9 @@ enum class LogLevel
 class LogBase
 {
 public:
-	LogBase(): logLevel(LogLevel::Info)
+	LogBase()
 	{
+	    logLevel = Info;
 		logMessageStream = boost::make_shared<std::ostringstream>();
 	}
 
@@ -51,7 +52,7 @@ public:
 		*logMessageStream << t;
 		return *this;
 	}
-	
+
 	LogBase& operator<<(const char* msg)
 	{
 		*logMessageStream << msg;

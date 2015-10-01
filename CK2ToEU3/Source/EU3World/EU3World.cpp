@@ -1,5 +1,5 @@
 /*Copyright (c) 2013 The CK2 to EU3 Converter Project
- 
+
  Permission is hereby granted, free of charge, to any person obtaining
  a copy of this software and associated documentation files (the
  "Software"), to deal in the Software without restriction, including
@@ -7,10 +7,10 @@
  distribute, sublicense, and/or sell copies of the Software, and to
  permit persons to whom the Software is furnished to do so, subject to
  the following conditions:
- 
+
  The above copyright notice and this permission notice shall be included
  in all copies or substantial portions of the Software.
- 
+
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
@@ -471,7 +471,7 @@ void EU3World::addHistoricalCountries()
 
 		string tag;
 		tag = string(countryDirData.name).substr(0, 3);
-		transform(tag.begin(), tag.end(), tag.begin(), toupper);
+		transform(tag.begin(), tag.end(), tag.begin(), ::toupper);
 
 		if (tag == "REB")
 		{
@@ -506,7 +506,7 @@ void EU3World::addHistoricalCountries()
 
 			string tag;
 			tag = string(countryDirData.name).substr(0, 3);
-			transform(tag.begin(), tag.end(), tag.begin(), toupper);
+			transform(tag.begin(), tag.end(), tag.begin(), ::toupper);
 
 			if (tag == "REB")
 			{
@@ -1450,13 +1450,13 @@ void EU3World::convertEconomies(const cultureGroupMapping& cultureGroups, const 
 		map<string, double>::iterator supplyItr = goodsSupply.find(tradeItr->first);
 		if (supplyItr == goodsSupply.end())
 		{
-			log("Error: no supply for trade good %s.\n", tradeItr->first);
+			LOG(LogLevel::Debug) << "Error: no supply for trade good " << tradeItr->first << ".\n";
 			continue;
 		}
 		map<string, double>::iterator demandItr = goodsDemand.find(tradeItr->first);
 		if (demandItr == goodsDemand.end())
 		{
-			log("Error: no demand for trade good %s.\n", tradeItr->first);
+		    LOG(LogLevel::Debug) << "Error: no demand for trade good " << tradeItr->first << ".\n";
 			continue;
 		}
 		double price = tradeItr->second.basePrice * (2.25 - supplyItr->second) * demandItr->second;
@@ -2075,7 +2075,7 @@ void EU3World::populateCountryFileData(EU3Country* country, cultureRuleOverrideM
 	ModCultureRule *rulingCulture = NULL, *commonCulture = NULL;
 	string primaryCulture = country->getPrimaryCulture().c_str();
 	string capitalCulture = provinces[country->getCapital()]->getCulture().c_str();
-		
+
 	if (croMap.count(titleString.c_str()) !=0 ) // check if CK2 title is in overrides
 	{
 		primaryCulture = croMap[titleString.c_str()]->getKey();
@@ -2333,13 +2333,23 @@ void EU3World::populateCountryFileData(EU3Country* country, cultureRuleOverrideM
 			{
 				if(i < maleRatio*rulers)
 				{
-					if (rulingNameListM.empty()) {printf ("empty: %s\n",country->getTag()); continue;}
+					if (rulingNameListM.empty())
+                    {
+
+                        LOG(LogLevel::Debug) << country->getTag() << " has no male names for rulers\n";
+                        continue;
+                    }
 					firstNames.push_back( make_tuple(rulingNameListM.back(),weight) );
 					rulingNameListM.pop_back();
 				}
 				else
 				{
-					if (rulingNameListF.empty()) {printf ("empty: %s\n",country->getTag()); continue;}
+					if (rulingNameListM.empty())
+                    {
+
+                        LOG(LogLevel::Debug) << country->getTag() << " has no female names for rulers\n";
+                        continue;
+                    }
 					firstNames.push_back( make_tuple(rulingNameListF.back(),weight*-1) );
 					rulingNameListF.pop_back();
 				}
@@ -2484,7 +2494,7 @@ void EU3World::addModCountries(const vector<EU3Country*>& modCountries, set<stri
 	{
 		croMap = initCultureRuleOverrideMap(static_cast<Object*>(cultureRuleOverrideObj[0]),cultureRules);
 	}
-	
+
 	vector<IObject*> localeOverrideObj = obj->getValue("locale_override");
 	localeOverrideMapping locMap; // Locale Override Mapping
 	if (localeOverrideObj.size() > 0)

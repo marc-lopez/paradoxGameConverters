@@ -45,7 +45,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #include "Object.h"
 #include "Parser.h"
-#include <sstream> 
+#include <sstream>
 #include <fstream>
 #include <algorithm>
 #include <iostream>
@@ -54,8 +54,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 
 Object::Object(string k) :
-objects(),
 strVal(),
+objects(),
 leaf(false),
 isObjList(false)
 {
@@ -76,8 +76,8 @@ Object::~Object() {
 
 
 Object::Object(IObject* other) :
-objects(),
 strVal(other->getLeaf()),
+objects(),
 leaf(other->isLeaf()),
 isObjList(other->isList())
 {
@@ -454,7 +454,7 @@ int Object::safeGetInt(string k, const int def)
 
 IObject* Object::safeGetObject(string k, IObject* def)
 {
-	objvec vec = getValue(k);	// the objects with the objects to be returned 
+	objvec vec = getValue(k);	// the objects with the objects to be returned
 	if (0 == vec.size())
 	{
 		return def;

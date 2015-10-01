@@ -23,7 +23,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 #define I_OBJECT_H
 
 
-#include <map> 
+#include <map>
 #include <vector>
 #include <string>
 
@@ -32,6 +32,7 @@ class IObject {
 	friend std::ostream& operator<< (std::ostream&, const IObject&);
 
 public:
+    virtual ~IObject() {}
 	virtual std::string print () const = 0;
 	virtual std::string getKey () = 0;
 	virtual std::vector<IObject*> getValue (std::string key) const = 0;
@@ -42,7 +43,7 @@ public:
 	virtual void keyCount (std::map<std::string, int>& counter) = 0;
 	virtual bool isLeaf () = 0;
 	virtual bool isList() const = 0;
-  
+
 };
 
 #endif	// I_OBJECT_H

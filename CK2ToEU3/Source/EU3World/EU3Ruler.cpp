@@ -1,5 +1,5 @@
 /*Copyright (c) 2013 The CK2 to EU3 Converter Project
- 
+
  Permission is hereby granted, free of charge, to any person obtaining
  a copy of this software and associated documentation files (the
  "Software"), to deal in the Software without restriction, including
@@ -7,10 +7,10 @@
  distribute, sublicense, and/or sell copies of the Software, and to
  permit persons to whom the Software is furnished to do so, subject to
  the following conditions:
- 
+
  The above copyright notice and this permission notice shall be included
  in all copies or substantial portions of the Software.
- 
+
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
@@ -22,7 +22,7 @@
 
 
 #include "EU3Ruler.h"
-#include "..\CK2World\CK2Character.h"
+#include "CK2World\Character\CK2Character.h"
 #include "..\CK2World\CK2Dynasty.h"
 #include "..\Configuration.h"
 #include "..\Log.h"
@@ -182,7 +182,7 @@ EU3Ruler::EU3Ruler(CK2Character* src)
 	diplomacy		+= stats[DIPLOMACY]		/ 6	+ bonus;
 	administration	+= stats[STEWARDSHIP]	/ 6	+ bonus;
 	military			+= stats[MARTIAL]			/ 6	+ bonus;
-	
+
 	int leftover	=	( stats[INTRIGUE] + stats[LEARNING] ) % (6 * 3);
 	leftover			+= stats[DIPLOMACY]		% 6;
 	leftover			+= stats[STEWARDSHIP]	% 6;
@@ -348,7 +348,7 @@ void EU3Ruler::outputRegnalNum(FILE* output)
 		// Set up key numerals and numeral pairs
 		int		values[13]		= { 1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1 };
 		string	numerals[13]	= { "M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I" };
-		
+
 		// Loop through each of the values to diminish the number
 		int number = regnalNum;
 		for (int i = 0; i < 13; i++)

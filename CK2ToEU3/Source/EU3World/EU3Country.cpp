@@ -1,5 +1,5 @@
 /*Copyright (c) 2013 The CK2 to EU3 Converter Project
- 
+
  Permission is hereby granted, free of charge, to any person obtaining
  a copy of this software and associated documentation files (the
  "Software"), to deal in the Software without restriction, including
@@ -7,10 +7,10 @@
  distribute, sublicense, and/or sell copies of the Software, and to
  permit persons to whom the Software is furnished to do so, subject to
  the following conditions:
- 
+
  The above copyright notice and this permission notice shall be included
  in all copies or substantial portions of the Software.
- 
+
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
@@ -30,7 +30,7 @@
 #include "..\CK2World\CK2Province.h"
 #include "..\CK2World\CK2Title.h"
 #include "..\CK2World\CK2History.h"
-#include "..\CK2World\CK2Character.h"
+#include "CK2World\Character\CK2Character.h"
 #include "..\CK2World\CK2Barony.h"
 #include "..\CK2World\CK2Techs.h"
 #include "..\CK2World\CK2Religion.h"
@@ -308,7 +308,7 @@ EU3Country::EU3Country(EU3World* world, string _tag, string newHistoryFile, date
 	estimatedGold			= 0.0f;
 	estimatedProduction	= 0.0f;
 	estimatedTolls			= 0.0f;
-	
+
 	vector<IObject*> daimyoObj = obj->getValue("daimyo");
 	if (daimyoObj.size() > 0)
 	{
@@ -1086,8 +1086,8 @@ void EU3Country::determineGovernment(double prestigeFactor)
 	{
 		government = "papal_government";
 	}
-	else if (  ( (srcTitleString == "e_golden_horde") || 
-					 (srcTitleString == "e_il-khanate") || 
+	else if (  ( (srcTitleString == "e_golden_horde") ||
+					 (srcTitleString == "e_il-khanate") ||
 					 (srcTitleString == "e_timurids") ||
 					 (srcTitleString == "e_mexikha") ||
 					 (srcTitleString == "e_mongol_empire") ) &&
@@ -1366,17 +1366,17 @@ void EU3Country::determineTechLevels(const vector<double>& avgTechLevels, const 
 			techLevels[TECH_INFANTRY_MELEE_WEAPONS] +
 			techLevels[TECH_SIEGE_EQUIPMENT_OLD] +
 			techLevels[TECH_TACTICS];
-		oldTradeTech = 
+		oldTradeTech =
 			techLevels[TECH_CASTLE_TAXES] +
 			techLevels[TECH_CITY_TAXES] +
 			techLevels[TECH_TEMPLE_TAXES];
-		oldProdTech = 
+		oldProdTech =
 			techLevels[TECH_CASTLE_CONSTRUCTION_OLD] +
 			techLevels[TECH_CITY_CONSTRUCTION_OLD] +
 			techLevels[TECH_TEMPLE_CONSTRUCTION_OLD] +
 			techLevels[TECH_FORTIFICATIONS_CONSTRUCTION_OLD] +
 			techLevels[TECH_CONSTRUCTION_OLD];
-		oldGovTech = 
+		oldGovTech =
 			techLevels[TECH_TEMPLE_TAXES] +
 			techLevels[TECH_NOBLE_CUSTOMS_OLD] +
 			techLevels[TECH_POPULAR_CUSTOMS_OLD] +
@@ -1431,13 +1431,13 @@ void EU3Country::determineTechLevels(const vector<double>& avgTechLevels, const 
 			techLevels[TECH_CITY_CONSTRUCTION] +
 			techLevels[TECH_TEMPLE_CONSTRUCTION] +
 			techLevels[TECH_TRADE_PRACTICES];
-		oldProdTech = 
+		oldProdTech =
 			techLevels[TECH_CASTLE_CONSTRUCTION] +
 			techLevels[TECH_CITY_CONSTRUCTION] +
 			techLevels[TECH_TEMPLE_CONSTRUCTION] +
 			techLevels[TECH_FORTIFICATIONS_CONSTRUCTION] +
 			techLevels[TECH_CONSTRUCTION];
-		oldGovTech = 
+		oldGovTech =
 			techLevels[TECH_NOBLE_CUSTOMS] +
 			techLevels[TECH_POPULAR_CUSTOMS] +
 			techLevels[TECH_RELIGIOUS_CUSTOMS] +
