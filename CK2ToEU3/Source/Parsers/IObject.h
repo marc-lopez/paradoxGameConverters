@@ -22,10 +22,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 #ifndef I_OBJECT_H
 #define I_OBJECT_H
 
-
+#include <functional>
 #include <map>
-#include <vector>
 #include <string>
+#include <vector>
 
 
 class IObject {
@@ -35,9 +35,12 @@ public:
     virtual ~IObject() {}
 	virtual std::string print () const = 0;
 	virtual std::string getKey () = 0;
-	virtual std::vector<IObject*> getValue (std::string key) const = 0;
+	virtual std::vector<IObject*> getValue (std::string) const = 0;
 	virtual std::string getLeaf (std::string) const = 0;
 	virtual std::string getLeaf () const = 0;
+	virtual std::string getTitle (std::string) const = 0;
+	virtual std::string getStringOrDefault(std::string, std::function<std::string(const IObject*)>,
+                                        std::function<std::string(const IObject*)>) const = 0;
 	virtual std::vector<IObject*> getLeaves () = 0;
 	virtual std::vector<std::string> getTokens() = 0;
 	virtual void keyCount (std::map<std::string, int>& counter) = 0;

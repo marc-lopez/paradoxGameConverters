@@ -574,8 +574,7 @@ int main(int argc, char * argv[])
 	destWorld.convertProvinces(provinceMap, provinces, cultureMap, religionMap, continentMap, adjacencyMap, tradeGoodMap, EU3ReligionGroupMap, positionsObj);
 
 	// Map CK2 nations to EU3 nations
-	log("Parsing country mappings.\n");
-	printf("Parsing country mappings.\n");
+	LOG(LogLevel::Info) << "Parsing country mappings.\n";
 	if (Configuration::getUseConverterMod() == "yes")
 	{
 		filename = "country_mappings_mod.txt";
@@ -587,28 +586,22 @@ int main(int argc, char * argv[])
 	obj = doParseFile(filename.c_str());
 	if (obj == NULL)
 	{
-		log("Error: Could not open country_mappings.txt\n");
-		printf("Error: Could not open country_mappings.txt\n");
+	    LOG(LogLevel::Error) << "Could not open country_mappings.txt\n";
 		exit(-1);
 	}
-	log("Mapping CK2 nations to EU3 nations.\n");
-	printf("Mapping CK2 nations to EU3 nations.\n");
+	LOG(LogLevel::Info) << "Mapping CK2 nations to EU3 nations.\n";
 	destWorld.assignTags(obj, blockedNations, provinceMap, religionMap, cultureMap, inverseProvinceMap, *(srcWorld.getVersion()));
 
-	log("Adding accepted cultures.\n");
-	printf("Adding accepted cultures.\n");
+    LOG(LogLevel::Info) << "Adding accepted cultures.\n";
 	destWorld.addAcceptedCultures();
 
-	log("Converting tech.\n");
-	printf("Converting tech.\n");
+    LOG(LogLevel::Info) << "Converting tech.\n";
 	destWorld.convertTech(srcWorld);
 
-	log("Converting governments.\n");
-	printf("Converting governments.\n");
+	LOG(LogLevel::Info) << "Converting governments.\n";
 	destWorld.convertGovernments();
 
-	log("Converting centes of trade\n");
-	printf("Converting centes of trade\n");
+	LOG(LogLevel::Info) << "Converting centers of trade\n";
 	destWorld.convertCoTs();
 
 	log("Converting sliders\n");

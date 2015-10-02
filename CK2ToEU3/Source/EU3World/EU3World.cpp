@@ -1476,10 +1476,10 @@ void EU3World::convertEconomies(const cultureGroupMapping& cultureGroups, const 
 
 void EU3World::assignTags(Object* rulesObj, vector<string>& blockedNations, const provinceMapping& provinceMap, const religionMapping& religionMap, const cultureMapping& cultureMap, const inverseProvinceMapping& inverseProvinceMap, CK2Version& version)
 {
-	log("Total converted EU3 countries: %d\n", convertedCountries.size());
+	LOG(LogLevel::Debug) << "Total converted EU3 countries: " << convertedCountries.size() << "\n";
 
 	removeUnusedCountries();
-	log("Total converted EU3 countries after removing unused ones: %d\n", convertedCountries.size());
+	LOG(LogLevel::Debug) << "Total converted EU3 countries after removing unused ones: " << convertedCountries.size() << "\n";
 
 	int leftoverCountries = convertedCountries.size();
 	int initialScore = atoi( Configuration::getVassalScore().c_str() );
@@ -1511,7 +1511,8 @@ void EU3World::assignTags(Object* rulesObj, vector<string>& blockedNations, cons
 				}
 			}
 		}
-		log("Total converted EU3 countries after absorbing: %d. Merge score is %d\n", convertedCountries.size(), initialScore);
+		LOG(LogLevel::Debug) << "Total converted EU3 countries after absorbing: " << convertedCountries.size() <<
+            ". Merge score is " << initialScore << "\n";
 
 		mappings.clear();
 		leftoverCountries = matchTags(rulesObj, blockedNations, provinceMap, mappings);
@@ -1552,7 +1553,7 @@ void EU3World::assignTags(Object* rulesObj, vector<string>& blockedNations, cons
 
 	if (Configuration::getUseConverterMod() == "yes")
 	{
-		log("%d tags were mapped. %d countries will be added to the mod.\n", mappedTags.size(), modCountries.size());
+		LOG(LogLevel::Debug) << mappedTags.size() << " tags were mapped. " << modCountries.size() << "countries will be added to the mod.\n";
 		addModCountries(modCountries, mappedTags, mappings, religionMap, cultureMap, inverseProvinceMap);
 	}
 
@@ -1568,11 +1569,11 @@ void EU3World::assignTags(Object* rulesObj, vector<string>& blockedNations, cons
 		convertedCountries.push_back(historicalCountry);
 		if (distance > 0)
 		{
-			log("\tMapped countries %s -> %s (#%d)\n", CK2TitleStr.c_str(), EU3TagStr.c_str(), distance);
+		    LOG(LogLevel::Debug) << "\tMapped countries " << CK2TitleStr << " -> " << EU3TagStr << "(#" << distance << ")\n";
 		}
 		else
 		{
-			log("\tMapped countries %s -> %s (fallback)\n", CK2TitleStr.c_str(), EU3TagStr.c_str());
+		    LOG(LogLevel::Debug) << "\tMapped countries " << CK2TitleStr << " -> " << EU3TagStr << "(fallback)\n";
 		}
 	}
 

@@ -65,9 +65,9 @@ CK2Title::CK2Title(string _titleString, int* _color)
 	color[2]				= _color[2];
 }
 
-
-void CK2Title::init(Object* obj,  map<int, CK2Character*>& characters, const CK2BuildingFactory* buildingFactory)
+void CK2Title::init(IObject* obj,  map<int, CK2Character*>& characters, const CK2BuildingFactory* buildingFactory)
 {
+    rawData = obj;
 	titleString = obj->getKey();
 	holder = NULL;
 	vector<IObject*> holderObjs = obj->getValue("holder");
@@ -139,12 +139,7 @@ void CK2Title::init(Object* obj,  map<int, CK2Character*>& characters, const CK2
 		}
 	}
 
-	vector<IObject*> liegeObjs = obj->getValue("liege");
-	if (liegeObjs.size() > 0)
-	{
-		liegeString = liegeObjs[0]->getLeaf();
-	}
-	liege = NULL;
+    initLiege();
 
 	vassals.clear();
 
@@ -193,6 +188,11 @@ void CK2Title::init(Object* obj,  map<int, CK2Character*>& characters, const CK2
 	inHRE			= false;
 }
 
+void CK2Title::initLiege()
+{
+    liegeString = rawData->getTitle("liege");
+	liege = NULL;
+}
 
 void CK2Title::setLiege(CK2Title* newLiege)
 {

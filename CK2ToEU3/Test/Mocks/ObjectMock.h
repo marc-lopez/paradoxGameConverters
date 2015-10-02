@@ -22,23 +22,38 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 #ifndef I_OBJECT_MOCK_H
 #define I_OBJECT_MOCK_H
 
+#include <string>
 #include <map>
-#include "gmock\gmock.h"
+#include <gmock\gmock.h>
 #include "Parsers\IObject.h"
+
+namespace unittests
+{
+namespace ck2
+{
+namespace mocks
+{
 
 class ObjectMock : public IObject
 {
 public:
-	MOCK_CONST_METHOD0(print, string());
-	MOCK_METHOD0(getKey, string());
-	MOCK_CONST_METHOD1(getValue, vector<IObject*>(string));
-	MOCK_CONST_METHOD1(getLeaf, string(string));
-	MOCK_CONST_METHOD0(getLeaf, string());
-	MOCK_METHOD0(getLeaves, vector<IObject*>());
-	MOCK_METHOD0(getTokens, vector<string>());
-	MOCK_METHOD1(keyCount, void(map<string, int>& counter));
+	MOCK_CONST_METHOD0(print, std::string());
+	MOCK_METHOD0(getKey, std::string());
+	MOCK_CONST_METHOD1(getValue, std::vector<IObject*>(std::string));
+	MOCK_CONST_METHOD1(getLeaf, std::string(std::string));
+	MOCK_CONST_METHOD0(getLeaf, std::string());
+	MOCK_CONST_METHOD1(getTitle, std::string(std::string));
+	MOCK_CONST_METHOD3(getStringOrDefault, std::string(std::string, std::function<std::string(const IObject*)>,
+                                                    std::function<std::string(const IObject*)>));
+	MOCK_METHOD0(getLeaves, std::vector<IObject*>());
+	MOCK_METHOD0(getTokens, std::vector<std::string>());
+	MOCK_METHOD1(keyCount, void(std::map<std::string, int>& counter));
 	MOCK_METHOD0(isLeaf, bool());
 	MOCK_CONST_METHOD0(isList, bool());
 };
+
+} // namespace mocks
+} // namespace ck2
+} // namespace unittests
 
 #endif	// I_OBJECT_MOCK_H

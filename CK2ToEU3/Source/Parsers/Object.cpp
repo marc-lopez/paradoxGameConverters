@@ -237,6 +237,28 @@ string Object::getLeaf(string leaf) const
 	return leaves[0]->getLeaf();
 }
 
+string Object::getTitle(string key) const
+{
+    return this->getStringOrDefault(key, [&](const IObject* obj) { return getTitleValue(obj); }, [&](const IObject* obj) { return string(); });
+}
+
+string Object::getTitleValue(const IObject* titleObj) const
+{
+    return titleObj->getStringOrDefault("title", [&](const IObject* obj) { return obj->getLeaf(); },
+        [&](const IObject* obj) { return obj->getLeaf(); });
+}
+
+string Object::getStringOrDefault(string key, std::function<string(const IObject*)> valueGetter,
+                                  std::function<string(const IObject*)> defaultValueGetter) const
+{
+    auto innerObj = this->getValue(key);
+    if (innerObj.empty())
+    {
+        return defaultValueGetter(this);
+    }
+    return valueGetter(innerObj[0]);
+}
+
 string Object::print() const
 {
 	stringstream stringBuilder;

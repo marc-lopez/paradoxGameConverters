@@ -28,25 +28,32 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 using namespace testing;
 
-namespace ck2
-{
 namespace unittests
 {
+namespace ck2
+{
+namespace character
+{
+
+using namespace mocks;
 
 class CK2CharacterShould : public Test
 {
 protected:
-	CK2CharacterShould() : SAMPLE_TITLE_NAME("e_sample")
+	CK2CharacterShould() : SAMPLE_TITLE_NAME("e_sample"), DEMESNE_KEY("demesne")
 	{
 	}
 
 	std::vector<IObject*> getSampleDemsneData()
 	{
-		Object *primaryTitleInnerObj = new Object("title");
-		primaryTitleInnerObj->setValue("e_abyssinia");
-		Object *primaryTitleObj = new Object("primary");
+	    auto TITLE_INNER_KEY = "title";
+	    auto PRIMARY_TITLE_KEY = "primary";
+
+		Object *primaryTitleInnerObj = new Object(TITLE_INNER_KEY);
+		primaryTitleInnerObj->setValue(SAMPLE_TITLE_NAME);
+		Object *primaryTitleObj = new Object(PRIMARY_TITLE_KEY);
 		primaryTitleObj->setValue(primaryTitleInnerObj);
-		Object *demesneObj = new Object("demesne");
+		Object *demesneObj = new Object(DEMESNE_KEY);
 		demesneObj->setValue(primaryTitleObj);
 		std::vector<IObject*> demesneCollection;
 		demesneCollection.push_back(demesneObj);
@@ -55,6 +62,7 @@ protected:
 	}
 
 	const std::string SAMPLE_TITLE_NAME;
+	const std::string DEMESNE_KEY;
 };
 
 TEST_F(CK2CharacterShould, SetVersion2Point2SaveFormatPrimaryTitle)
@@ -72,13 +80,13 @@ TEST_F(CK2CharacterShould, SetVersion2Point2SaveFormatPrimaryTitle)
 
 	ObjectMock *configurationMock = new ObjectMock();
 	ObjectMock *saveDataMock = new ObjectMock();
-			
+
 	EXPECT_CALL(*configurationMock, getLeaf(_)).WillRepeatedly(Return(std::string()));
 	EXPECT_CALL(*saveDataMock, getKey()).WillRepeatedly(Return(std::string()));
 	EXPECT_CALL(*saveDataMock, getLeaf(_)).WillRepeatedly(Return(std::string()));
 	EXPECT_CALL(*saveDataMock, getValue(_)).WillRepeatedly(Return(std::vector<IObject*>()));
-	EXPECT_CALL(*saveDataMock, getValue("demesne")).WillRepeatedly(Return(demesneData));
-			
+	EXPECT_CALL(*saveDataMock, getValue(DEMESNE_KEY)).WillRepeatedly(Return(demesneData));
+
 	Configuration::setConfiguration(configurationMock);
 	CK2Character* sampleCharacter = new CK2Character(saveDataMock, dynasties, traits, date());
 	sampleTitle->setHolder(sampleCharacter);
@@ -95,5 +103,6 @@ TEST_F(CK2CharacterShould, SetVersion2Point2SaveFormatPrimaryTitle)
 	delete saveDataMock;
 }
 
-} //namespace unittests
-} //namespace ck2
+} // namespace character
+} // namespace ck2
+} // namespace unittests
