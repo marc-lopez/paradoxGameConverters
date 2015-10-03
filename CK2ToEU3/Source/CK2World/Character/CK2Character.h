@@ -1,5 +1,5 @@
 /*Copyright (c) 2013 The CK2 to EU3 Converter Project
- 
+
  Permission is hereby granted, free of charge, to any person obtaining
  a copy of this software and associated documentation files (the
  "Software"), to deal in the Software without restriction, including
@@ -7,10 +7,10 @@
  distribute, sublicense, and/or sell copies of the Software, and to
  permit persons to whom the Software is furnished to do so, subject to
  the following conditions:
- 
+
  The above copyright notice and this permission notice shall be included
  in all copies or substantial portions of the Software.
- 
+
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
@@ -30,7 +30,7 @@
 #include <map>
 #include <vector>
 #include "boost\move\unique_ptr.hpp"
-#include "Date.h"
+#include "Common\Date.h"
 #include "Mappers.h"
 #include "Parsers\IObject.h"
 #include "CK2World\CK2Opinion.h"
@@ -66,9 +66,9 @@ class CK2Character
 {
 	public:
 		CK2Character() {};
-		CK2Character(IObject*, const map<int, CK2Dynasty*>&, const map<int, CK2Trait*>&, date theDate);
+		CK2Character(IObject*, const map<int, CK2Dynasty*>&, const map<int, CK2Trait*>&, common::date theDate);
 		void							readOpinionModifiers(Object* obj);
-	
+
 		void							addTitle(CK2Title*);
 		void							removeTitle(CK2Title*);
 		void							setParents(map<int, CK2Character*>&);
@@ -93,9 +93,9 @@ class CK2Character
 		string						getCulture()				const { return culture; };
 		CK2Religion*				getReligion()				const { return religion; };
 		CK2Dynasty*					getDynasty()				const { return dynasty; };
-		date							getBirthDate()				const { return birthDate; };
-		bool							isDead()						const { return dead; };
-		date							getDeathDate()				const { return deathDate; };
+		common::date				getBirthDate()				const { return birthDate; };
+		bool						isDead()					const { return dead; };
+		common::date				getDeathDate()				const { return deathDate; };
 		bool							isFemale()					const { return female; };
 		bool							isBastard()					const { return bastard; };
 		int*							getStats()					const { return (int*)stats; };
@@ -136,10 +136,10 @@ class CK2Character
 		CK2Religion*		religion;
 		string				culture;
 		CK2Dynasty*			dynasty;
-		date					birthDate;
-		float					age;
-		bool					dead;
-		date					deathDate;
+		common:: date		birthDate;
+		float				age;
+		bool				dead;
+		common::date	    deathDate;
 		bool					female;
 		bool					bastard;
 		vector<int>			traitNums;
@@ -174,7 +174,7 @@ class CK2Character
 		CK2Title*					primaryTitle;
 		vector<CK2Barony*>		holdings;
 		vector<CK2War*>			wars;
-		
+
 		map<int, vector<CK2Opinion> >		opinionMods;
 
 		boost::movelib::unique_ptr<ck2::character::Demesne>	demesne;

@@ -60,19 +60,21 @@ file(GLOB CK2World CK2World/*.cpp)
 file(GLOB CK2World_Character CK2World/Character/*.cpp)
 file(GLOB EU3World EU3World/*.cpp)
 file(GLOB ModWorld ModWorld/*.cpp)
+file(GLOB Common Common/*.cpp)
 file(GLOB Parsers Parsers/*.cpp)
 
 # Group sources
-source_group("Source Files" FILES ${SRC})
+source_group("Source Files" FILES ${TEST})
 source_group("Source Files\\CK2World" FILES ${CK2World})
 source_group("Source Files\\CK2World\\Character" FILES ${CK2World_Character})
 source_group("Source Files\\EU3World" FILES ${EU3World})
 source_group("Source Files\\ModWorld" FILES ${ModWorld})
+source_group("Source Files\\Common" FILES ${Common})
 source_group("Source Files\\Parsers" FILES ${Parsers})
 
 # Make sublibraries
 list(REMOVE_ITEM SRC "Configuration.cpp" "Date.cpp" "mappers.cpp" "Log.cpp")
-add_library(Common Configuration.cpp Date.cpp mappers.cpp Log.cpp)
+add_library(Common ${Common} Configuration.cpp mappers.cpp Log.cpp)
 add_library(Parser ${Parsers})
 add_library(CK2ToEU3 ${CK2World} ${CK2World_Character} ${EU3World} ${ModWorld})
 target_link_libraries(Parser Common)

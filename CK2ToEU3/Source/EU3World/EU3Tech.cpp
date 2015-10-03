@@ -1,5 +1,5 @@
 /*Copyright (c) 2013 The CK2 to EU3 Converter Project
- 
+
  Permission is hereby granted, free of charge, to any person obtaining
  a copy of this software and associated documentation files (the
  "Software"), to deal in the Software without restriction, including
@@ -7,10 +7,10 @@
  distribute, sublicense, and/or sell copies of the Software, and to
  permit persons to whom the Software is furnished to do so, subject to
  the following conditions:
- 
+
  The above copyright notice and this permission notice shall be included
  in all copies or substantial portions of the Software.
- 
+
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
@@ -35,7 +35,8 @@ enum techCategory
 };
 
 
-EU3Tech::EU3Tech(date startDate, Object* mainObj, Object* governmentObj, Object* productionObj, Object* tradeObj, Object* navalObj, Object* landObj)
+EU3Tech::EU3Tech(common::date startDate, Object* mainObj, Object* governmentObj, Object* productionObj,
+                 Object* tradeObj, Object* navalObj, Object* landObj)
 {
 	vector<IObject*> groupsObjs = mainObj->getValue("groups")[0]->getLeaves();
 	for(vector<IObject*>::iterator groupItr = groupsObjs.begin(); groupItr != groupsObjs.end(); groupItr++)
@@ -100,7 +101,7 @@ EU3Tech::EU3Tech(date startDate, Object* mainObj, Object* governmentObj, Object*
 
 		double	level			= groupsItr->second.first;
 		int		nextLevel	= groupsItr->second.first + 1;
-		date		currentDate("1399.2.1");
+		common::date		currentDate("1399.2.1");
 		int		yearCurrentTech	= governmentYears[nextLevel - 1];
 		int		yearNextTech		= governmentYears[nextLevel];
 		while (currentDate < startDate)
@@ -124,7 +125,7 @@ EU3Tech::EU3Tech(date startDate, Object* mainObj, Object* governmentObj, Object*
 
 		level					= groupsItr->second.first;
 		nextLevel			= groupsItr->second.first + 1;
-		currentDate			= date("1399.2.1");
+		currentDate			= common::date("1399.2.1");
 		yearCurrentTech	= productionYears[nextLevel - 1];
 		yearNextTech		= productionYears[nextLevel];
 		while (currentDate < startDate)
@@ -148,7 +149,7 @@ EU3Tech::EU3Tech(date startDate, Object* mainObj, Object* governmentObj, Object*
 
 		level					= groupsItr->second.first;
 		nextLevel			= groupsItr->second.first + 1;
-		currentDate			= date("1399.2.1");
+		currentDate			= common::date("1399.2.1");
 		yearCurrentTech	= tradeYears[nextLevel - 1];
 		yearNextTech		= tradeYears[nextLevel];
 		while (currentDate < startDate)
@@ -172,7 +173,7 @@ EU3Tech::EU3Tech(date startDate, Object* mainObj, Object* governmentObj, Object*
 
 		level					= groupsItr->second.first;
 		nextLevel			= groupsItr->second.first + 1;
-		currentDate			= date("1399.2.1");
+		currentDate			= common::date("1399.2.1");
 		yearCurrentTech	= navalYears[nextLevel - 1];
 		yearNextTech		= navalYears[nextLevel];
 		while (currentDate < startDate)
@@ -196,7 +197,7 @@ EU3Tech::EU3Tech(date startDate, Object* mainObj, Object* governmentObj, Object*
 
 		level					= groupsItr->second.first;
 		nextLevel			= groupsItr->second.first + 1;
-		currentDate			= date("1399.2.1");
+		currentDate			= common::date("1399.2.1");
 		yearCurrentTech	= landYears[nextLevel - 1];
 		yearNextTech		= landYears[nextLevel];
 		while (currentDate < startDate)
@@ -293,7 +294,7 @@ double EU3Tech::getLandTech(string techGroup) const
 }
 
 
-double EU3Tech::getGovernmentBaseCost(date startDate, int level) const
+double EU3Tech::getGovernmentBaseCost(common::date startDate, int level) const
 {
 	int startDiff = governmentYears[level] - startDate.year;
 	if (startDiff < 0)
@@ -314,7 +315,7 @@ double EU3Tech::getGovernmentBaseCost(date startDate, int level) const
 }
 
 
-double EU3Tech::getProductionBaseCost(date startDate, int level) const
+double EU3Tech::getProductionBaseCost(common::date startDate, int level) const
 {
 	int startDiff = productionYears[level] - startDate.year;
 	if (startDiff < 0)
@@ -335,7 +336,7 @@ double EU3Tech::getProductionBaseCost(date startDate, int level) const
 }
 
 
-double EU3Tech::getTradeBaseCost(date startDate, int level) const
+double EU3Tech::getTradeBaseCost(common::date startDate, int level) const
 {
 	int startDiff = tradeYears[level] - startDate.year;
 	if (startDiff < 0)
@@ -356,7 +357,7 @@ double EU3Tech::getTradeBaseCost(date startDate, int level) const
 }
 
 
-double EU3Tech::getNavalBaseCost(date startDate, int level) const
+double EU3Tech::getNavalBaseCost(common::date startDate, int level) const
 {
 	int startDiff = navalYears[level] - startDate.year;
 	if (startDiff < 0)
@@ -377,7 +378,7 @@ double EU3Tech::getNavalBaseCost(date startDate, int level) const
 }
 
 
-double EU3Tech::getLandBaseCost(date startDate, int level) const
+double EU3Tech::getLandBaseCost(common::date startDate, int level) const
 {
 	int startDiff = landYears[level] - startDate.year;
 	if (startDiff < 0)

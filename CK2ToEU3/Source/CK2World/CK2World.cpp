@@ -26,7 +26,7 @@
 #include "..\Log.h"
 #include "..\Configuration.h"
 #include "..\Parsers\Object.h"
-#include "Date.h"
+#include "Common\Date.h"
 #include "CK2Building.h"
 #include "CK2Version.h"
 #include "CK2Title.h"
@@ -45,7 +45,7 @@ CK2World::CK2World(boost::shared_ptr<LogBase> logger) : logOutput(logger)
 	buildingFactory = NULL;
 
 	version = NULL;
-	endDate = date();
+	endDate = common::date();
 	independentTitles.clear();
 	hreMembers.clear();
 	dynasties.clear();
@@ -81,12 +81,12 @@ void CK2World::init(IObject* obj, const cultureGroupMapping& cultureGroupMap)
 	vector<IObject*> dateObj = obj->getValue("date");
 	if (dateObj.size() > 0)
 	{
-		date newDate( dateObj[0]->getLeaf() );
+		common::date newDate( dateObj[0]->getLeaf() );
 		endDate = newDate;
 	}
 	else
 	{
-		date newDate("1399.10.14");
+		common::date newDate("1399.10.14");
 	}
 
 	// get dynasties

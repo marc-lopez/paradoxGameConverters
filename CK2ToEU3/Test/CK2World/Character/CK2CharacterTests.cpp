@@ -88,7 +88,7 @@ TEST_F(CK2CharacterShould, SetVersion2Point2SaveFormatPrimaryTitle)
 	EXPECT_CALL(*saveDataMock, getValue(DEMESNE_KEY)).WillRepeatedly(Return(demesneData));
 
 	Configuration::setConfiguration(configurationMock);
-	CK2Character* sampleCharacter = new CK2Character(saveDataMock, dynasties, traits, date());
+	CK2Character* sampleCharacter = new CK2Character(saveDataMock, dynasties, traits, common::date());
 	sampleTitle->setHolder(sampleCharacter);
 	sampleCharacter->setPrimaryTitle(titleMap);
 	CK2Title* calculatedPrimaryTitle = sampleCharacter->getPrimaryTitle();

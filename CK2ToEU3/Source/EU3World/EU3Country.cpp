@@ -26,7 +26,7 @@
 #include "..\Parsers\Parser.h"
 #include "..\Parsers\Object.h"
 #include "..\Configuration.h"
-#include "..\Date.h"
+#include "Common\Date.h"
 #include "..\CK2World\CK2Province.h"
 #include "..\CK2World\CK2Title.h"
 #include "..\CK2World\CK2History.h"
@@ -49,7 +49,8 @@
 using namespace std;
 
 
-EU3Country::EU3Country(EU3World* world, string _tag, string newHistoryFile, date startDate, const EU3Tech* techData)
+EU3Country::EU3Country(EU3World* world, string _tag, string newHistoryFile, common::date startDate,
+                       const EU3Tech* techData)
 {
 	src				= NULL;
 	liege				= NULL;
@@ -357,7 +358,7 @@ EU3Country::EU3Country(EU3World* world, string _tag, string newHistoryFile, date
 		string key = objectList[i]->getKey();
 		if (key[0] == '1')
 		{
-			date histDate(key);
+			common::date histDate(key);
 			if (histDate <= startDate)
 			{
 				EU3History* newHistory = new EU3History(histDate);
@@ -616,7 +617,7 @@ EU3Country::EU3Country(CK2Title* _src, const religionMapping& religionMap, const
 	land				= 0;
 	quality			= 0;
 
-	date ascensionDate;
+	common::date ascensionDate;
 	vector<CK2History*> oldHistory = src->getHistory();
 	for (unsigned int i = 0; i < oldHistory.size(); i++)
 	{
@@ -670,7 +671,7 @@ EU3Country::EU3Country(CK2Title* _src, const religionMapping& religionMap, const
 		{
 			heir = new EU3Ruler(newHeir);
 
-			date when = newHeir->getBirthDate();
+			common::date when = newHeir->getBirthDate();
 			if (when < ascensionDate)
 			{
 				when = ascensionDate;
@@ -1456,7 +1457,7 @@ void EU3Country::determineTechLevels(const vector<double>& avgTechLevels, const 
 }
 
 
-void EU3Country::determineTechInvestment(const EU3Tech* techData, date startDate)
+void EU3Country::determineTechInvestment(const EU3Tech* techData, common::date startDate)
 {
 	double groupModifier = 1.0f / techData->getGroupModifier(techGroup);
 
@@ -1717,7 +1718,7 @@ vector<EU3Country*> EU3Country::convertVassals(int initialScore, EU3Diplomacy* d
 			newAgreement->type			= "vassal";
 			newAgreement->country1	= this;
 			newAgreement->country2	= vassals[i];
-			newAgreement->startDate	= date("1.1.1");
+			newAgreement->startDate	= common::date("1.1.1");
 			diplomacy->addAgreement(newAgreement);
 			agreements.push_back(newAgreement);
 			vassals[i]->addAgreement(newAgreement);
@@ -1730,7 +1731,7 @@ vector<EU3Country*> EU3Country::convertVassals(int initialScore, EU3Diplomacy* d
 			newAgreement->type			= "vassal";
 			newAgreement->country1	= this;
 			newAgreement->country2	= vassals[i];
-			newAgreement->startDate	= date("1.1.1");
+			newAgreement->startDate	= common::date("1.1.1");
 			diplomacy->addAgreement(newAgreement);
 			agreements.push_back(newAgreement);
 			vassals[i]->addAgreement(newAgreement);
@@ -1743,7 +1744,7 @@ vector<EU3Country*> EU3Country::convertVassals(int initialScore, EU3Diplomacy* d
 			newAgreement->type			= "sphere";
 			newAgreement->country1	= this;
 			newAgreement->country2	= vassals[i];
-			newAgreement->startDate	= date("1.1.1");
+			newAgreement->startDate	= common::date("1.1.1");
 			diplomacy->addAgreement(newAgreement);
 			agreements.push_back(newAgreement);
 			vassals[i]->addAgreement(newAgreement);
@@ -1751,7 +1752,7 @@ vector<EU3Country*> EU3Country::convertVassals(int initialScore, EU3Diplomacy* d
 			newAgreement->type			= "alliance";
 			newAgreement->country1	= this;
 			newAgreement->country2	= vassals[i];
-			newAgreement->startDate	= date("1.1.1");
+			newAgreement->startDate	= common::date("1.1.1");
 			diplomacy->addAgreement(newAgreement);
 			agreements.push_back(newAgreement);
 			vassals[i]->addAgreement(newAgreement);
@@ -1764,7 +1765,7 @@ vector<EU3Country*> EU3Country::convertVassals(int initialScore, EU3Diplomacy* d
 			newAgreement->type			= "guarantee";
 			newAgreement->country1	= this;
 			newAgreement->country2	= vassals[i];
-			newAgreement->startDate	= date("1.1.1");
+			newAgreement->startDate	= common::date("1.1.1");
 			diplomacy->addAgreement(newAgreement);
 			agreements.push_back(newAgreement);
 			vassals[i]->addAgreement(newAgreement);
@@ -1772,7 +1773,7 @@ vector<EU3Country*> EU3Country::convertVassals(int initialScore, EU3Diplomacy* d
 			newAgreement->type			= "guarantee";
 			newAgreement->country1	= vassals[i];
 			newAgreement->country2	= this;
-			newAgreement->startDate	= date("1.1.1");
+			newAgreement->startDate	= common::date("1.1.1");
 			diplomacy->addAgreement(newAgreement);
 			agreements.push_back(newAgreement);
 			vassals[i]->addAgreement(newAgreement);

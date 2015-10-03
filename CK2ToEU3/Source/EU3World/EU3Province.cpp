@@ -35,7 +35,7 @@
 #include <algorithm>
 
 
-EU3Province::EU3Province(int _num, Object* obj, date _startDate)
+EU3Province::EU3Province(int _num, Object* obj, common::date _startDate)
 {
 	srcProvinces.clear();
 	srcProvinceNums.clear();
@@ -222,7 +222,7 @@ EU3Province::EU3Province(int _num, Object* obj, date _startDate)
 		string key = objectList[i]->getKey();
 		if (key[0] == '1')
 		{
-			date histDate(key);
+			common::date histDate(key);
 			if (histDate <= startDate)
 			{
 				EU3History* newHistory = new EU3History(histDate);

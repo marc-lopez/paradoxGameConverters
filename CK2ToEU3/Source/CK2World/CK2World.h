@@ -29,7 +29,7 @@
 #include <map>
 #include <boost\function.hpp>
 #include "Parsers\IObject.h"
-#include "..\Date.h"
+#include "Common\Date.h"
 #include "..\LogBase.h"
 #include "..\Mappers.h"
 using namespace std;
@@ -66,8 +66,8 @@ class CK2World
 		void							mergeTitles();
 
 		boost::shared_ptr<LogBase>		getLogger()				const	{ return logOutput; };
-		CK2Version*					getVersion()				const	{ return version; };
-		date							getEndDate()				const { return endDate; };
+		CK2Version*					    getVersion()				const	{ return version; };
+		common::date					getEndDate()				const { return endDate; };
 		map<string, CK2Title*>	getIndependentTitles()	const { return independentTitles; };
 		map<string, CK2Title*>	getAllTitles()				const { return titles; };
 		CK2Title*					getHRETitle()				const { return hreTitle; };
@@ -81,7 +81,7 @@ class CK2World
 		CK2BuildingFactory*		buildingFactory;
 
 		CK2Version*					version;
-		date							endDate;
+		common::date				endDate;
 		map<string, CK2Title*>	independentTitles;
 		map<string, CK2Title*>	hreMembers;
 		map<int, CK2Dynasty*>	dynasties;

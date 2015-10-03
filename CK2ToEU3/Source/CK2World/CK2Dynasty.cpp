@@ -59,7 +59,7 @@ void CK2Dynasty::addMember(CK2Character* newMember)
 CK2Character* CK2Dynasty::getSenoirityHeir(string genderLaw)
 {
 	CK2Character* heir = NULL;
-	date heirBirthDate("1500.12.31");
+	common::date heirBirthDate("1500.12.31");
 
 	// unless absolute cognatic, consider only males
 	for(unsigned int i = 0; i < members.size(); i++)

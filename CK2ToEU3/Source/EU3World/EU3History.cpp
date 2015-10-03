@@ -29,7 +29,7 @@
 
 
 
-EU3History::EU3History(date _when)
+EU3History::EU3History(common::date _when)
 {
 	when				= _when;
 	monarch			= NULL;

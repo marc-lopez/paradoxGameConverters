@@ -30,7 +30,7 @@
 #include <vector>
 #include <queue>
 #include <tuple>
-#include "..\Date.h"
+#include "Common\Date.h"
 #include "..\Mappers.h"
 #include "..\CK2World\CK2Title.h"
 using namespace std;
@@ -53,7 +53,7 @@ class EU3Navy;
 class EU3Country
 {
 	public:
-		EU3Country(EU3World* world, string tag, string countryFile, date startDate, const EU3Tech* techData);
+		EU3Country(EU3World* world, string tag, string countryFile, common::date startDate, const EU3Tech* techData);
 		EU3Country(CK2Title*, const religionMapping& religionMap, const cultureMapping& cultureMap, const inverseProvinceMapping& inverseProvinceMap);
 
 		void						output(FILE*);
@@ -67,7 +67,7 @@ class EU3Country
 		double					getProductionEffeciency();
 		void						setPreferredUnitType();
 		void						determineTechLevels(const vector<double>& avgTechLevels, const EU3Tech* techData, CK2Version& version);
-		void						determineTechInvestment(const EU3Tech* techData, date startDate);
+		void						determineTechInvestment(const EU3Tech* techData, common::date startDate);
 		void						determineStartingAgents();
 		vector<EU3Country*>	convertVassals(int initialScore, EU3Diplomacy* diplomacy, CK2Version& version);
 		vector<EU3Country*>	eatVassals();

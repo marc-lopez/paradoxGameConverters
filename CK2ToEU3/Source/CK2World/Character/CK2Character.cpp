@@ -41,7 +41,7 @@
 
 
 CK2Character::CK2Character(IObject* obj, const map<int, CK2Dynasty*>& dynasties,
-						   const map<int, CK2Trait*>& traitTypes, date theDate) :
+						   const map<int, CK2Trait*>& traitTypes, common::date theDate) :
 	capital(NULL), primaryTitle(NULL), demesne(new ck2::character::Demesne(obj->getValue("demesne")))
 {
 	num			= atoi( obj->getKey().c_str() );
