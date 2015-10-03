@@ -94,9 +94,13 @@ class CK2Title
 
 	private:
 	    void                            initLiege();
-		void								setDeJureLiege(CK2Title* _deJureLiege);
-		void								addVassal(CK2Title*);
-		void								removeVassal(CK2Title*);
+		void							setDeJureLiege(CK2Title* _deJureLiege);
+		void							addVassal(CK2Title*);
+		void							removeVassal(CK2Title*);
+		void                            absorbTitle(CK2Title*);
+		void                            stealDeFactoDeJureVassalsFromTitle(CK2Title*);
+		void                            disconnectHolderAndLieges();
+		void                            setTitleAsDead(CK2Title*);
 		CK2Character*					getElectiveHeir(map<int, CK2Character*>&);
 		CK2Character*					getTurkishSuccessionHeir();
 

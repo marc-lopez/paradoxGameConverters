@@ -22,56 +22,61 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 #include <vector>
 #include "Parsers/Object.h"
 #include "Mocks/ObjectMock.h"
+#include "CK2World/Character/CK2Character.h"
 #include "CK2World/CK2Title.h"
 
 using namespace testing;
 
-namespace unittests
-{
 namespace ck2
 {
-
+namespace unittests
+{
 using namespace mocks;
 
 class CK2TitleShould : public Test
 {
 protected:
-	CK2TitleShould()
+	CK2TitleShould() : sampleTitle(SAMPLE_TITLE, SAMPLE_COLOR)
 	{
 	}
 
-	virtual void SetUp()
-	{
-	    titleDataMock = new ObjectMock();
-	}
-
-	virtual void TearDown()
-	{
-        delete titleDataMock;
-	}
-
-	ObjectMock* titleDataMock;
+    static constexpr char SAMPLE_TITLE[] = "k_sample";
+    static constexpr char SAMPLE_LIEGE[] = "e_sample";
+    int SAMPLE_COLOR[3] {0, 0, 0};
+    CK2Title sampleTitle;
 };
+
+constexpr char CK2TitleShould::SAMPLE_TITLE[];
+constexpr char CK2TitleShould::SAMPLE_LIEGE[];
 
 TEST_F(CK2TitleShould, SetVersion2Point2SaveFormatLiege)
 {
-    auto SAMPLE_TITLE = "k_sample";
-    auto SAMPLE_LIEGE = "e_sample";
     auto LIEGE_KEY = "liege";
     std::map<int, CK2Character*> characterMap;
-    int sampleColor[3] = {0, 0, 0};
-    CK2Title sampleTitle(SAMPLE_TITLE, sampleColor);
+	ObjectMock titleDataMock;
 
-    EXPECT_CALL(*titleDataMock, getKey()).WillRepeatedly(Return(std::string()));
-	EXPECT_CALL(*titleDataMock, getLeaf(_)).WillRepeatedly(Return(std::string()));
-	EXPECT_CALL(*titleDataMock, getLeaves()).WillRepeatedly(Return(std::vector<IObject*>()));
-	EXPECT_CALL(*titleDataMock, getValue(_)).WillRepeatedly(Return(std::vector<IObject*>()));
-	EXPECT_CALL(*titleDataMock, getTitle(LIEGE_KEY)).WillOnce(Return(SAMPLE_LIEGE));
+    EXPECT_CALL(titleDataMock, getKey()).WillRepeatedly(Return(std::string()));
+	EXPECT_CALL(titleDataMock, getLeaf(_)).WillRepeatedly(Return(std::string()));
+	EXPECT_CALL(titleDataMock, getLeaves()).WillRepeatedly(Return(std::vector<IObject*>()));
+	EXPECT_CALL(titleDataMock, getValue(_)).WillRepeatedly(Return(std::vector<IObject*>()));
+	EXPECT_CALL(titleDataMock, getTitle(LIEGE_KEY)).WillOnce(Return(SAMPLE_LIEGE));
 
-    sampleTitle.init(titleDataMock, characterMap, nullptr);
+    sampleTitle.init(&titleDataMock, characterMap, nullptr);
 
     ASSERT_EQ(SAMPLE_LIEGE, sampleTitle.getLiegeString());
 }
 
-} // namespace ck2
+TEST_F(CK2TitleShould, NotResetHolderOfEatenTitle)
+{
+    CK2Character sampleHolder;
+    CK2Title sampleVassal(SAMPLE_TITLE, SAMPLE_COLOR);
+
+    sampleTitle.setHolder(&sampleHolder);
+    sampleVassal.setHolder(&sampleHolder);
+
+    ASSERT_TRUE(sampleTitle.eatTitle(&sampleVassal, false));
+    ASSERT_TRUE(sampleVassal.hasHolders());
+}
+
 } // namespace unittests
+} // namespace ck2

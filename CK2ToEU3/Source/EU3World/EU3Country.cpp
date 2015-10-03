@@ -1532,7 +1532,7 @@ vector<EU3Country*> EU3Country::convertVassals(int initialScore, EU3Diplomacy* d
 	// Am I a junior in a PU?
 	if (src->isIndependent() && (src != src->getHolder()->getPrimaryTitle()))
 	{
-		log("\t%s is completely absorbing all vassals (junior in PU).\n", src->getTitleString().c_str());
+		LOG(LogLevel::Debug) << "\t" << src->getTitleString() << " is completely absorbing all vassals (junior in PU).\n";
 		vector<EU3Country*> absorbedCountries = eatVassals();
 		return absorbedCountries;
 	}
@@ -1574,8 +1574,8 @@ vector<EU3Country*> EU3Country::convertVassals(int initialScore, EU3Diplomacy* d
 				(vassals[i]->getSrcCountry()->getTitleString() != Configuration::getHRETitle())
 			)
 		{
-			//vector<EU3Country*> newlyAbsorbed = vassals[i]->convertVassals(initialScore, diplomacy);
-			log("\t%s is completely absorbing %s (same holder).\n", src->getTitleString().c_str(), vassals[i]->getSrcCountry()->getTitleString().c_str());
+			LOG(LogLevel::Debug) << "\t" << src->getTitleString() << " is completely absorbing " <<
+                vassals[i]->getSrcCountry()->getTitleString() << "(junior in PU).\n";
 			for (vector<EU3Province*>::iterator provinceItr = vassals[i]->provinces.begin(); provinceItr != vassals[i]->provinces.end(); provinceItr++)
 			{
 				provinces.push_back(*provinceItr);

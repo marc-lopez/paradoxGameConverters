@@ -27,9 +27,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 #include <gmock\gmock.h>
 #include "Parsers\IObject.h"
 
-namespace unittests
-{
 namespace ck2
+{
+namespace unittests
 {
 namespace mocks
 {
@@ -53,7 +53,7 @@ public:
 };
 
 } // namespace mocks
-} // namespace ck2
 } // namespace unittests
+} // namespace ck2
 
 #endif	// I_OBJECT_MOCK_H

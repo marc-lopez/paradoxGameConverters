@@ -19,7 +19,7 @@
  TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
-
+#include <iostream>
 #include <boost\bind.hpp>
 #include <boost\foreach.hpp>
 #include "CK2World.h"
@@ -60,7 +60,7 @@ CK2World::CK2World(boost::shared_ptr<LogBase> logger) : logOutput(logger)
 }
 
 
-void CK2World::init(Object* obj, const cultureGroupMapping& cultureGroupMap)
+void CK2World::init(IObject* obj, const cultureGroupMapping& cultureGroupMap)
 {
 	buildingFactory = new CK2BuildingFactory(&cultureGroupMap);
 
@@ -227,11 +227,11 @@ void CK2World::init(Object* obj, const cultureGroupMapping& cultureGroupMap)
 		i->second->setPrimaryTitle(titles);
 	}
 
-	// get provinces
-	printf("\tGetting provinces\n");
+	std::cout << "\tGetting provinces" << std::endl;
 	for (unsigned int i = 0; i < leaves.size(); i++)
 	{
 		string key = leaves[i]->getKey();
+
 		if (atoi(key.c_str()) > 0)
 		{
 			CK2Province* newProvince = new CK2Province(static_cast<Object*>(leaves[i]), titles, characters,
@@ -246,6 +246,27 @@ void CK2World::init(Object* obj, const cultureGroupMapping& cultureGroupMap)
 			}
 		}
 	}
+	if (provinces.empty())
+    {
+        for (auto provinceObj : obj->getValue("provinces")[0]->getLeaves())
+        {
+            string key = provinceObj->getKey();
+
+            if (atoi(key.c_str()) > 0)
+            {
+                CK2Province* newProvince = new CK2Province(static_cast<Object*>(provinceObj), titles, characters,
+                    buildingFactory, *version);
+                provinces.insert( make_pair(atoi(key.c_str()), newProvince) );
+
+                vector<CK2Barony*> newBaronies = newProvince->getBaronies();
+                for (unsigned int j = 0; j < newBaronies.size(); j++)
+                {
+                    string title = newBaronies[j]->getTitle()->getTitleString();
+                    baronies.insert( make_pair(title, newBaronies[j]) );
+                }
+            }
+        }
+    }
 
 	// create tree of vassal/liege relationships
 	printf("\tRelating vassals and lieges\n");

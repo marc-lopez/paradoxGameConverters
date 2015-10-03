@@ -28,9 +28,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 using namespace testing;
 
-namespace unittests
-{
 namespace ck2
+{
+namespace unittests
 {
 namespace character
 {
@@ -104,5 +104,5 @@ TEST_F(CK2CharacterShould, SetVersion2Point2SaveFormatPrimaryTitle)
 }
 
 } // namespace character
-} // namespace ck2
 } // namespace unittests
+} // namespace ck2

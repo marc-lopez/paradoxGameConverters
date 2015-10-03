@@ -31,6 +31,7 @@
 #include "CK2Barony.h"
 #include "..\Log.h"
 #include <algorithm>
+#include <boost/range/adaptor/reversed.hpp>
 #include "..\Configuration.h"
 #include "..\EU3World\EU3Country.h"
 
@@ -556,15 +557,13 @@ CK2Character* CK2Title::getTurkishSuccessionHeir()
 	return heir;
 }
 
-
 bool CK2Title::eatTitle(CK2Title* target, bool checkInheritance)
 {
 	// see if it's valid to consume the target title
 
-	// can't autocephalate
 	if (target == this)
 	{
-		log("\tAssert: title attempted to autocephalate.\n");
+		LOG(LogLevel::Warning) << target->getTitleString() << " attempted to autocephalate.\n";
 		return false;
 	}
 
@@ -604,34 +603,39 @@ bool CK2Title::eatTitle(CK2Title* target, bool checkInheritance)
 			return false;
 	}
 
-	// if we get here, it must be valid, so do the deed
+	absorbTitle(target);
+	return true;
+}
 
-	// steal all vassals and de jure vassals from target
-	for (vector<CK2Title*>::reverse_iterator itr = target->vassals.rbegin(); itr != target->vassals.rend(); ++itr)
-		(*itr)->setLiege(this);
-	/*for (vector<CK2Title*>::reverse_iterator itr = target->deJureVassals.rbegin(); itr != target->deJureVassals.rend(); ++itr)
-		(*itr)->setDeJureLiege(this);*/
+void CK2Title::absorbTitle(CK2Title* target)
+{
+    stealDeFactoDeJureVassalsFromTitle(target);
+	target->disconnectHolderAndLieges();
+	setTitleAsDead(target);
+}
 
-	// remove the target from its holder and lieges
-	target->holder->removeTitle(target);
-	if (target->liege)
-		target->liege->removeVassal(target);
-	/*if (target->deJureLiege)
-		target->deJureLiege->removeDeJureVassal(target);*/
+void CK2Title::stealDeFactoDeJureVassalsFromTitle(CK2Title* target)
+{
+    for (auto vassal : boost::adaptors::reverse(target->vassals))
+    {
+        vassal->setLiege(this);
+    }
+}
 
-	// destroy the target
+void CK2Title::disconnectHolderAndLieges()
+{
+    holder->removeTitle(this);
+	if (liege)
+		liege->removeVassal(this);
+}
+
+void CK2Title::setTitleAsDead(CK2Title* target)
+{
 	target->vassals.clear();
-	/*target->deJureVassals.clear();
-	target->deJureLiege = NULL;
-	target->deJureLiegeString = "";*/
 	target->liege = NULL;
 	target->liegeString = "";
-	target->holder = NULL;
 	target->heir = NULL;
-
 	target->setLiege(this);
-
-	return true;
 }
 
 bool CK2Title::hasUnionWith(CK2Title* other, bool& otherDominant) const

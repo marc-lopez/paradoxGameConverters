@@ -23,9 +23,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 #include "LogBase.h"
 #include "Parsers\Object.h"
 #include "Mocks\LoggerMock.h"
+#include "Mocks\ObjectMock.h"
 #include "CK2World\CK2Title.h"
-#include "CK2World\CK2World.h"
 #include "CK2World\Character\CK2Character.h"
+#include "CK2World\CK2World.h"
 
 using namespace testing;
 
@@ -33,6 +34,8 @@ namespace ck2
 {
 namespace unittests
 {
+
+using namespace mocks;
 
 class CK2WorldShould : public Test
 {
@@ -44,6 +47,8 @@ protected:
 
 	virtual void SetUp()
 	{
+        saveDataMock = new ObjectMock();
+        provinceDataMock = new ObjectMock();
 		sampleDeJureLiege = new CK2Title(deJureLIegeTitleName, color);
 		sampleDeJureLieges.insert(make_pair(deJureLIegeTitleName, sampleDeJureLiege));
 		newTitle = new CK2Title(titleName, color);
@@ -56,6 +61,8 @@ protected:
 	{
 		delete newTitle;
 		delete sampleDeJureLiege;
+		delete provinceDataMock;
+		delete saveDataMock;
 	}
 
 	int color[3];
@@ -64,6 +71,8 @@ protected:
 	title_map_t sampleDeJureLieges;
 	CK2Title* sampleDeJureLiege;
 	CK2Title* newTitle;
+	ObjectMock* saveDataMock;
+	ObjectMock* provinceDataMock;
 	boost::shared_ptr<CK2World> world;
 };
 
@@ -83,6 +92,27 @@ TEST_F(CK2WorldShould, NotFailWhilePassingUsedTitleToWorld)
 
 	ASSERT_THAT(world->getAllTitles()[titleName], NotNull());
 	delete holder;
+}
+
+TEST_F(CK2WorldShould, ReadProvincesForVersion2Point2)
+{
+    cultureGroupMapping cultureGroupMapping;
+    std::vector<IObject*> objCollectionMock;
+    objCollectionMock.push_back(saveDataMock);
+    std::vector<IObject*> provincesCollectionMock;
+    provincesCollectionMock.push_back(provinceDataMock);
+
+    EXPECT_CALL(*provinceDataMock, getKey()).WillRepeatedly(Return("1"));
+    EXPECT_CALL(*provinceDataMock, getLeaves()).WillRepeatedly(Return(provincesCollectionMock));
+	EXPECT_CALL(*provinceDataMock, getValue(_)).WillRepeatedly(Return(std::vector<IObject*>()));
+    EXPECT_CALL(*saveDataMock, getLeaf()).WillRepeatedly(Return(std::string()));
+	EXPECT_CALL(*saveDataMock, getLeaves()).WillRepeatedly(Return(std::vector<IObject*>()));
+	EXPECT_CALL(*saveDataMock, getValue(_)).WillRepeatedly(Return(objCollectionMock));
+	EXPECT_CALL(*saveDataMock, getValue("provinces")).WillRepeatedly(Return(provincesCollectionMock));
+
+    world->init(saveDataMock, cultureGroupMapping);
+
+    ASSERT_FALSE(world->getProvinces().empty());
 }
 
 } // namespace unittests

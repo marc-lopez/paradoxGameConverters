@@ -244,19 +244,15 @@ string Object::getTitle(string key) const
 
 string Object::getTitleValue(const IObject* titleObj) const
 {
-    return titleObj->getStringOrDefault("title", [&](const IObject* obj) { return obj->getLeaf(); },
-        [&](const IObject* obj) { return obj->getLeaf(); });
+    auto leafGetter = [&](const IObject* obj) { return obj->getLeaf(); };
+    return titleObj->getStringOrDefault("title", leafGetter, leafGetter);
 }
 
 string Object::getStringOrDefault(string key, std::function<string(const IObject*)> valueGetter,
                                   std::function<string(const IObject*)> defaultValueGetter) const
 {
     auto innerObj = this->getValue(key);
-    if (innerObj.empty())
-    {
-        return defaultValueGetter(this);
-    }
-    return valueGetter(innerObj[0]);
+    return innerObj.empty() ? defaultValueGetter(this) : valueGetter(innerObj[0]);
 }
 
 string Object::print() const
