@@ -19,42 +19,52 @@ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
-#ifndef I_OBJECT_MOCK_H
-#define I_OBJECT_MOCK_H
+#include <utility>
+#include <gtest/gtest.h>
+#include "Parsers/Object.h"
+#include "CK2World/Character/CK2Character.h"
+#include "Mocks/ObjectMock.h"
+#include "CK2World/CK2History.h"
 
-#include <string>
-#include <map>
-#include <gmock\gmock.h>
-#include "Parsers\IObject.h"
+using namespace testing;
 
 namespace ck2
 {
 namespace unittests
 {
-namespace mocks
-{
+using namespace mocks;
 
-class ObjectMock : public IObject
+class CK2HistoryShould : public Test
 {
-public:
-	MOCK_CONST_METHOD0(print, std::string());
-	MOCK_METHOD0(getKey, std::string());
-	MOCK_CONST_METHOD1(getValue, std::vector<IObject*>(std::string));
-	MOCK_CONST_METHOD1(getLeaf, std::string(std::string));
-	MOCK_CONST_METHOD0(getLeaf, std::string());
-	MOCK_CONST_METHOD1(getTitle, std::string(std::string));
-	MOCK_CONST_METHOD1(getLeafValueOrThisValue, std::string(std::string));
-	MOCK_CONST_METHOD3(getStringOrDefault, std::string(std::string, std::function<std::string(const IObject*)>,
-                                                    std::function<std::string(const IObject*)>));
-	MOCK_METHOD0(getLeaves, std::vector<IObject*>());
-	MOCK_METHOD0(getTokens, std::vector<std::string>());
-	MOCK_METHOD1(keyCount, void(std::map<std::string, int>& counter));
-	MOCK_METHOD0(isLeaf, bool());
-	MOCK_CONST_METHOD0(isList, bool());
+protected:
 };
 
-} // namespace mocks
+TEST_F(CK2HistoryShould, SetVersion2Point2SaveFormatHolder)
+{
+    auto CHARACTER_KEY = "character";
+    auto HOLDER_KEY = "holder";
+    auto SAMPLE_CHARACTER_ID = 1;
+
+	ObjectMock historyDataMock;
+	Object holderInnerObj(CHARACTER_KEY);
+	holderInnerObj.setValue(std::to_string(SAMPLE_CHARACTER_ID));
+	Object holderObj(HOLDER_KEY);
+	holderObj.setValue(&holderInnerObj);
+	std::vector<IObject*> historyObj = {&holderObj};
+	CK2Character* sampleCharacter = new CK2Character();
+
+	map<int, CK2Character*> characterMapping
+	{
+        std::make_pair(SAMPLE_CHARACTER_ID, sampleCharacter)
+    };
+
+	EXPECT_CALL(historyDataMock, getKey()).WillRepeatedly(Return(std::string()));
+	EXPECT_CALL(historyDataMock, getLeaves()).WillRepeatedly(Return(historyObj));
+
+	CK2History sampleHistory(&historyDataMock, characterMapping);
+
+    ASSERT_EQ(sampleHistory.getHolder(), sampleCharacter);
+}
+
 } // namespace unittests
 } // namespace ck2
-
-#endif	// I_OBJECT_MOCK_H

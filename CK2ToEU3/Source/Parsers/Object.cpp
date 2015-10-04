@@ -239,13 +239,19 @@ string Object::getLeaf(string leaf) const
 
 string Object::getTitle(string key) const
 {
-    return this->getStringOrDefault(key, [&](const IObject* obj) { return getTitleValue(obj); }, [&](const IObject* obj) { return string(); });
+    return getStringOrDefault(key, [&](const IObject* obj) { return getTitleValue(obj); },
+                                [&](const IObject* obj) { return string(); });
 }
 
 string Object::getTitleValue(const IObject* titleObj) const
 {
+    return titleObj->getLeafValueOrThisValue("title");
+}
+
+string Object::getLeafValueOrThisValue(string key) const
+{
     auto leafGetter = [&](const IObject* obj) { return obj->getLeaf(); };
-    return titleObj->getStringOrDefault("title", leafGetter, leafGetter);
+    return getStringOrDefault(key, leafGetter, leafGetter);
 }
 
 string Object::getStringOrDefault(string key, std::function<string(const IObject*)> valueGetter,

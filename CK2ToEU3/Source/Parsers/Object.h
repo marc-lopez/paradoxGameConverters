@@ -71,6 +71,7 @@ public:
   virtual string getLeaf () const {return strVal;}
   virtual string getLeaf (string leaf) const;
   virtual string getTitle (string key) const;
+  virtual string getLeafValueOrThisValue(string key) const;
   virtual string getStringOrDefault(string key, std::function<string(const IObject*)> valueGetter,
                                   std::function<string(const IObject*)> defaultValueGetter) const;
   virtual vector<IObject*> getLeaves () {return objects;}

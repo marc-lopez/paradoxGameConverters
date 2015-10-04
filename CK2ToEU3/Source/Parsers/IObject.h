@@ -39,6 +39,7 @@ public:
 	virtual std::string getLeaf (std::string) const = 0;
 	virtual std::string getLeaf () const = 0;
 	virtual std::string getTitle (std::string) const = 0;
+	virtual std::string getLeafValueOrThisValue(std::string) const = 0;
 	virtual std::string getStringOrDefault(std::string, std::function<std::string(const IObject*)>,
                                         std::function<std::string(const IObject*)>) const = 0;
 	virtual std::vector<IObject*> getLeaves () = 0;
