@@ -37,20 +37,30 @@ using namespace mocks;
 class CK2HistoryShould : public Test
 {
 protected:
+    void setExpectations()
+    {
+        EXPECT_CALL(historyDataMock, getKey()).WillRepeatedly(Return(std::string()));
+        EXPECT_CALL(historyDataMock, getLeaves()).WillRepeatedly(Return(holderObjCollection));
+        EXPECT_CALL(historyDataMock, getValue(HOLDER_KEY)).WillRepeatedly(Return(holderObjCollection));
+    }
+
+    static constexpr char HOLDER_KEY[] = "holder";
+    ObjectMock historyDataMock;
+    std::vector<IObject*> holderObjCollection;
 };
+
+constexpr char CK2HistoryShould::HOLDER_KEY[];
 
 TEST_F(CK2HistoryShould, SetVersion2Point2SaveFormatHolder)
 {
     auto CHARACTER_KEY = "character";
-    auto HOLDER_KEY = "holder";
     auto SAMPLE_CHARACTER_ID = 1;
 
-	ObjectMock historyDataMock;
 	Object holderInnerObj(CHARACTER_KEY);
 	holderInnerObj.setValue(std::to_string(SAMPLE_CHARACTER_ID));
 	Object holderObj(HOLDER_KEY);
 	holderObj.setValue(&holderInnerObj);
-	std::vector<IObject*> historyObj = {&holderObj};
+	holderObjCollection.push_back(&holderObj);
 	CK2Character* sampleCharacter = new CK2Character();
 
 	map<int, CK2Character*> characterMapping
@@ -58,12 +68,23 @@ TEST_F(CK2HistoryShould, SetVersion2Point2SaveFormatHolder)
         std::make_pair(SAMPLE_CHARACTER_ID, sampleCharacter)
     };
 
-	EXPECT_CALL(historyDataMock, getKey()).WillRepeatedly(Return(std::string()));
-	EXPECT_CALL(historyDataMock, getLeaves()).WillRepeatedly(Return(historyObj));
+	setExpectations();
 
 	CK2History sampleHistory(&historyDataMock, characterMapping);
 
     ASSERT_EQ(sampleHistory.getHolder(), sampleCharacter);
+    delete sampleCharacter;
+}
+
+TEST_F(CK2HistoryShould, NotCloneCharacterMappingOnCreation)
+{
+	map<int, CK2Character*> characterMapping;
+
+    setExpectations();
+
+	CK2History sampleHistory(&historyDataMock, characterMapping);
+
+    ASSERT_EQ(&(sampleHistory.getCharacterMapping()), &characterMapping);
 }
 
 } // namespace unittests

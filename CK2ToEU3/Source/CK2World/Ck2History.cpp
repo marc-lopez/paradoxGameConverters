@@ -26,21 +26,20 @@
 
 #include <iostream>
 
-CK2History::CK2History(IObject* obj, map<int, CK2Character*>& characters) : characterMapping(characters)
+CK2History::CK2History(IObject* obj, map<int, CK2Character*>& characters) :
+    characterMapping(characters)
 {
+    constexpr char HOLDER_KEY[] = "holder";
+    constexpr char CHARACTER_KEY[] = "character";
 	when = obj->getKey();
 	vector<IObject*> historyObj = obj->getLeaves();
 
 	holder = NULL;
-	for (unsigned int i = 0; i < historyObj.size(); i++)
-	{
-		string key = historyObj[i]->getKey();
-		if (key == "holder")
-		{
-		    auto leafGetter = [&](const IObject* obj) { return obj->getLeaf(); };
-            holder = getHolderObj(historyObj[i]->getStringOrDefault("character", leafGetter, leafGetter));
-		}
-	}
+	auto holderObj = obj->getValue(HOLDER_KEY);
+	if (!holderObj.empty())
+    {
+        holder = getHolderObj(holderObj[0]->getLeafValueOrThisValue(CHARACTER_KEY));
+    }
 }
 
 CK2Character* CK2History::getHolderObj(string holderId)

@@ -42,12 +42,13 @@ class CK2History
 
 		common::date		getWhen()	const { return when; };
 		CK2Character*	    getHolder()	const { return holder; };
+		map<int, CK2Character*>& getCharacterMapping() const { return characterMapping; }
 	private:
         CK2Character*       getHolderObj(string);
 
 		common::date		when;
 		CK2Character*	    holder;
-		map<int, CK2Character*> characterMapping;
+		map<int, CK2Character*>& characterMapping;
 };
 
 
