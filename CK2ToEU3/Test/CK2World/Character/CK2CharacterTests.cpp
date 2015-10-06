@@ -20,11 +20,12 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #include <map>
+#include "Mocks/ObjectMock.h"
 #include "Configuration.h"
-#include "Parsers\Object.h"
-#include "Mocks\ObjectMock.h"
-#include "CK2World\Character\CK2Character.h"
-#include "CK2World\CK2Title.h"
+#include "Parsers/Object.h"
+#include "CK2World/CK2Religion.h"
+#include "CK2World/CK2Title.h"
+#include "CK2World/Character/CK2Character.h"
 
 using namespace testing;
 
@@ -61,46 +62,70 @@ protected:
 		return demesneCollection;
 	}
 
+	void setDefaultExpectations()
+	{
+        EXPECT_CALL(saveDataMock, getKey()).WillRepeatedly(Return(std::string()));
+        EXPECT_CALL(saveDataMock, getLeaf(_)).WillRepeatedly(Return(std::string()));
+        EXPECT_CALL(saveDataMock, getValue(_)).WillRepeatedly(Return(std::vector<IObject*>()));
+	}
+
 	const std::string SAMPLE_TITLE_NAME;
 	const std::string DEMESNE_KEY;
+    map<int, CK2Dynasty*> dynasties;
+	map<int, CK2Trait*> traits;
+	ObjectMock saveDataMock;
 };
 
 TEST_F(CK2CharacterShould, SetVersion2Point2SaveFormatPrimaryTitle)
 {
-	map<int, CK2Dynasty*> dynasties;
-	map<int, CK2Trait*> traits;
-
 	int color[3];
-	CK2Title* sampleTitle = new CK2Title(SAMPLE_TITLE_NAME, color);
+	CK2Title sampleTitle(SAMPLE_TITLE_NAME, color);
 
 	map<string, CK2Title*> titleMap;
-	titleMap.insert(std::pair<string, CK2Title*>(SAMPLE_TITLE_NAME, sampleTitle));
+	titleMap.insert(std::pair<string, CK2Title*>(SAMPLE_TITLE_NAME, &sampleTitle));
 
 	std::vector<IObject*> demesneData = getSampleDemsneData();
 
-	ObjectMock *configurationMock = new ObjectMock();
-	ObjectMock *saveDataMock = new ObjectMock();
+	ObjectMock configurationMock;
 
-	EXPECT_CALL(*configurationMock, getLeaf(_)).WillRepeatedly(Return(std::string()));
-	EXPECT_CALL(*saveDataMock, getKey()).WillRepeatedly(Return(std::string()));
-	EXPECT_CALL(*saveDataMock, getLeaf(_)).WillRepeatedly(Return(std::string()));
-	EXPECT_CALL(*saveDataMock, getValue(_)).WillRepeatedly(Return(std::vector<IObject*>()));
-	EXPECT_CALL(*saveDataMock, getValue(DEMESNE_KEY)).WillRepeatedly(Return(demesneData));
+    setDefaultExpectations();
+	EXPECT_CALL(configurationMock, getLeaf(_)).WillRepeatedly(Return(std::string()));
+	EXPECT_CALL(saveDataMock, getValue(DEMESNE_KEY)).WillRepeatedly(Return(demesneData));
 
-	Configuration::setConfiguration(configurationMock);
-	CK2Character* sampleCharacter = new CK2Character(saveDataMock, dynasties, traits, common::date());
-	sampleTitle->setHolder(sampleCharacter);
-	sampleCharacter->setPrimaryTitle(titleMap);
-	CK2Title* calculatedPrimaryTitle = sampleCharacter->getPrimaryTitle();
+	Configuration::setConfiguration(&configurationMock);
+	CK2Character sampleCharacter(&saveDataMock, dynasties, traits, common::date());
+	sampleTitle.setHolder(&sampleCharacter);
+	sampleCharacter.setPrimaryTitle(titleMap);
+	CK2Title* calculatedPrimaryTitle = sampleCharacter.getPrimaryTitle();
 
 	ASSERT_THAT(calculatedPrimaryTitle, NotNull());
 	ASSERT_EQ(SAMPLE_TITLE_NAME, calculatedPrimaryTitle->getTitleString());
 
-	delete sampleTitle;
-	delete sampleCharacter;
 	delete demesneData[0];
-	delete configurationMock;
-	delete saveDataMock;
+}
+
+TEST_F(CK2CharacterShould, BeSunniIfBektashiHeresyNotAvailableInGame)
+{
+    constexpr auto BEKTASHI_KEY = "bektashi";
+    constexpr auto SUNNI_KEY = "sunni";
+    constexpr auto MUSLIM_KEY = "muslim";
+    constexpr auto RELIGION_KEY = "religion";
+
+    Object sunniObj(SUNNI_KEY);
+    std::vector<IObject*> muslimReligions = { &sunniObj };
+    Object muslimGroupObj(MUSLIM_KEY);
+    muslimGroupObj.setValue(&sunniObj);
+    std::vector<IObject*> religionGroups = { &muslimGroupObj };
+    ObjectMock religionsMock;
+
+    setDefaultExpectations();
+    EXPECT_CALL(religionsMock, getLeaves()).WillRepeatedly(Return(religionGroups));
+	EXPECT_CALL(saveDataMock, getLeaf(RELIGION_KEY)).WillRepeatedly(Return(BEKTASHI_KEY));
+
+    CK2Religion::parseReligions(&religionsMock);
+    CK2Character sampleCharacter(&saveDataMock, dynasties, traits, common::date());
+
+    ASSERT_EQ(sampleCharacter.getReligion(), CK2Religion::getReligion(SUNNI_KEY));
 }
 
 } // namespace character

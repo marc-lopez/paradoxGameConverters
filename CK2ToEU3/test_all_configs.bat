@@ -1,5 +1,7 @@
 echo off
 
+mkdir testresults
+
 copy "%1\configuration.txt" "%1\configuration-backup.txt"
 copy "%1\culture_mappings.txt" "%1\culture_mappings-backup.txt"
 copy "%1\religion_mappings.txt" "%1\religion_mappings-backup.txt"

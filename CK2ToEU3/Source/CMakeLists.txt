@@ -106,8 +106,8 @@ add_custom_command(TARGET build-to-archive
 	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
 
 # Add integration testing target
-add_custom_target(test-all-configs EXCLUDE_FROM_ALL)
+add_custom_target(test-all-configs)
 add_custom_command(TARGET test-all-configs
 	PRE_BUILD
-	COMMAND test_all_configs ${CMAKE_CURRENT_BINARY_DIR}/Release
+	COMMAND test_all_configs ${CMAKE_CURRENT_BINARY_DIR}
 	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})

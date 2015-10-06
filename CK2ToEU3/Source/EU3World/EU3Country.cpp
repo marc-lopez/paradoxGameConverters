@@ -1567,6 +1567,7 @@ vector<EU3Country*> EU3Country::convertVassals(int initialScore, EU3Diplomacy* d
 	vector<EU3Country*> absorbedVassals;
 	for(unsigned int i = 0; i < vassals.size(); i++)
 	{
+        LOG(LogLevel::Debug) << src->getTitleString() << " : " << vassals[i]->getSrcCountry()->getTitleString() << "\n";
 		// one's own titles should generally just merge completely
 		if	(	(src->getHolder() == vassals[i]->getSrcCountry()->getHolder()) &&
 				(src->getHeir() == vassals[i]->getSrcCountry()->getHeir()) &&
@@ -1621,6 +1622,7 @@ vector<EU3Country*> EU3Country::convertVassals(int initialScore, EU3Diplomacy* d
 		int vassalScore = score;
 		CK2Character* liege	= this->getSrcCountry()->getHolder();
 		CK2Character* vassal	= vassals[i]->getSrcCountry()->getHolder();
+
 		vassalScore += vassal->getOpinionOf(liege, version);
 		if (vassals[i]->getSrcCountry()->getTitleString().substr(0,2) == "b_") // baronies should be absorbed
 		{
@@ -1738,7 +1740,8 @@ vector<EU3Country*> EU3Country::convertVassals(int initialScore, EU3Diplomacy* d
 		}
 		else if ((vassalScore >= 1000) && (vassals[i]->getAbsorbScore() < 1000))
 		{
-			log("\t%s is sphering and alliancing %s.\n", src->getTitleString().c_str(), vassals[i]->getSrcCountry()->getTitleString().c_str());
+		    LOG(LogLevel::Debug) << "\t" << src->getTitleString() << " is sphering and alliancing " <<
+                vassals[i]->getSrcCountry()->getTitleString() << ".\n";
 			vassals[i]->setAbsorbScore(vassalScore);
 			EU3Agreement* newAgreement = new EU3Agreement;
 			newAgreement->type			= "sphere";
@@ -1791,6 +1794,8 @@ vector<EU3Country*> EU3Country::convertVassals(int initialScore, EU3Diplomacy* d
 			}
 		}
 	}
+
+
 
 	return absorbedCountries;
 }

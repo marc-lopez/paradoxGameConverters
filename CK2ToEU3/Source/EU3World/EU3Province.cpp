@@ -845,6 +845,7 @@ void EU3Province::determineReligion(const religionMapping& religionMap, const ve
 					rulerTitle = rulerTitle->getLiege();
 				}
 				const CK2Character* ruler = rulerTitle->getLastHolder();
+
 				if ( ruler->getReligion()->isHereticTo(topReligion) )
 				{
 					modifiers.push_back("heresy");

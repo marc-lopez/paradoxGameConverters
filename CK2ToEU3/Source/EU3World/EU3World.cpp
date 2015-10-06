@@ -627,9 +627,9 @@ void EU3World::convertProvinces(provinceMapping& provinceMap, map<int, CK2Provin
 			totalHistoricalManpower		+= provinces.find(provItr->first)->second->getManpower();
 		}
 	}
-	log("\tTotal historical base tax is %f.\n", totalHistoricalBaseTax);
-	log("\tTotal historical population is %f.\n", totalHistoricalPopulation);
-	log("\tTotal historical manpower is %f.\n", totalHistoricalManpower);
+	LOG(LogLevel::Debug) << "\tTotal historical base tax is " << totalHistoricalBaseTax << ".\n";
+	LOG(LogLevel::Debug) << "\tTotal historical population is " << totalHistoricalPopulation << ".\n";
+	LOG(LogLevel::Debug) << "\tTotal historical manpower tax is " << totalHistoricalManpower << ".\n";
 
 	double totalBaseTaxProxy	= 0.0f;
 	double totalPopProxy			= 0.0f;
