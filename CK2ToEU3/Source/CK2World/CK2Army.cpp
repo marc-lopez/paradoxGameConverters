@@ -1,5 +1,5 @@
 /*Copyright (c) 2013 The CK2 to EU3 Converter Project
- 
+
  Permission is hereby granted, free of charge, to any person obtaining
  a copy of this software and associated documentation files (the
  "Software"), to deal in the Software without restriction, including
@@ -7,10 +7,10 @@
  distribute, sublicense, and/or sell copies of the Software, and to
  permit persons to whom the Software is furnished to do so, subject to
  the following conditions:
- 
+
  The above copyright notice and this permission notice shall be included
  in all copies or substantial portions of the Software.
- 
+
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
@@ -26,7 +26,7 @@
 
 
 
-CK2Subunit::CK2Subunit(const Object* obj)
+CK2Subunit::CK2Subunit(const IObject* obj)
 {
 	home = atoi( obj->getLeaf("home").c_str() );
 
@@ -93,13 +93,13 @@ CK2Subunit::CK2Subunit(const Object* obj)
 }
 
 
-CK2Army::CK2Army(const Object* obj)
+CK2Army::CK2Army(const IObject* obj)
 {
 	name = obj->getLeaf("name");
 	vector<IObject*> subunitObjs = obj->getValue("sub_unit");
 	for (unsigned int i = 0; i < subunitObjs.size(); i++)
 	{
-		CK2Subunit* newSubunit = new CK2Subunit(static_cast<Object*>(subunitObjs[i]));
+		CK2Subunit* newSubunit = new CK2Subunit(subunitObjs[i]);
 		subunits.push_back(newSubunit);
 	}
 	vector<IObject*> movementObj = obj->getValue("movement_progress");
@@ -111,7 +111,7 @@ CK2Army::CK2Army(const Object* obj)
 	{
 		movementProgress = 0.0F;
 	}
-	
+
 	vector<IObject*> pathObj = obj->getValue("path");
 	if (pathObj.size() > 0)
 	{
@@ -128,7 +128,7 @@ CK2Army::CK2Army(const Object* obj)
 	vector<IObject*> armyObjs = obj->getValue("army");
 	for (unsigned int i = 0; i < armyObjs.size(); i++)
 	{
-		CK2Army* newArmy = new CK2Army(static_cast<Object *>(armyObjs[i]));
+		CK2Army* newArmy = new CK2Army(armyObjs[i]);
 		transportedArmies.push_back(newArmy);
 	}
 

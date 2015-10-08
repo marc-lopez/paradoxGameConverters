@@ -383,7 +383,7 @@ void Object::removeObject(Object* target)
 }
 
 
-void Object::addObject(Object* target)
+void Object::addObject(IObject* target)
 {
 	objects.push_back(target);
 }

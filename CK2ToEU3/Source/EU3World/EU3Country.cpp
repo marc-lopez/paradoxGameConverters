@@ -1567,8 +1567,7 @@ vector<EU3Country*> EU3Country::convertVassals(int initialScore, EU3Diplomacy* d
 	vector<EU3Country*> absorbedVassals;
 	for(unsigned int i = 0; i < vassals.size(); i++)
 	{
-        LOG(LogLevel::Debug) << src->getTitleString() << " : " << vassals[i]->getSrcCountry()->getTitleString() << "\n";
-		// one's own titles should generally just merge completely
+        // one's own titles should generally just merge completely
 		if	(	(src->getHolder() == vassals[i]->getSrcCountry()->getHolder()) &&
 				(src->getHeir() == vassals[i]->getSrcCountry()->getHeir()) &&
 				(src->getSuccessionLaw() == vassals[i]->getSrcCountry()->getSuccessionLaw()) &&

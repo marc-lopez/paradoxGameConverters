@@ -53,19 +53,19 @@ class CK2Version;
 class CK2World
 {
 	public:
-		CK2World(boost::shared_ptr<LogBase>);
+		CK2World(std::shared_ptr<LogBase>);
 		void							init(IObject*, const cultureGroupMapping& cultureGroupMap);
 		void							addBuildingTypes(Object*);
 		void							addDynasties(Object*);
 		void							addTraits(Object*);
-		void							addPotentialTitles(Object*);
+		void							addPotentialTitles(IObject*);
 		void							addTitle(pair<string, CK2Title*>);
 		void							setIndependentTitles(title_map_t*);
 		void							setAllTitles(title_map_t*);
 		void							setHREMembers(title_map_t*);
 		void							mergeTitles();
 
-		boost::shared_ptr<LogBase>		getLogger()				const	{ return logOutput; };
+		std::shared_ptr<LogBase>		getLogger()				const	{ return logOutput; };
 		CK2Version*					    getVersion()				const	{ return version; };
 		common::date					getEndDate()				const { return endDate; };
 		map<string, CK2Title*>	getIndependentTitles()	const { return independentTitles; };
@@ -77,7 +77,7 @@ class CK2World
 
 		vector<double>				getAverageTechLevels(CK2Version& version) const;
 	private:
-		boost::shared_ptr<LogBase> logOutput;
+		std::shared_ptr<LogBase> logOutput;
 		CK2BuildingFactory*		buildingFactory;
 
 		CK2Version*					version;

@@ -76,7 +76,7 @@ public:
                                   std::function<string(const IObject*)> defaultValueGetter) const;
   virtual vector<IObject*> getLeaves () {return objects;}
   void removeObject (Object* target);
-  void addObject (Object* target);
+  void addObject (IObject* target);
   void addObjectAfter(Object* target, string key);
   void setLeaf (string k, string value);
   void unsetValue (string val);

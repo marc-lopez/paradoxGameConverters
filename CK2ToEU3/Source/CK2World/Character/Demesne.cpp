@@ -45,12 +45,12 @@ Demesne::Demesne(std::vector<IObject*> demesneObj) : capitalString(""), primaryT
 
 	BOOST_FOREACH(IObject* armyObj, demesneObj[0]->getValue("army"))
 	{
-		armies.push_back(new CK2Army(static_cast<Object*>(armyObj)));
+		armies.push_back(new CK2Army(armyObj));
 	}
 
 	BOOST_FOREACH(IObject* navyObj, demesneObj[0]->getValue("navy"))
 	{
-		navies.push_back(new CK2Army(static_cast<Object*>(navyObj)));
+		navies.push_back(new CK2Army(navyObj));
 	}
 }
 

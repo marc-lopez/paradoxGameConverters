@@ -20,8 +20,10 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #include <map>
+#include <memory>
 #include "LogBase.h"
 #include "Parsers\Object.h"
+#include "Helpers\ObjectDataHelper.h"
 #include "Mocks\LoggerMock.h"
 #include "Mocks\ObjectMock.h"
 #include "CK2World\CK2Title.h"
@@ -29,6 +31,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 #include "CK2World\CK2World.h"
 
 using namespace testing;
+using namespace helpers;
 
 namespace ck2
 {
@@ -40,17 +43,15 @@ using namespace mocks;
 class CK2WorldShould : public Test
 {
 protected:
-	CK2WorldShould() : color(), titleName("k_sample"), deJureLIegeTitleName("e_sample"),
-		world(new CK2World(boost::make_shared<LoggerMock>()))
+	CK2WorldShould() : color(), titleName("k_sample"), deJureLiegeTitleName("e_sample"),
+		world(new CK2World(std::make_shared<LoggerMock>()))
 	{
 	}
 
 	virtual void SetUp()
 	{
-        saveDataMock = new ObjectMock();
-        provinceDataMock = new ObjectMock();
-		sampleDeJureLiege = new CK2Title(deJureLIegeTitleName, color);
-		sampleDeJureLieges.insert(make_pair(deJureLIegeTitleName, sampleDeJureLiege));
+		sampleDeJureLiege = new CK2Title(deJureLiegeTitleName, color);
+		sampleDeJureLieges.insert(std::make_pair(deJureLiegeTitleName, sampleDeJureLiege));
 		newTitle = new CK2Title(titleName, color);
 		newTitle->setDeJureLiege(sampleDeJureLieges);
 
@@ -61,19 +62,18 @@ protected:
 	{
 		delete newTitle;
 		delete sampleDeJureLiege;
-		delete provinceDataMock;
-		delete saveDataMock;
 	}
 
 	int color[3];
 	string titleName;
-	string deJureLIegeTitleName;
+	string deJureLiegeTitleName;
+    cultureGroupMapping cultureGroupMapping;
 	title_map_t sampleDeJureLieges;
 	CK2Title* sampleDeJureLiege;
 	CK2Title* newTitle;
-	ObjectMock* saveDataMock;
-	ObjectMock* provinceDataMock;
-	boost::shared_ptr<CK2World> world;
+	ObjectDataHelper saveData;
+	ObjectDataHelper provinceDataMock;
+	std::shared_ptr<CK2World> world;
 };
 
 TEST_F(CK2WorldShould, RemoveTitlesWithoutCurrentHolderAndHistory)
@@ -96,23 +96,45 @@ TEST_F(CK2WorldShould, NotFailWhilePassingUsedTitleToWorld)
 
 TEST_F(CK2WorldShould, ReadProvincesForVersion2Point2)
 {
-    cultureGroupMapping cultureGroupMapping;
-    std::vector<IObject*> objCollectionMock;
-    objCollectionMock.push_back(saveDataMock);
-    std::vector<IObject*> provincesCollectionMock;
-    provincesCollectionMock.push_back(provinceDataMock);
+    EXPECT_CALL(provinceDataMock.getData(), getKey()).WillRepeatedly(Return("1"));
+    EXPECT_CALL(provinceDataMock.getData(), getLeaves()).WillRepeatedly(Return(provinceDataMock.getContainer()));
+	EXPECT_CALL(saveData.getData(), getValue(_)).WillRepeatedly(Return(saveData.getContainer()));
+	EXPECT_CALL(saveData.getData(), getValue("provinces")).WillRepeatedly(Return(provinceDataMock.getContainer()));
 
-    EXPECT_CALL(*provinceDataMock, getKey()).WillRepeatedly(Return("1"));
-    EXPECT_CALL(*provinceDataMock, getLeaves()).WillRepeatedly(Return(provincesCollectionMock));
-	EXPECT_CALL(*provinceDataMock, getValue(_)).WillRepeatedly(Return(std::vector<IObject*>()));
-    EXPECT_CALL(*saveDataMock, getLeaf()).WillRepeatedly(Return(std::string()));
-	EXPECT_CALL(*saveDataMock, getLeaves()).WillRepeatedly(Return(std::vector<IObject*>()));
-	EXPECT_CALL(*saveDataMock, getValue(_)).WillRepeatedly(Return(objCollectionMock));
-	EXPECT_CALL(*saveDataMock, getValue("provinces")).WillRepeatedly(Return(provincesCollectionMock));
-
-    world->init(saveDataMock, cultureGroupMapping);
+    world->init(&(saveData.getData()), cultureGroupMapping);
 
     ASSERT_FALSE(world->getProvinces().empty());
+}
+
+TEST_F(CK2WorldShould, SubstituteObsoleteTitleWithAnEquivalentTitle)
+{
+    ObjectDataHelper oldTitle;
+    ObjectDataHelper oldTitleHolder;
+
+    ObjectDataHelper installedTitles;
+    ObjectDataHelper substituteTitle;
+
+    ObjectDataHelper defaultObj;
+
+    EXPECT_CALL(saveData.getData(), getLeaves()).WillRepeatedly(Return(oldTitle.getContainer()));
+	EXPECT_CALL(saveData.getData(), getValue(_)).WillRepeatedly(Return(defaultObj.getContainer()));
+	EXPECT_CALL(saveData.getData(), getValue("character")).WillRepeatedly(Return(oldTitleHolder.getContainer()));
+
+    EXPECT_CALL(oldTitle.getData(), getKey()).WillRepeatedly(Return("b_lori"));
+    EXPECT_CALL(oldTitle.getData(), getValue("holder")).WillRepeatedly(Return(oldTitleHolder.getContainer()));
+	EXPECT_CALL(oldTitleHolder.getData(), getKey()).WillRepeatedly(Return("1"));
+	EXPECT_CALL(oldTitleHolder.getData(), getLeaves()).WillRepeatedly(Return(defaultObj.getContainer()));
+
+	EXPECT_CALL(installedTitles.getData(), getLeaves()).WillRepeatedly(Return(substituteTitle.getContainer()));
+    EXPECT_CALL(substituteTitle.getData(), getKey()).WillRepeatedly(Return("b_lori_berd"));
+
+	EXPECT_CALL(defaultObj.getData(), getValue("sub_unit")).WillRepeatedly(Return(std::vector<IObject*>()));
+	EXPECT_CALL(defaultObj.getData(), getValue("army")).WillRepeatedly(Return(std::vector<IObject*>()));
+
+    world->addPotentialTitles(&(installedTitles.getData()));
+    world->init(&(saveData.getData()), cultureGroupMapping);
+
+    ASSERT_THAT(world->getAllTitles()["b_lori"], NotNull());
 }
 
 } // namespace unittests

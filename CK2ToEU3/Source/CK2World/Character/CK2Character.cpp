@@ -80,6 +80,7 @@ CK2Character::CK2Character(IObject* obj, const map<int, CK2Dynasty*>& dynasties,
 	}
 	birthDate	= obj->getLeaf("birth_date");
 	age			= theDate.diffInYears(birthDate);
+
 	vector<IObject*> deathObj = obj->getValue("death_date");
 	if (deathObj.size() > 0)
 	{
@@ -220,11 +221,22 @@ CK2Character::CK2Character(IObject* obj, const map<int, CK2Dynasty*>& dynasties,
 	if (attributesObj.size() > 0)
 	{
 		vector<string> attributeTokens = attributesObj[0]->getTokens();
-		stats[DIPLOMACY]		= atoi( attributeTokens[0].c_str() );
-		stats[MARTIAL]			= atoi( attributeTokens[1].c_str() );
-		stats[STEWARDSHIP]	= atoi( attributeTokens[2].c_str() );
-		stats[INTRIGUE]		= atoi( attributeTokens[3].c_str() );
-		stats[LEARNING]		= atoi( attributeTokens[4].c_str() );
+		if(attributeTokens.empty())
+        {
+            stats[DIPLOMACY]	= 0;
+            stats[MARTIAL]		= 0;
+            stats[STEWARDSHIP]	= 0;
+            stats[INTRIGUE]		= 0;
+            stats[LEARNING]		= 0;
+        }
+        else
+        {
+            stats[DIPLOMACY]	= atoi( attributeTokens[0].c_str() );
+            stats[MARTIAL]		= atoi( attributeTokens[1].c_str() );
+            stats[STEWARDSHIP]	= atoi( attributeTokens[2].c_str() );
+            stats[INTRIGUE]		= atoi( attributeTokens[3].c_str() );
+            stats[LEARNING]		= atoi( attributeTokens[4].c_str() );
+        }
 	}
 	else
 	{

@@ -40,7 +40,7 @@
 
 
 
-CK2World::CK2World(boost::shared_ptr<LogBase> logger) : logOutput(logger)
+CK2World::CK2World(std::shared_ptr<LogBase> logger) : logOutput(logger)
 {
 	buildingFactory = NULL;
 
@@ -109,7 +109,7 @@ void CK2World::init(IObject* obj, const cultureGroupMapping& cultureGroupMap)
 	for (unsigned int i = 0; i < characterLeaves.size(); i++)
 	{
 		int number = atoi( characterLeaves[i]->getKey().c_str() );
-		CK2Character* newCharacter = new CK2Character(static_cast<Object*>(characterLeaves[i]), dynasties,
+		CK2Character* newCharacter = new CK2Character(characterLeaves[i], dynasties,
 			traits, endDate);
 		characters.insert( make_pair(number, newCharacter) );
 	}
@@ -202,6 +202,14 @@ void CK2World::init(IObject* obj, const cultureGroupMapping& cultureGroupMap)
 			map<string, CK2Title*>::iterator titleItr = potentialTitles.find(key);
 			if (titleItr == potentialTitles.end())
 			{
+                if (key == "b_lori")
+                {
+                    key = "b_lori_berd";
+                }
+                titleItr = potentialTitles.find(key);
+			}
+			if (titleItr == potentialTitles.end())
+			{
 				int color[3] = {0,0,0};
 				CK2Title* dynTitle = new CK2Title(key, color);
 				dynTitle->init(static_cast<Object*>(leaves[i]), characters, buildingFactory);
@@ -214,7 +222,7 @@ void CK2World::init(IObject* obj, const cultureGroupMapping& cultureGroupMap)
 			}
 			else
 			{
-				titleItr->second->init(static_cast<Object*>(leaves[i]), characters, buildingFactory);
+				titleItr->second->init(leaves[i], characters, buildingFactory);
 				titles.insert( make_pair(titleItr->second->getTitleString(), titleItr->second) );
 			}
 		}
@@ -333,6 +341,7 @@ void CK2World::init(IObject* obj, const cultureGroupMapping& cultureGroupMap)
 	}
 	independentTitles.swap(newIndependentTitles);
 
+
 	TitleFilter(this).removeDeadTitles();
 
 	// determine heirs
@@ -361,7 +370,6 @@ void CK2World::init(IObject* obj, const cultureGroupMapping& cultureGroupMap)
 			character->setStateStats();
 		}
 	}
-
 	log("\tThere are a total of %d titles\n", titles.size());
 	log("\tThere are a total of %d independent titles\n", independentTitles.size());
 	log("\tThere are a total of %d hre members\n", hreMembers.size());
@@ -408,7 +416,7 @@ void CK2World::addTraits(Object* obj)
 }
 
 
-void CK2World::addPotentialTitles(Object* obj)
+void CK2World::addPotentialTitles(IObject* obj)
 {
 	if (obj == NULL)
 	{
@@ -546,7 +554,7 @@ TitleFilter::TitleFilter(CK2World* world) : world(world), newTitles(), newIndepe
 
 void TitleFilter::removeDeadTitles()
 {
-	BOOST_FOREACH(const title_map_t::value_type &title, world->getAllTitles())
+	for(auto title : world->getAllTitles())
 	{
 		CK2Title *titleInfo = title.second;
 		if (titleInfo->hasMapImpact() || titleInfo->hasHolders())

@@ -139,7 +139,7 @@ int main(int argc, char * argv[])
 
 	// Input CK2 Data
 	inform("Getting CK2 data.");
-	CK2World srcWorld(boost::make_shared<Log>(LogLevel::Info));
+	CK2World srcWorld(std::make_shared<Log>(LogLevel::Info));
 
 	inform("\tGetting building types.");
 	if (Configuration::getCK2Mod() != "")
