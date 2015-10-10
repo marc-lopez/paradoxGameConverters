@@ -48,6 +48,7 @@ private:
 	{
         std::shared_ptr<ObjectMock> newObjMock = std::make_shared<ObjectMock>();
 
+        EXPECT_CALL(*newObjMock, getKey()).WillRepeatedly(Return(std::string()));
         EXPECT_CALL(*newObjMock, getLeaf()).WillRepeatedly(Return(std::string()));
         EXPECT_CALL(*newObjMock, getLeaf(_)).WillRepeatedly(Return(std::string()));
         EXPECT_CALL(*newObjMock, getLeaves()).WillRepeatedly(Return(std::vector<IObject*>()));
