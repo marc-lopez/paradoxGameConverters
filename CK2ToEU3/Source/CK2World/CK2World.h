@@ -60,6 +60,7 @@ class CK2World
 		void							addTraits(Object*);
 		void							addPotentialTitles(IObject*);
 		void							addTitle(pair<string, CK2Title*>);
+		void                            addTitleMigrations(map<string, string>);
 		void							setIndependentTitles(title_map_t*);
 		void							setAllTitles(title_map_t*);
 		void							setHREMembers(title_map_t*);
@@ -77,6 +78,8 @@ class CK2World
 
 		vector<double>				getAverageTechLevels(CK2Version& version) const;
 	private:
+	    void readSavedTitles(vector<IObject*>);
+
 		std::shared_ptr<LogBase> logOutput;
 		CK2BuildingFactory*		buildingFactory;
 
@@ -93,6 +96,7 @@ class CK2World
 		map<int, CK2Province*>	provinces;
 		map<string, CK2Barony*>	baronies;
 		vector<CK2War*>			wars;
+		map<string, string>     titleMigrations;
 };
 
 class TitleFilter

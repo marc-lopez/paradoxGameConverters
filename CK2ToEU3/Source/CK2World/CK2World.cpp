@@ -164,69 +164,7 @@ void CK2World::init(IObject* obj, const cultureGroupMapping& cultureGroupMap)
 
 	// get titles
 	printf("\tGetting titles\n");
-	for (unsigned int i = 0; i < leaves.size(); i++)
-	{
-		string key = leaves[i]->getKey();
-		if ( (key == "title") )
-		{
-			vector<IObject*> titleList = leaves[i]->getLeaves();
-			for (vector<IObject*>::iterator itr = titleList.begin() ; itr != titleList.end(); ++itr)
-			{
-				key = (*itr)->getKey();
-				if (key == "k_seljuk_turks")
-				{
-					key = "e_seljuk_turks";
-				}
-				map<string, CK2Title*>::iterator titleItr = potentialTitles.find(key);
-				if (titleItr == potentialTitles.end())
-				{
-					int color[3] = {0,0,0};
-					CK2Title* dynTitle = new CK2Title(key, color);
-					dynTitle->init(static_cast<Object*>(*itr), characters, buildingFactory);
-					if (!dynTitle->isDynamic())
-					{
-						log("\t\tWarning: tried to create title %s, but it is neither a potential title nor a dynamic title.\n", key.c_str());
-						continue;
-					}
-					titles.insert( make_pair(dynTitle->getTitleString(), dynTitle) );
-				}
-				else
-				{
-					titleItr->second->init(static_cast<Object*>(*itr), characters, buildingFactory);
-					titles.insert( make_pair(titleItr->second->getTitleString(), titleItr->second) );
-				}
-			}
-		}
-		else if ( (key.substr(0, 2) == "e_") || (key.substr(0, 2) == "k_") || (key.substr(0, 2) == "d_") || (key.substr(0, 2) == "c_") || (key.substr(0, 2) == "b_") )
-		{
-			map<string, CK2Title*>::iterator titleItr = potentialTitles.find(key);
-			if (titleItr == potentialTitles.end())
-			{
-                if (key == "b_lori")
-                {
-                    key = "b_lori_berd";
-                }
-                titleItr = potentialTitles.find(key);
-			}
-			if (titleItr == potentialTitles.end())
-			{
-				int color[3] = {0,0,0};
-				CK2Title* dynTitle = new CK2Title(key, color);
-				dynTitle->init(static_cast<Object*>(leaves[i]), characters, buildingFactory);
-				if (!dynTitle->isDynamic())
-				{
-					log("\t\tWarning: tried to create title %s, but it is neither a potential title nor a dynamic title.\n", key.c_str());
-					continue;
-				}
-				titles.insert( make_pair(dynTitle->getTitleString(), dynTitle) );
-			}
-			else
-			{
-				titleItr->second->init(leaves[i], characters, buildingFactory);
-				titles.insert( make_pair(titleItr->second->getTitleString(), titleItr->second) );
-			}
-		}
-	}
+	readSavedTitles(leaves);
 
 	// set primary titles
 	for (map<int, CK2Character*>::iterator i = characters.begin(); i != characters.end(); i++)
@@ -375,6 +313,50 @@ void CK2World::init(IObject* obj, const cultureGroupMapping& cultureGroupMap)
 	log("\tThere are a total of %d hre members\n", hreMembers.size());
 }
 
+void CK2World::readSavedTitles(vector<IObject*> leaves)
+{
+	for (auto leaf : leaves)
+	{
+		string key = leaf->getKey();
+		if ((key == "title"))
+		{
+			readSavedTitles(leaf->getLeaves());
+			break;
+		}
+		if ( (key.substr(0, 2) == "e_") || (key.substr(0, 2) == "k_") || (key.substr(0, 2) == "d_") || (key.substr(0, 2) == "c_") || (key.substr(0, 2) == "b_") )
+		{
+			map<string, CK2Title*>::iterator titleItr = potentialTitles.find(key);
+			if (titleItr == potentialTitles.end())
+			{
+			    auto obsoleteTitle = key;
+                key = titleMigrations[key];
+				if (obsoleteTitle != key)
+                {
+                    LOG(LogLevel::Debug) << "Obsolete title " << obsoleteTitle << " will be changed to " << key << "\n";
+                }
+                titleItr = potentialTitles.find(key);
+			}
+			if (titleItr == potentialTitles.end())
+			{
+				int color[3] = {0,0,0};
+				CK2Title* dynTitle = new CK2Title(key, color);
+				dynTitle->init(static_cast<Object*>(leaf), characters, buildingFactory);
+				if (!dynTitle->isDynamic())
+				{
+					log("\t\tWarning: tried to create title %s, but it is neither a potential title nor a dynamic title.\n", key.c_str());
+					continue;
+				}
+				titles.insert( make_pair(dynTitle->getTitleString(), dynTitle) );
+			}
+			else
+			{
+				titleItr->second->init(leaf, characters, buildingFactory);
+				titles.insert( make_pair(titleItr->second->getTitleString(), titleItr->second) );
+			}
+		}
+	}
+}
+
 void CK2World::addBuildingTypes(Object* obj)
 {
 	if (obj != NULL)
@@ -451,6 +433,11 @@ void CK2World::addPotentialTitles(IObject* obj)
 void CK2World::addTitle(pair<string, CK2Title*> titleInfo)
 {
 	titles.insert(titleInfo);
+}
+
+void CK2World::addTitleMigrations(map<string, string> titleMigrations)
+{
+    this->titleMigrations = titleMigrations;
 }
 
 void CK2World::mergeTitles()
