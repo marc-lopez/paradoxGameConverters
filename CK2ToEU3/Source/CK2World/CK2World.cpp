@@ -330,11 +330,15 @@ void CK2World::readSavedTitles(vector<IObject*> leaves)
 			{
 			    auto obsoleteTitle = key;
                 key = titleMigrations[key];
-				if (obsoleteTitle != key)
+				if (!key.empty())
                 {
-                    LOG(LogLevel::Debug) << "Obsolete title " << obsoleteTitle << " will be changed to " << key << "\n";
+                    LOG(LogLevel::Debug) << "\t\tObsolete title " << obsoleteTitle << " will be changed to " << key << "\n";
+                    titleItr = potentialTitles.find(key);
                 }
-                titleItr = potentialTitles.find(key);
+                else
+                {
+                    key = obsoleteTitle;
+                }
 			}
 			if (titleItr == potentialTitles.end())
 			{

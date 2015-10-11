@@ -38,7 +38,7 @@ public:
     {
         container.push_back(objectData.get());
     }
-
+    std::shared_ptr<ObjectMock> getDataPointer() { return objectData; }
     ObjectMock& getData() const { return *objectData; }
     std::vector<IObject*> getContainer() const { return container; }
 

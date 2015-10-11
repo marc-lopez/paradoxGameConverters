@@ -32,6 +32,7 @@
 #include "Configuration.h"
 #include "Parsers/Parser.h"
 #include "Parsers/Object.h"
+#include "Parsers/LandedTitleMigrationsParser.h"
 #include "EU3World\EU3World.h"
 #include "EU3World\EU3Country.h"
 #include "EU3World\EU3Tech.h"
@@ -73,6 +74,15 @@ bool doParseDirectoryContents(const std::string& directory, std::function<void(O
 	_findclose(fileListing);
 
 	return true;
+}
+
+void parseLandedTitleMigrations(CK2World& world)
+{
+    LOG(LogLevel::Info) << "\tParsing landed title migrations\n";
+    auto fileData = doParseFile("landed_title_migrations.txt");
+    parsers::LandedTitleMigrationsParser landedTitleMigrationsParser;
+    auto landedTitleMigrations = landedTitleMigrationsParser.parse(std::shared_ptr<Object>(fileData));
+    world.addTitleMigrations(landedTitleMigrations);
 }
 
 int main(int argc, char * argv[])
@@ -232,6 +242,8 @@ int main(int argc, char * argv[])
 			}
 		}
 	}
+
+	parseLandedTitleMigrations(srcWorld);
 
 	inform("\tGetting traits");
 	if (Configuration::getCK2Mod() != "")

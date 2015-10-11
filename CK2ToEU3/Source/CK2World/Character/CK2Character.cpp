@@ -1073,6 +1073,10 @@ bool CK2Character::isDirectVassalOf(const CK2Character* other) const
 
 int CK2Character::getOpinionOf(const CK2Character* other, CK2Version& version) const
 {
+    if (primaryHolding == nullptr)
+    {
+		LOG(LogLevel::Warning) << other->getCapitalString() << " has no holding data. It might be obsolete.\n";
+    }
 	int relations = 0;
 
 	// ***** scaled intrinsics (variable - e.g. prestige, state diplomacy, piety...)

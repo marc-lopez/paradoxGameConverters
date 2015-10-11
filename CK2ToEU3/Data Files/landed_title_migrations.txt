@@ -1,0 +1,11 @@
+mappings={
+
+#Landed Title Migrations
+#Handles landed_title changes from one version to new, which typically happens if map expansions were involved (the RoI patch is an example). If the converter encounters a title not available in the CK2 install, it will check this file and attempt to use the new title as a replacement 
+
+# link = { old =  new =  }
+
+link = { old = b_lori new = b_lori_berd }
+link = { old = k_seljuk_turks new = e_seljuk_turks }
+
+}
