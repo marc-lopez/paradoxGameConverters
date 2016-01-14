@@ -21,7 +21,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #include <gtest/gtest.h>
 #include "Helpers/ObjectDataHelper.h"
-#include "Parsers/LandedMigrationsParser.h"
+#include "Parsers/LandedTitleMigrationsParser.h"
 
 using namespace testing;
 using namespace helpers;
@@ -41,7 +41,7 @@ TEST_F(LandedTitleMigrationsParserShould, ProcessParsedFileToMap)
     ObjectDataHelper fileData;
     ObjectDataHelper mappingData;
     ObjectDataHelper mappingObj;
-    LandedMigrationsParser parser;
+    LandedTitleMigrationsParser parser;
 
     EXPECT_CALL(fileData.getData(), getValue("mappings")).WillRepeatedly(Return(mappingData.getContainer()));
     EXPECT_CALL(mappingData.getData(), getLeaves()).WillRepeatedly(Return(mappingObj.getContainer()));

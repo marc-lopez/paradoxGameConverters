@@ -20,6 +20,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #include <map>
+#include <memory>
 #include "Mocks/ObjectMock.h"
 #include "Configuration.h"
 #include "Parsers/Object.h"
@@ -47,8 +48,8 @@ protected:
 
 	std::vector<IObject*> getSampleDemsneData()
 	{
-	    auto TITLE_INNER_KEY = "title";
-	    auto PRIMARY_TITLE_KEY = "primary";
+	    constexpr auto TITLE_INNER_KEY = "title";
+	    constexpr auto PRIMARY_TITLE_KEY = "primary";
 
 		Object *primaryTitleInnerObj = new Object(TITLE_INNER_KEY);
 		primaryTitleInnerObj->setValue(SAMPLE_TITLE_NAME);
@@ -125,7 +126,31 @@ TEST_F(CK2CharacterShould, BeSunniIfBektashiHeresyNotAvailableInGame)
     CK2Religion::parseReligions(&religionsMock);
     CK2Character sampleCharacter(&saveDataMock, dynasties, traits, common::date());
 
-    ASSERT_EQ(sampleCharacter.getReligion(), CK2Religion::getReligion(SUNNI_KEY));
+    ASSERT_EQ(CK2Religion::getReligion(SUNNI_KEY), sampleCharacter.getReligion());
+}
+
+TEST_F(CK2CharacterShould, GetItsMappedPrimaryTitleStringIfDemesnePrimaryTitleStringEmpty)
+{
+    int color[3];
+	CK2Title sampleTitle(SAMPLE_TITLE_NAME, color);
+
+	map<string, CK2Title*> titleMap;
+	titleMap.insert(std::pair<string, CK2Title*>(SAMPLE_TITLE_NAME, &sampleTitle));
+
+    std::vector<IObject*> demesneData;
+    auto demesneMock = std::make_shared<ObjectMock>();
+    EXPECT_CALL(*demesneMock, getValue(_)).WillRepeatedly(Return(std::vector<IObject*>()));
+    EXPECT_CALL(*demesneMock, getTitle(_)).WillRepeatedly(Return(std::string()));
+    demesneData.push_back(&*demesneMock);
+
+    setDefaultExpectations();
+	EXPECT_CALL(saveDataMock, getValue(DEMESNE_KEY)).WillRepeatedly(Return(demesneData));
+
+    CK2Character sampleCharacter(&saveDataMock, dynasties, traits, common::date());
+    sampleTitle.setHolder(&sampleCharacter);
+    sampleCharacter.setPrimaryTitle(titleMap);
+
+    ASSERT_EQ(SAMPLE_TITLE_NAME, sampleCharacter.getPrimaryTitleString());
 }
 
 } // namespace character

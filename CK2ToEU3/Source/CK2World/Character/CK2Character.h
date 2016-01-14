@@ -102,6 +102,7 @@ class CK2Character
 		int*							getStateStats()			const { return (int*)stateStats; };
 		vector<CK2Title*>			getTitles()					const { return titles; };
 		CK2Title*					getPrimaryTitle()			const { return primaryTitle; }
+		string                      getPrimaryTitleString()     const;
 		CK2Character*				getFather()					const { return father; };
 		CK2Character*				getRegent()					const { return regent; };
 		CK2Character**				getAdvisors()				const { return (CK2Character**)advisors; };

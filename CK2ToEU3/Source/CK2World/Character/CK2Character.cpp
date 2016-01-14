@@ -308,6 +308,11 @@ void CK2Character::readOpinionModifiers(Object* obj)
 	}
 }
 
+std::string CK2Character::getPrimaryTitleString() const
+{
+    auto demesnePrimaryTitle = demesne->getPrimaryTitle();
+    return (demesnePrimaryTitle == std::string()) ? getPrimaryTitle()->getTitleString() : demesnePrimaryTitle;
+}
 
 CK2Character* CK2Character::getPrimarySpouse() const
 {
@@ -887,7 +892,6 @@ void CK2Character::mergeTitles(bool useInheritance)
 	}
 }
 
-
 void CK2Character::setPrimaryTitle(const map<string, CK2Title*>& titleMap)
 {
 	// find the title
@@ -944,6 +948,7 @@ void CK2Character::setPrimaryTitle(const map<string, CK2Title*>& titleMap)
 			}
 		}
 	}
+
 	if ((primaryTitle == NULL) && (titles.size() > 0))
 	{
 		log("Warning: %s %s does not have a primary title.\n", name.c_str(), dynasty->getName().c_str());
