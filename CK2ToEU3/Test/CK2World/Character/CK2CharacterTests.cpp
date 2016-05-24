@@ -128,6 +128,8 @@ TEST_F(CK2CharacterShould, BeSunniIfBektashiHeresyNotAvailableInGame)
     CK2Character sampleCharacter(&saveDataMock, dynasties, traits, common::date());
 
     ASSERT_EQ(CK2Religion::getReligion(SUNNI_KEY), sampleCharacter.getReligion());
+
+    CK2Religion::forgetReligions();
 }
 
 TEST_F(CK2CharacterShould, GetItsMappedPrimaryTitleStringIfDemesnePrimaryTitleStringEmpty)

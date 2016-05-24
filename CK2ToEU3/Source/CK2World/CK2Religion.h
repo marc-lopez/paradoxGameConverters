@@ -46,6 +46,7 @@ public:
 	string getGroup() const { return group; }
 
 	static void parseReligions(IObject* obj);
+	static void forgetReligions();
 	static CK2Religion* getReligion(string name);
 
 private:
