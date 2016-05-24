@@ -67,6 +67,7 @@ protected:
 	{
         EXPECT_CALL(saveDataMock, getKey()).WillRepeatedly(Return(std::string()));
         EXPECT_CALL(saveDataMock, getLeaf(_)).WillRepeatedly(Return(std::string()));
+        EXPECT_CALL(saveDataMock, getLeaf("birth_date")).WillRepeatedly(Return(std::string("1.1.1")));
         EXPECT_CALL(saveDataMock, getValue(_)).WillRepeatedly(Return(std::vector<IObject*>()));
 	}
 
