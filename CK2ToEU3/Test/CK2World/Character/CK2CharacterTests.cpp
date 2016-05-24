@@ -113,10 +113,10 @@ TEST_F(CK2CharacterShould, BeSunniIfBektashiHeresyNotAvailableInGame)
     constexpr auto MUSLIM_KEY = "muslim";
     constexpr auto RELIGION_KEY = "religion";
 
-    Object sunniObj(SUNNI_KEY);
-    std::vector<IObject*> muslimReligions = { &sunniObj };
+    IObject* sunniObj = new Object(SUNNI_KEY);
+    std::vector<IObject*> muslimReligions = { sunniObj };
     Object muslimGroupObj(MUSLIM_KEY);
-    muslimGroupObj.setValue(&sunniObj);
+    muslimGroupObj.setValue(static_cast<Object *>(sunniObj));
     std::vector<IObject*> religionGroups = { &muslimGroupObj };
     ObjectMock religionsMock;
 

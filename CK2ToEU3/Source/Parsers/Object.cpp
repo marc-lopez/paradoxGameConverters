@@ -62,12 +62,13 @@ isObjList(false)
 	key = k;
 }
 
+#include<iostream>
 
 Object::~Object() {
-	for (objiter i = objects.begin(); i != objects.end(); ++i)
-	{
-		delete (*i);
-	}
+    for (auto i : objects)
+    {
+        delete (i);
+    }
 	if (br == this)
 	{
 		br = 0;
