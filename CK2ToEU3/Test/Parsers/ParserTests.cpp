@@ -41,6 +41,11 @@ protected:
 	{
 		initParser();
 	}
+
+	virtual void TearDown()
+	{
+	    terminateParser();
+	}
 };
 
 TEST_P(ParserShould, RecognizeUnicodeCharactersInNestedAssignments) {

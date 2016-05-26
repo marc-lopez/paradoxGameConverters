@@ -59,22 +59,25 @@ CK2World::CK2World(std::shared_ptr<LogBase> logger) : logOutput(logger)
 	wars.clear();
 }
 
-
-void CK2World::init(IObject* obj, const cultureGroupMapping& cultureGroupMap)
+CK2World::~CK2World()
 {
-	buildingFactory = new CK2BuildingFactory(&cultureGroupMap);
+}
+
+void CK2World::init(IObject* obj, const std::shared_ptr<cultureGroupMapping> cultureGroupMap)
+{
+	buildingFactory = std::make_shared<CK2BuildingFactory>(cultureGroupMap);
 
 	// get version
 	vector<IObject*> versionObj = obj->getValue("version");
 	if (versionObj.size() > 0)
 	{
-		version = new CK2Version( versionObj[0]->getLeaf() );
+		version = std::make_shared<CK2Version>(versionObj[0]->getLeaf());
 	}
 	else
 	{
 		log("\tError: Unknown version format.\n");
 		printf("\tError: Unknown version format.\n");
-		version = new CK2Version("0.0");
+		version = std::make_shared<CK2Version>("0.0");
 	}
 
 	// get conversion date
@@ -96,10 +99,10 @@ void CK2World::init(IObject* obj, const cultureGroupMapping& cultureGroupMap)
 	for (unsigned int i = 0; i < dynastyLeaves.size(); i++)
 	{
 		int number = atoi( dynastyLeaves[i]->getKey().c_str() );
-		CK2Dynasty* newDynasty = new CK2Dynasty(static_cast<Object*>(dynastyLeaves[i]));
+		auto newDynasty = std::make_shared<CK2Dynasty>(static_cast<Object*>(dynastyLeaves[i]));
 		dynasties.insert( make_pair(number, newDynasty) );
 	}
-	CK2Dynasty* newDynasty = new CK2Dynasty(0, "Lowborn");
+	auto newDynasty = std::make_shared<CK2Dynasty>(0, "Lowborn");
 	dynasties.insert( make_pair(0, newDynasty) );
 
 	// get characters
@@ -109,15 +112,15 @@ void CK2World::init(IObject* obj, const cultureGroupMapping& cultureGroupMap)
 	for (unsigned int i = 0; i < characterLeaves.size(); i++)
 	{
 		int number = atoi( characterLeaves[i]->getKey().c_str() );
-		CK2Character* newCharacter = new CK2Character(characterLeaves[i], dynasties,
+		auto newCharacter = std::make_shared<CK2Character>(characterLeaves[i], dynasties,
 			traits, endDate);
 		characters.insert( make_pair(number, newCharacter) );
 	}
 
 	printf("\tCreating family trees\n");
-	for (map<int, CK2Character*>::iterator i = characters.begin(); i != characters.end(); i++)
+	for (auto character : characters)
 	{
-		i->second->setParents(characters);
+		character.second->setParents(characters);
 	}
 
 	printf("\tGetting opinion modifiers\n");
@@ -128,7 +131,7 @@ void CK2World::init(IObject* obj, const cultureGroupMapping& cultureGroupMap)
 		if (key.substr(0, 4) == "rel_")
 		{
 			int charId = atoi(key.c_str() + 4);
-			map<int, CK2Character*>::const_iterator chitr = characters.find(charId);
+			auto chitr = characters.find(charId);
 			if (chitr == characters.end())
 			{
 				log("%s bad LHS character ID %d\n", key.c_str(), charId);
@@ -149,13 +152,13 @@ void CK2World::init(IObject* obj, const cultureGroupMapping& cultureGroupMap)
 			wars.push_back(war);
 			for (vector<int>::iterator witr = war->attackers.begin(); witr != war->attackers.end(); ++witr)
 			{
-				map<int, CK2Character*>::iterator attacker = characters.find(*witr);
+				auto attacker = characters.find(*witr);
 				if (attacker != characters.end())
 					attacker->second->addWar(war);
 			}
 			for (vector<int>::iterator witr = war->defenders.begin(); witr != war->defenders.end(); ++witr)
 			{
-				map<int, CK2Character*>::iterator defender = characters.find(*witr);
+				auto defender = characters.find(*witr);
 				if (defender != characters.end())
 					defender->second->addWar(war);
 			}
@@ -167,10 +170,10 @@ void CK2World::init(IObject* obj, const cultureGroupMapping& cultureGroupMap)
 	readSavedTitles(leaves);
 
 	// set primary titles
-	for (map<int, CK2Character*>::iterator i = characters.begin(); i != characters.end(); i++)
+	for (auto character : characters)
 	{
-		if (!i->second) continue;
-		i->second->setPrimaryTitle(titles);
+		if (!character.second) continue;
+		character.second->setPrimaryTitle(titles);
 	}
 
 	std::cout << "\tGetting provinces" << std::endl;
@@ -180,8 +183,8 @@ void CK2World::init(IObject* obj, const cultureGroupMapping& cultureGroupMap)
 
 		if (atoi(key.c_str()) > 0)
 		{
-			CK2Province* newProvince = new CK2Province(static_cast<Object*>(leaves[i]), titles, characters,
-				buildingFactory, *version);
+			auto newProvince = std::make_shared<CK2Province>(static_cast<Object*>(leaves[i]), titles,
+                characters, buildingFactory.get(), *version);
 			provinces.insert( make_pair(atoi(key.c_str()), newProvince) );
 
 			vector<CK2Barony*> newBaronies = newProvince->getBaronies();
@@ -200,8 +203,8 @@ void CK2World::init(IObject* obj, const cultureGroupMapping& cultureGroupMap)
 
             if (atoi(key.c_str()) > 0)
             {
-                CK2Province* newProvince = new CK2Province(static_cast<Object*>(provinceObj), titles, characters,
-                    buildingFactory, *version);
+                auto newProvince = std::make_shared<CK2Province>(static_cast<Object*>(provinceObj), titles,
+                    characters, buildingFactory.get(), *version);
                 provinces.insert( make_pair(atoi(key.c_str()), newProvince) );
 
                 vector<CK2Barony*> newBaronies = newProvince->getBaronies();
@@ -290,9 +293,9 @@ void CK2World::init(IObject* obj, const cultureGroupMapping& cultureGroupMap)
 	}
 
 	printf("\tSetting employers\n");
-	for (map<int, CK2Character*>::iterator i = characters.begin(); i != characters.end(); i++)
+	for (auto characterPair : characters)
 	{
-		CK2Character* character = i->second;
+		auto character = characterPair.second;
 		if (character != NULL)
 		{
 			character->setEmployer(characters, baronies);
@@ -300,9 +303,9 @@ void CK2World::init(IObject* obj, const cultureGroupMapping& cultureGroupMap)
 	}
 
 	printf("\tCalculating state stats\n");
-	for (map<int, CK2Character*>::iterator itr = characters.begin(); itr != characters.end(); ++itr)
+	for (auto characterPair : characters)
 	{
-		CK2Character* character = itr->second;
+		auto character = characterPair.second;
 		if (character != NULL)
 		{
 			character->setStateStats();
@@ -325,7 +328,7 @@ void CK2World::readSavedTitles(vector<IObject*> leaves)
 		}
 		if ( (key.substr(0, 2) == "e_") || (key.substr(0, 2) == "k_") || (key.substr(0, 2) == "d_") || (key.substr(0, 2) == "c_") || (key.substr(0, 2) == "b_") )
 		{
-			map<string, CK2Title*>::iterator titleItr = potentialTitles.find(key);
+			auto titleItr = potentialTitles.find(key);
 			if (titleItr == potentialTitles.end())
 			{
 			    auto obsoleteTitle = key;
@@ -344,7 +347,7 @@ void CK2World::readSavedTitles(vector<IObject*> leaves)
 			{
 				int color[3] = {0,0,0};
 				CK2Title* dynTitle = new CK2Title(key, color);
-				dynTitle->init(static_cast<Object*>(leaf), characters, buildingFactory);
+				dynTitle->init(static_cast<Object*>(leaf), characters, buildingFactory.get());
 				if (!dynTitle->isDynamic())
 				{
 					log("\t\tWarning: tried to create title %s, but it is neither a potential title nor a dynamic title.\n", key.c_str());
@@ -354,8 +357,8 @@ void CK2World::readSavedTitles(vector<IObject*> leaves)
 			}
 			else
 			{
-				titleItr->second->init(leaf, characters, buildingFactory);
-				titles.insert( make_pair(titleItr->second->getTitleString(), titleItr->second) );
+				titleItr->second->init(leaf, characters, buildingFactory.get());
+				titles.insert( make_pair(titleItr->second->getTitleString(), titleItr->second.get()) );
 			}
 		}
 	}
@@ -380,7 +383,7 @@ void CK2World::addDynasties(Object* obj)
 	for (unsigned int i = 0; i < dynastyLeaves.size(); i++)
 	{
 		int number = atoi( dynastyLeaves[i]->getKey().c_str() );
-		CK2Dynasty* newDynasty = new CK2Dynasty(static_cast<Object*>(dynastyLeaves[i]));
+		auto newDynasty = std::make_shared<CK2Dynasty>(static_cast<Object*>(dynastyLeaves[i]));
 		dynasties.insert( make_pair(number, newDynasty) );
 	}
 }
@@ -411,7 +414,7 @@ void CK2World::addPotentialTitles(IObject* obj)
 	vector<IObject*> leaves = obj->getLeaves();
 	for (vector<IObject*>::iterator itr = leaves.begin(); itr < leaves.end(); itr++)
 	{
-		map<string, CK2Title*>::iterator titleItr = potentialTitles.find( (*itr)->getKey() );
+		auto titleItr = potentialTitles.find( (*itr)->getKey() );
 		if (titleItr == potentialTitles.end())
 		{
 			int color[3] = {0, 0, 0};
@@ -422,7 +425,7 @@ void CK2World::addPotentialTitles(IObject* obj)
 				color[1] = atoi(colorObjs[0]->getTokens()[1].c_str() );
 				color[2] = atoi(colorObjs[0]->getTokens()[2].c_str() );
 			}
-			CK2Title* newTitle = new CK2Title( (*itr)->getKey(), color);
+			auto newTitle = std::make_shared<CK2Title>( (*itr)->getKey(), color);
 			potentialTitles.insert( make_pair((*itr)->getKey(), newTitle) );
 			titleItr = potentialTitles.find( (*itr)->getKey() );
 		}
@@ -455,10 +458,10 @@ void CK2World::mergeTitles()
 	else if (mergeTitlesSetting == "always")
 		useInheritance = false;
 
-	for (map<int, CK2Character*>::iterator citr = characters.begin(); citr != characters.end(); ++citr)
+	for (auto character : characters)
 	{
-		if (!citr->second) continue;
-		citr->second->mergeTitles(useInheritance);
+		if (!character.second) continue;
+		character.second->mergeTitles(useInheritance);
 	}
 
 	independentTitles.clear();
@@ -486,14 +489,14 @@ vector<double> CK2World::getAverageTechLevels(CK2Version& version) const
 		{
 			avgTechLevels[i] = 0.0f;
 		}
-		for(map<int, CK2Province*>::const_iterator provItr = provinces.begin(); provItr != provinces.end(); provItr++)
-		{
-			vector<double> currentTechLevels = provItr->second->getTechLevels();
+		for (auto province : provinces)
+        {
+			vector<double> currentTechLevels = province.second->getTechLevels();
 			for (unsigned int i = 0; i <= TECH_LEGALISM_OLD; i++)
 			{
 				avgTechLevels[i] += currentTechLevels[i];
 			}
-		}
+        }
 		for (unsigned int i = 0; i <= TECH_LEGALISM_OLD; i++)
 		{
 			avgTechLevels[i] /= provinces.size();
@@ -506,9 +509,9 @@ vector<double> CK2World::getAverageTechLevels(CK2Version& version) const
 		{
 			avgTechLevels[i] = 0.0f;
 		}
-		for(map<int, CK2Province*>::const_iterator provItr = provinces.begin(); provItr != provinces.end(); provItr++)
+		for(auto province : provinces)
 		{
-			vector<double> currentTechLevels = provItr->second->getTechLevels();
+			vector<double> currentTechLevels = province.second->getTechLevels();
 			for (unsigned int i = 0; i <= TECH_LEGALISM; i++)
 			{
 				avgTechLevels[i] += currentTechLevels[i];

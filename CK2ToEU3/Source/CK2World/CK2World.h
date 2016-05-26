@@ -54,7 +54,8 @@ class CK2World
 {
 	public:
 		CK2World(std::shared_ptr<LogBase>);
-		void							init(IObject*, const cultureGroupMapping& cultureGroupMap);
+		~CK2World();
+		void							init(IObject*, std::shared_ptr<cultureGroupMapping> cultureGroupMap);
 		void							addBuildingTypes(Object*);
 		void							addDynasties(Object*);
 		void							addTraits(Object*);
@@ -67,12 +68,24 @@ class CK2World
 		void							mergeTitles();
 
 		std::shared_ptr<LogBase>		getLogger()				const	{ return logOutput; };
-		CK2Version*					    getVersion()				const	{ return version; };
+		std::shared_ptr<CK2Version>	    getVersion() const
+		{
+		    return std::weak_ptr<CK2Version>(version).lock();
+        };
 		common::date					getEndDate()				const { return endDate; };
 		map<string, CK2Title*>	getIndependentTitles()	const { return independentTitles; };
 		map<string, CK2Title*>	getAllTitles()				const { return titles; };
 		CK2Title*					getHRETitle()				const { return hreTitle; };
-		map<int, CK2Province*>	getProvinces()				const { return provinces; };
+		map<int, std::shared_ptr<CK2Province>>	getProvinces() const
+		{
+		    map<int, std::shared_ptr<CK2Province>> result;
+		    for (auto province : provinces)
+            {
+                std::weak_ptr<CK2Province> provinceWeakRef(province.second);
+                result.insert(std::make_pair(province.first, provinceWeakRef.lock()));
+            }
+		    return result;
+        };
 		map<string, CK2Title*>	getHREMembers()			const { return hreMembers; };
 
 
@@ -81,19 +94,19 @@ class CK2World
 	    void readSavedTitles(vector<IObject*>);
 
 		std::shared_ptr<LogBase> logOutput;
-		CK2BuildingFactory*		buildingFactory;
+		std::shared_ptr<CK2BuildingFactory>		buildingFactory;
 
-		CK2Version*					version;
+		std::shared_ptr<CK2Version>				version;
 		common::date				endDate;
 		map<string, CK2Title*>	independentTitles;
 		map<string, CK2Title*>	hreMembers;
-		map<int, CK2Dynasty*>	dynasties;
-		map<int, CK2Character*>	characters;
+		map<int, std::shared_ptr<CK2Dynasty>>	dynasties;
+		map<int, std::shared_ptr<CK2Character>>	characters;
 		map<int, CK2Trait*>		traits;
-		map<string, CK2Title*>	potentialTitles;
+		map<string, std::shared_ptr<CK2Title>>	potentialTitles;
 		map<string, CK2Title*>	titles;
 		CK2Title*					hreTitle;
-		map<int, CK2Province*>	provinces;
+		map<int, std::shared_ptr<CK2Province>>	provinces;
 		map<string, CK2Barony*>	baronies;
 		vector<CK2War*>			wars;
 		map<string, string>     titleMigrations;

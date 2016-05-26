@@ -28,6 +28,7 @@
 #include <string>
 #include <list>
 #include <map>
+#include <memory>
 #include <vector>
 #include "boost\move\unique_ptr.hpp"
 #include "Common\Date.h"
@@ -66,13 +67,13 @@ class CK2Character
 {
 	public:
 		CK2Character() {};
-		CK2Character(IObject*, const map<int, CK2Dynasty*>&, const map<int, CK2Trait*>&, common::date theDate);
+		CK2Character(IObject*, const map<int, std::shared_ptr<CK2Dynasty>>&, const map<int, CK2Trait*>&, common::date theDate);
 		void							readOpinionModifiers(Object* obj);
 
 		void							addTitle(CK2Title*);
 		void							removeTitle(CK2Title*);
-		void							setParents(map<int, CK2Character*>&);
-		void							setEmployer(map<int, CK2Character*>&, map<string, CK2Barony*>&);
+		void							setParents(map<int, std::shared_ptr<CK2Character>>&);
+		void							setEmployer(map<int, std::shared_ptr<CK2Character>>&, map<string, CK2Barony*>&);
 		void							setGavelkindHeirs(string);
 		void							setStateStats();
 

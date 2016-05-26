@@ -188,6 +188,10 @@ void initParser()
 	epsilon	= false;
 }
 
+void terminateParser()
+{
+    delete topLevel;
+}
 
 string bufferOneObject(istream& read)
 {

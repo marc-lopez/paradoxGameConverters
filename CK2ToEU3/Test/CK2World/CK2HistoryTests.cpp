@@ -56,14 +56,14 @@ TEST_F(CK2HistoryShould, SetVersion2Point2SaveFormatHolder)
     auto CHARACTER_KEY = "character";
     auto SAMPLE_CHARACTER_ID = 1;
 
-	Object holderInnerObj(CHARACTER_KEY);
-	holderInnerObj.setValue(std::to_string(SAMPLE_CHARACTER_ID));
-	Object holderObj(HOLDER_KEY);
-	holderObj.setValue(&holderInnerObj);
-	holderObjCollection.push_back(&holderObj);
-	CK2Character* sampleCharacter = new CK2Character();
+	auto holderInnerObj = new Object(CHARACTER_KEY);
+	holderInnerObj->setValue(std::to_string(SAMPLE_CHARACTER_ID));
+	auto holderObj = new Object(HOLDER_KEY);
+	holderObj->setValue(holderInnerObj);
+	holderObjCollection.push_back(holderObj);
+	auto sampleCharacter = std::make_shared<CK2Character>();
 
-	map<int, CK2Character*> characterMapping
+	map<int, std::shared_ptr<CK2Character>> characterMapping
 	{
         std::make_pair(SAMPLE_CHARACTER_ID, sampleCharacter)
     };
@@ -72,19 +72,8 @@ TEST_F(CK2HistoryShould, SetVersion2Point2SaveFormatHolder)
 
 	CK2History sampleHistory(&historyDataMock, characterMapping);
 
-    ASSERT_EQ(sampleHistory.getHolder(), sampleCharacter);
-    delete sampleCharacter;
-}
-
-TEST_F(CK2HistoryShould, NotCloneCharacterMappingOnCreation)
-{
-	map<int, CK2Character*> characterMapping;
-
-    setExpectations();
-
-	CK2History sampleHistory(&historyDataMock, characterMapping);
-
-    ASSERT_EQ(&(sampleHistory.getCharacterMapping()), &characterMapping);
+    ASSERT_EQ(sampleHistory.getHolder(), sampleCharacter.get());
+    delete holderObj;
 }
 
 } // namespace unittests

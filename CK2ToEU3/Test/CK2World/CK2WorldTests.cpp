@@ -50,7 +50,8 @@ protected:
 
 	virtual void SetUp()
 	{
-		sampleDeJureLiege = new CK2Title(deJureLiegeTitleName, color);
+        cultureGroupMapping = std::make_shared<::cultureGroupMapping>();
+		sampleDeJureLiege = std::make_shared<CK2Title>(deJureLiegeTitleName, color);
 		sampleDeJureLieges.insert(std::make_pair(deJureLiegeTitleName, sampleDeJureLiege));
 		newTitle = new CK2Title(titleName, color);
 		newTitle->setDeJureLiege(sampleDeJureLieges);
@@ -61,15 +62,14 @@ protected:
 	virtual void TearDown()
 	{
 		delete newTitle;
-		delete sampleDeJureLiege;
 	}
 
 	int color[3];
 	string titleName;
 	string deJureLiegeTitleName;
-    cultureGroupMapping cultureGroupMapping;
-	title_map_t sampleDeJureLieges;
-	CK2Title* sampleDeJureLiege;
+    std::shared_ptr<cultureGroupMapping> cultureGroupMapping;
+	map<string, std::shared_ptr<CK2Title>> sampleDeJureLieges;
+	std::shared_ptr<CK2Title> sampleDeJureLiege;
 	CK2Title* newTitle;
 	ObjectDataHelper saveData;
 	ObjectDataHelper provinceDataMock;
@@ -130,10 +130,13 @@ TEST_P(CK2WorldWithObsoleteTitleShould, SubstituteOldTitleWithEquivalent)
     ObjectDataHelper substituteTitle;
 
     ObjectDataHelper defaultObj;
+    ObjectDataHelper gameDateObj;
 
     EXPECT_CALL(saveData.getData(), getLeaves()).WillRepeatedly(Return(oldTitle.getContainer()));
 	EXPECT_CALL(saveData.getData(), getValue(_)).WillRepeatedly(Return(defaultObj.getContainer()));
-	EXPECT_CALL(saveData.getData(), getValue(CHARACTER_KEY)).WillRepeatedly(Return(oldTitleHolder.getContainer()));
+	EXPECT_CALL(saveData.getData(), getValue(CHARACTER_KEY)).WillRepeatedly(
+        Return(oldTitleHolder.getContainer()));
+    EXPECT_CALL(saveData.getData(), getValue("date")).WillRepeatedly(Return(gameDateObj.getContainer()));
 
     EXPECT_CALL(oldTitle.getData(), getKey()).WillRepeatedly(Return(oldTitleRepr));
     EXPECT_CALL(oldTitle.getData(), getValue(HOLDER_KEY)).WillRepeatedly(Return(oldTitleHolder.getContainer()));
@@ -145,6 +148,9 @@ TEST_P(CK2WorldWithObsoleteTitleShould, SubstituteOldTitleWithEquivalent)
 
 	EXPECT_CALL(defaultObj.getData(), getValue(SUB_UNIT_KEY)).WillRepeatedly(Return(std::vector<IObject*>()));
 	EXPECT_CALL(defaultObj.getData(), getValue(ARMY_KEY)).WillRepeatedly(Return(std::vector<IObject*>()));
+	EXPECT_CALL(defaultObj.getData(), getLeaf("birth_date")).WillRepeatedly(Return(std::string("1.1.1")));
+
+	EXPECT_CALL(gameDateObj.getData(), getLeaf()).WillRepeatedly(Return("1.1.1"));
 
     std::map<std::string, std::string> landedTitleMigrations
 	{

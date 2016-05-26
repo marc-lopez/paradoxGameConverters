@@ -66,7 +66,7 @@ CK2Title::CK2Title(string _titleString, int* _color)
 	color[2]				= _color[2];
 }
 
-void CK2Title::init(IObject* obj,  map<int, CK2Character*>& characters, const CK2BuildingFactory* buildingFactory)
+void CK2Title::init(IObject* obj,  map<int, std::shared_ptr<CK2Character>>& characters, const CK2BuildingFactory* buildingFactory)
 {
     rawData = obj;
 	titleString = obj->getKey();
@@ -74,7 +74,7 @@ void CK2Title::init(IObject* obj,  map<int, CK2Character*>& characters, const CK
 	vector<IObject*> holderObjs = obj->getValue("holder");
 	if (holderObjs.size() > 0)
 	{
-		setHolder(characters[ atoi( holderObjs[0]->getLeaf().c_str() ) ]);
+		setHolder(characters[ atoi( holderObjs[0]->getLeaf().c_str() ) ].get());
 	}
 	heir = NULL;
 	successionLaw = obj->getLeaf("succession");
@@ -234,7 +234,7 @@ void CK2Title::addToHRE()
 }
 
 
-void CK2Title::determineHeir(map<int, CK2Character*>& characters)
+void CK2Title::determineHeir(map<int, std::shared_ptr<CK2Character>>& characters)
 {
 	if (holder != NULL)
 	{
@@ -314,18 +314,18 @@ void CK2Title::setHolder(CK2Character* newHolder)
 	}
 }
 
-void CK2Title::setDeJureLiege(const map<string, CK2Title*>& titles)
+void CK2Title::setDeJureLiege(const map<string, std::shared_ptr<CK2Title>>& titles)
 {
 	if (  (deJureLiegeString != "") && (deJureLiegeString != "---") && ( (deJureLiege == NULL) || (deJureLiege->getTitleString() != deJureLiegeString ) )  )
 	{
-		map<string, CK2Title*>::const_iterator titleItr = titles.find(deJureLiegeString);
+		auto titleItr = titles.find(deJureLiegeString);
 		if (titleItr != titles.end())
 		{
 			if (deJureLiege != NULL)
 			{
 				deJureLiege->removeDeJureVassal(this);
 			}
-			deJureLiege = titleItr->second;
+			deJureLiege = titleItr->second.get();
 			deJureLiege->addDeJureVassal(this);
 		}
 		else
@@ -347,7 +347,7 @@ void CK2Title::setDeJureLiege(CK2Title* _deJureLiege)
 }
 
 
-void CK2Title::addDeJureVassals(vector<IObject*> obj, map<string, CK2Title*>& titles, CK2World* world)
+void CK2Title::addDeJureVassals(vector<IObject*> obj, map<string, std::shared_ptr<CK2Title>>& titles, CK2World* world)
 {
 
 	for (vector<IObject*>::iterator itr = obj.begin(); itr < obj.end(); itr++)
@@ -357,7 +357,7 @@ void CK2Title::addDeJureVassals(vector<IObject*> obj, map<string, CK2Title*>& ti
 		{
 			continue;
 		}
-		map<string, CK2Title*>::iterator titleItr = titles.find( (*itr)->getKey() );
+		auto titleItr = titles.find( (*itr)->getKey() );
 		if (titleItr == titles.end())
 		{
 			int color[3] = {0, 0, 0};
@@ -368,7 +368,7 @@ void CK2Title::addDeJureVassals(vector<IObject*> obj, map<string, CK2Title*>& ti
 				color[1] = atoi(colorObjs[0]->getTokens()[1].c_str() );
 				color[2] = atoi(colorObjs[0]->getTokens()[2].c_str() );
 			}
-			CK2Title* newTitle = new CK2Title( (*itr)->getKey(), color);
+			auto newTitle = std::make_shared<CK2Title>( (*itr)->getKey(), color);
 			titles.insert( make_pair((*itr)->getKey(), newTitle) );
 			titleItr = titles.find( (*itr)->getKey() );
 		}
@@ -435,7 +435,7 @@ void CK2Title::getCultureWeights(map<string, int>& cultureWeights, const culture
 	}
 }
 
-CK2Character* CK2Title::getElectiveHeir(map<int, CK2Character*>& characters)
+CK2Character* CK2Title::getElectiveHeir(map<int, std::shared_ptr<CK2Character>>& characters)
 {
 	int nominee = -1;
 	int mostVotes = 0;
@@ -448,7 +448,7 @@ CK2Character* CK2Title::getElectiveHeir(map<int, CK2Character*>& characters)
 		}
 	}
 
-	return characters[nominee];
+	return characters[nominee].get();
 }
 
 

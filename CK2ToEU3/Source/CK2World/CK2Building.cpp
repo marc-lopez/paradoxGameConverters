@@ -178,11 +178,10 @@ CK2Building::CK2Building(Object* obj)
 map<string, const CK2Building*> CK2BuildingFactory::buildings;
 
 
-CK2BuildingFactory::CK2BuildingFactory(const cultureGroupMapping* _cultureGroupMap)
+CK2BuildingFactory::CK2BuildingFactory(std::shared_ptr<cultureGroupMapping> _cultureGroupMap)
 {
 	cultureGroupMap = _cultureGroupMap;
 }
-
 
 void CK2BuildingFactory::addBuildingTypes(Object* obj)
 {

@@ -26,6 +26,7 @@
 
 
 #include <map>
+#include <memory>
 #include "Common\Date.h"
 #include "Parsers\IObject.h"
 using namespace std;
@@ -38,17 +39,26 @@ class CK2Character;
 class CK2History
 {
 	public:
-		CK2History(IObject*, map<int, CK2Character*>&);
+		CK2History(IObject*, map<int, std::shared_ptr<CK2Character>>&);
 
 		common::date		getWhen()	const { return when; };
 		CK2Character*	    getHolder()	const { return holder; };
-		map<int, CK2Character*>& getCharacterMapping() const { return characterMapping; }
+		map<int, std::shared_ptr<CK2Character>> getCharacterMapping() const
+		{
+		    map<int, std::shared_ptr<CK2Character>> result;
+		    for (auto characterPair : characterMapping)
+            {
+                std::weak_ptr<CK2Character> characterWeakRef(characterPair.second);
+                result.insert(std::make_pair(characterPair.first, characterWeakRef.lock()));
+            }
+		    return result;
+        };
 	private:
         CK2Character*       getHolderObj(string);
 
 		common::date		when;
 		CK2Character*	    holder;
-		map<int, CK2Character*>& characterMapping;
+		map<int, std::shared_ptr<CK2Character>>& characterMapping;
 };
 
 

@@ -26,7 +26,7 @@
 
 #include <iostream>
 
-CK2History::CK2History(IObject* obj, map<int, CK2Character*>& characters) :
+CK2History::CK2History(IObject* obj, map<int, std::shared_ptr<CK2Character>>& characters) :
     characterMapping(characters)
 {
     constexpr char HOLDER_KEY[] = "holder";
@@ -44,5 +44,5 @@ CK2History::CK2History(IObject* obj, map<int, CK2Character*>& characters) :
 
 CK2Character* CK2History::getHolderObj(string holderId)
 {
-    return characterMapping[ atoi( holderId.c_str() ) ];
+    return characterMapping[ atoi( holderId.c_str() ) ].get();
 }

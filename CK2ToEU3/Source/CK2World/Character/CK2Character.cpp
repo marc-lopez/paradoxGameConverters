@@ -40,7 +40,7 @@
 
 
 
-CK2Character::CK2Character(IObject* obj, const map<int, CK2Dynasty*>& dynasties,
+CK2Character::CK2Character(IObject* obj, const map<int, std::shared_ptr<CK2Dynasty>>& dynasties,
 						   const map<int, CK2Trait*>& traitTypes, common::date theDate) :
 	capital(NULL), primaryTitle(NULL), demesne(new ck2::character::Demesne(obj->getValue("demesne")))
 {
@@ -68,10 +68,10 @@ CK2Character::CK2Character(IObject* obj, const map<int, CK2Dynasty*>& dynasties,
 		score = 0.0;
 
 	dynasty		= NULL;
-	map<int, CK2Dynasty*>::const_iterator dynItr	= dynasties.find(  atoi( obj->getLeaf("dynasty").c_str() )  );
+	auto dynItr	= dynasties.find(  atoi( obj->getLeaf("dynasty").c_str() )  );
 	if (dynItr != dynasties.end())
 	{
-		dynasty = dynItr->second;
+		dynasty = dynItr->second.get();
 		dynasty->addMember(this);
 	}
 	else
@@ -367,19 +367,19 @@ void CK2Character::removeTitle(CK2Title* oldTitle)
 }
 
 
-static CK2Character* GetCharacterNoInsert(map<int, CK2Character*>& characters, int num)
+static CK2Character* GetCharacterNoInsert(map<int, std::shared_ptr<CK2Character>>& characters, int num)
 {
 	// std::map<>::Operator[] has the side effect of inserting the default value if the key is not found.
 	// use std::map<>::find() instead, and return NULL if not found, to prevent adding NULL characters to the character map.
-	map<int, CK2Character*>::iterator itr = characters.find(num);
+	auto itr = characters.find(num);
 	if (itr != characters.end())
-		return itr->second;
+		return itr->second.get();
 	log("Error: Character %d has a relationship with another character, but could not be found.\n", num);
 	return NULL;
 }
 
 
-void CK2Character::setParents(map<int, CK2Character*>& characters)
+void CK2Character::setParents(map<int, std::shared_ptr<CK2Character>>& characters)
 {
 	if (fatherNum != -1)
 	{
@@ -448,11 +448,11 @@ void CK2Character::setParents(map<int, CK2Character*>& characters)
 }
 
 
-void CK2Character::setEmployer(map<int, CK2Character*>& characters, map<string, CK2Barony*>& baronies)
+void CK2Character::setEmployer(map<int, std::shared_ptr<CK2Character>>& characters, map<string, CK2Barony*>& baronies)
 {
 	if ( (hostNum != -1) && (jobType != NONE) )
 	{
-		CK2Character* employer = characters[hostNum];
+		auto employer = characters[hostNum];
 		if (employer != NULL)
 		{
 			characters[hostNum]->addAdvisor(this, jobType);
@@ -465,7 +465,7 @@ void CK2Character::setEmployer(map<int, CK2Character*>& characters, map<string, 
 
 	if (hostNum != -1)
 	{
-		CK2Character* host = characters[employerNum];
+		auto host = characters[employerNum];
 		if (host != NULL)
 		{
 			string hostCapitalString = host->getCapitalString();

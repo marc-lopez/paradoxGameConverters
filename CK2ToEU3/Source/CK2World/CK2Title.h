@@ -28,6 +28,7 @@
 #include "..\mappers.h"
 #include <vector>
 #include <map>
+#include <memory>
 using namespace std;
 
 
@@ -43,16 +44,16 @@ class CK2Title
 {
 	public:
 		CK2Title(string _titleString, int* color);
-		void	init(IObject*, map<int, CK2Character*>&, const CK2BuildingFactory* buildingFactory);
+		void	init(IObject*, map<int, std::shared_ptr<CK2Character>>&, const CK2BuildingFactory* buildingFactory);
 
-		void						setDeJureLiege(const map<string, CK2Title*>& titles);
+		void						setDeJureLiege(const map<string, std::shared_ptr<CK2Title>>& titles);
 		void						setLiege(CK2Title*);
 		void						setHolder(CK2Character*);
 		void						addToHRE();
-		void						determineHeir(map<int, CK2Character*>&);
+		void						determineHeir(map<int, std::shared_ptr<CK2Character>>&);
 		void						setHeir(CK2Character*);
 		void						setSuccessionLaw(string _successionLaw);
-		void						addDeJureVassals(vector<IObject*>, map<string, CK2Title*>& titles, CK2World* world);
+		void						addDeJureVassals(vector<IObject*>, map<string, std::shared_ptr<CK2Title>>& titles, CK2World* world);
 		void						removeDeJureVassal(CK2Title* vassal);
 
 		void						getCultureWeights(map<string, int>& cultureWeights, const cultureMapping& cultureMap) const;
@@ -101,7 +102,7 @@ class CK2Title
 		void                            stealDeFactoDeJureVassalsFromTitle(CK2Title*);
 		void                            disconnectHolderAndLieges();
 		void                            setTitleAsDead(CK2Title*);
-		CK2Character*					getElectiveHeir(map<int, CK2Character*>&);
+		CK2Character*					getElectiveHeir(map<int, std::shared_ptr<CK2Character>>&);
 		CK2Character*					getTurkishSuccessionHeir();
 
 		string							titleString;

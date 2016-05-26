@@ -52,7 +52,7 @@ constexpr char CK2TitleShould::SAMPLE_LIEGE[];
 TEST_F(CK2TitleShould, SetVersion2Point2SaveFormatLiege)
 {
     auto LIEGE_KEY = "liege";
-    std::map<int, CK2Character*> characterMap;
+    std::map<int, std::shared_ptr<CK2Character>> characterMap;
 	ObjectMock titleDataMock;
 
     EXPECT_CALL(titleDataMock, getKey()).WillRepeatedly(Return(std::string()));

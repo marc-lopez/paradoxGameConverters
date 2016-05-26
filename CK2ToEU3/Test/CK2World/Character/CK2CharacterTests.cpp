@@ -73,7 +73,7 @@ protected:
 
 	const std::string SAMPLE_TITLE_NAME;
 	const std::string DEMESNE_KEY;
-    map<int, CK2Dynasty*> dynasties;
+    map<int, std::shared_ptr<CK2Dynasty>> dynasties;
 	map<int, CK2Trait*> traits;
 	ObjectMock saveDataMock;
 };

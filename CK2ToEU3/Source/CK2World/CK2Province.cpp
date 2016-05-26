@@ -33,7 +33,7 @@
 
 
 
-CK2Province::CK2Province(Object* obj, map<string, CK2Title*>& titles, map<int, CK2Character*>& characters, const CK2BuildingFactory* buildingFactory, CK2Version& version)
+CK2Province::CK2Province(Object* obj, map<string, CK2Title*>& titles, map<int, std::shared_ptr<CK2Character>>& characters, const CK2BuildingFactory* buildingFactory, CK2Version& version)
 {
 	number			= atoi( obj->getKey().c_str() );
 	tradePost		= false;
@@ -66,7 +66,7 @@ CK2Province::CK2Province(Object* obj, map<string, CK2Title*>& titles, map<int, C
 		{
 			tradePost = true;
 			int ownerNum = atoi(leaves[i]->getLeaf("owner").c_str());
-			map<int, CK2Character*>::iterator owner = characters.find(ownerNum);
+			auto owner = characters.find(ownerNum);
 			if (owner != characters.end())
 			{
 				tpOwner = owner->second->getPrimaryTitle();
