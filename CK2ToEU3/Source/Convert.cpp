@@ -1,5 +1,5 @@
 /*Copyright (c) 2013 The CK2 to EU3 Converter Project
- 
+
  Permission is hereby granted, free of charge, to any person obtaining
  a copy of this software and associated documentation files (the
  "Software"), to deal in the Software without restriction, including
@@ -7,10 +7,10 @@
  distribute, sublicense, and/or sell copies of the Software, and to
  permit persons to whom the Software is furnished to do so, subject to
  the following conditions:
- 
+
  The above copyright notice and this permission notice shall be included
  in all copies or substantial portions of the Software.
- 
+
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
@@ -23,6 +23,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <sys/stat.h>
 #include <io.h>
@@ -32,6 +33,7 @@
 #include "Configuration.h"
 #include "Parsers/Parser.h"
 #include "Parsers/Object.h"
+#include "Parsers/LandedTitleMigrationsParser.h"
 #include "EU3World\EU3World.h"
 #include "EU3World\EU3Country.h"
 #include "EU3World\EU3Tech.h"
@@ -75,10 +77,17 @@ bool doParseDirectoryContents(const std::string& directory, std::function<void(O
 	return true;
 }
 
+void parseLandedTitleMigrations(CK2World& world)
+{
+    LOG(LogLevel::Info) << "\tParsing landed title migrations\n";
+    auto fileData = doParseFile("landed_title_migrations.txt");
+    parsers::LandedTitleMigrationsParser landedTitleMigrationsParser;
+    auto landedTitleMigrations = landedTitleMigrationsParser.parse(std::shared_ptr<Object>(fileData));
+    world.addTitleMigrations(landedTitleMigrations);
+}
+
 int main(int argc, char * argv[])
 {
-	initLog();
-
 	Object*	obj;				// generic object
 
 	//Get CK2 install location
@@ -107,7 +116,7 @@ int main(int argc, char * argv[])
 	}
 
 
-	//Get Input CK2 save 
+	//Get Input CK2 save
 	string inputFilename("input.ck2");
 	if (argc >= 2)
 	{
@@ -137,11 +146,11 @@ int main(int argc, char * argv[])
 		string copyCommand = "xcopy mod \"" + modFolderName + "\" /E /C /I /Y";
 		system(copyCommand.c_str());
 	}
-	
+
 
 	// Input CK2 Data
 	inform("Getting CK2 data.");
-	CK2World srcWorld;
+	CK2World srcWorld(std::make_shared<Log>(LogLevel::Info));
 
 	inform("\tGetting building types.");
 	if (Configuration::getCK2Mod() != "")
@@ -155,7 +164,7 @@ int main(int argc, char * argv[])
 	if (!doParseDirectoryContents((CK2Loc + "\\common\\buildings\\"), [&](Object* eachobj) { srcWorld.addBuildingTypes(eachobj); }))
 	{
 		inform("\t\tError: Could not open buildings directory (ok for pre-1.06).\n");
-		
+
 		if (obj == NULL)
 		{
 			inform("Error: Could not open " + Configuration::getCK2Path() + "/common/buildings.txt");
@@ -175,7 +184,7 @@ int main(int argc, char * argv[])
 	if (!doParseDirectoryContents((CK2Loc + "\\common\\religions\\"), [&](Object* eachobj) { CK2Religion::parseReligions(eachobj); }))
 	{
 		inform("\t\tError: Could not open religions directory (ok for pre-1.06).");
-		
+
 		if (obj == NULL)
 		{
 			inform("Error: Could not open " + Configuration::getCK2Path() + "/common/religion.txt");
@@ -184,16 +193,16 @@ int main(int argc, char * argv[])
 	}
 
 	inform("\tGetting CK2 cultures");
-	cultureGroupMapping CK2CultureGroupMap;
+	auto CK2CultureGroupMap = std::make_shared<cultureGroupMapping>();
 	if (Configuration::getCK2Mod() != "")
 	{
 		obj = doParseFile((Configuration::getCK2ModPath() + "\\" + Configuration::getCK2Mod() + "/common/cultures.txt").c_str()); // for pre-1.06 installs
-		addCultureGroupMappings(obj, CK2CultureGroupMap);
-		doParseDirectoryContents((Configuration::getCK2ModPath() + "\\" + Configuration::getCK2Mod() + "\\common\\cultures\\"), [&](Object* eachobj) { addCultureGroupMappings(eachobj, CK2CultureGroupMap); });
+		addCultureGroupMappings(obj, *CK2CultureGroupMap);
+		doParseDirectoryContents((Configuration::getCK2ModPath() + "\\" + Configuration::getCK2Mod() + "\\common\\cultures\\"), [&](Object* eachobj) { addCultureGroupMappings(eachobj, *CK2CultureGroupMap); });
 	}
 	obj = doParseFile((Configuration::getCK2Path() + "/common/cultures.txt").c_str()); // for pre-1.06 installs
-	addCultureGroupMappings(obj, CK2CultureGroupMap);
-	if (!doParseDirectoryContents((CK2Loc + "\\common\\cultures\\"), [&](Object* eachobj) { addCultureGroupMappings(eachobj, CK2CultureGroupMap); }))
+	addCultureGroupMappings(obj, *CK2CultureGroupMap);
+	if (!doParseDirectoryContents((CK2Loc + "\\common\\cultures\\"), [&](Object* eachobj) { addCultureGroupMappings(eachobj, *CK2CultureGroupMap); }))
 	{
 		inform("\t\tError: Could not open cultures directory (ok for pre-1.06).");
 		if (obj == NULL)
@@ -234,6 +243,8 @@ int main(int argc, char * argv[])
 			}
 		}
 	}
+
+	parseLandedTitleMigrations(srcWorld);
 
 	inform("\tGetting traits");
 	if (Configuration::getCK2Mod() != "")
@@ -305,7 +316,7 @@ int main(int argc, char * argv[])
 			exit(-1);
 		}
 	}
-	
+
 	log("Parsing CK2 save.\n");
 	printf("Parsing CK2 save.\n");
 	obj = doParseFile(inputFilename.c_str());
@@ -336,7 +347,7 @@ int main(int argc, char * argv[])
 		printf("Error: Could not open %s\n", mappingFile);
 		exit(-1);
 	}
-	provinceMapping			provinceMap				= initProvinceMap(obj, srcWorld.getVersion());
+	provinceMapping			provinceMap				= initProvinceMap(obj, srcWorld.getVersion().get());
 	inverseProvinceMapping	inverseProvinceMap	= invertProvinceMap(provinceMap);
 	//map<int, CK2Province*> srcProvinces				= srcWorld.getProvinces();
 	//for (map<int, CK2Province*>::iterator i = srcProvinces.begin(); i != srcProvinces.end(); i++)
@@ -400,12 +411,12 @@ int main(int argc, char * argv[])
 	EU3Tech* techData = new EU3Tech(srcWorld.getEndDate(), obj, govObj, prodObj, tradeObj, navalObj, landObj);
 
 	EU3World destWorld(&srcWorld, techData);
-	
+
 	// Add historical EU3 countries
 	log("Adding historical EU3 nations.\n");
 	printf("Adding historical EU3 nations.\n");
 	destWorld.addHistoricalCountries();
-	
+
 	// Get list of blocked nations
 	log("Getting blocked EU3 nations.\n");
 	printf("Getting blocked EU3 nations.\n");
@@ -488,7 +499,7 @@ int main(int argc, char * argv[])
 		return 1;
 	}
 	cultureMapping cultureMap;
-	cultureMap = initCultureMap(obj->getLeaves()[0]);
+	cultureMap = initCultureMap(static_cast<Object*>(obj->getLeaves()[0]));
 
 	// Get religion mappings
 	log("Parsing religion mappings.\n");
@@ -515,7 +526,7 @@ int main(int argc, char * argv[])
 		return 1;
 	}
 	religionMapping religionMap;
-	religionMap = initReligionMap(obj->getLeaves()[0]);
+	religionMap = initReligionMap(static_cast<Object*>(obj->getLeaves()[0]));
 
 	// Get continents
 	log("Parsing continents.\n");
@@ -572,11 +583,11 @@ int main(int argc, char * argv[])
 	log("Converting provinces.\n");
 	printf("Converting provinces.\n");
 	Object* positionsObj = doParseFile((Configuration::getEU3Path() + "\\map\\positions.txt").c_str());
-	destWorld.convertProvinces(provinceMap, srcWorld.getProvinces(), cultureMap, religionMap, continentMap, adjacencyMap, tradeGoodMap, EU3ReligionGroupMap, positionsObj);
+	auto provinces = srcWorld.getProvinces();
+	destWorld.convertProvinces(provinceMap, provinces, cultureMap, religionMap, continentMap, adjacencyMap, tradeGoodMap, EU3ReligionGroupMap, positionsObj);
 
 	// Map CK2 nations to EU3 nations
-	log("Parsing country mappings.\n");
-	printf("Parsing country mappings.\n");
+	LOG(LogLevel::Info) << "Parsing country mappings.\n";
 	if (Configuration::getUseConverterMod() == "yes")
 	{
 		filename = "country_mappings_mod.txt";
@@ -588,34 +599,28 @@ int main(int argc, char * argv[])
 	obj = doParseFile(filename.c_str());
 	if (obj == NULL)
 	{
-		log("Error: Could not open country_mappings.txt\n");
-		printf("Error: Could not open country_mappings.txt\n");
+	    LOG(LogLevel::Error) << "Could not open country_mappings.txt\n";
 		exit(-1);
 	}
-	log("Mapping CK2 nations to EU3 nations.\n");
-	printf("Mapping CK2 nations to EU3 nations.\n");
+	LOG(LogLevel::Info) << "Mapping CK2 nations to EU3 nations.\n";
 	destWorld.assignTags(obj, blockedNations, provinceMap, religionMap, cultureMap, inverseProvinceMap, *(srcWorld.getVersion()));
 
-	log("Adding accepted cultures.\n");
-	printf("Adding accepted cultures.\n");
+    LOG(LogLevel::Info) << "Adding accepted cultures.\n";
 	destWorld.addAcceptedCultures();
 
-	log("Converting tech.\n");
-	printf("Converting tech.\n");
+    LOG(LogLevel::Info) << "Converting tech.\n";
 	destWorld.convertTech(srcWorld);
 
-	log("Converting governments.\n");
-	printf("Converting governments.\n");
+	LOG(LogLevel::Info) << "Converting governments.\n";
 	destWorld.convertGovernments();
 
-	log("Converting centes of trade\n");
-	printf("Converting centes of trade\n");
+	LOG(LogLevel::Info) << "Converting centers of trade\n";
 	destWorld.convertCoTs();
 
 	log("Converting sliders\n");
 	printf("Converting sliders\n");
 	destWorld.convertSliders();
-	
+
 	log("Converting economies.\n");
 	printf("Converting economies.\n");
 	destWorld.convertEconomies(EU3CultureGroupMap, tradeGoodMap);
@@ -676,6 +681,5 @@ int main(int argc, char * argv[])
 
 	log("Complete.\n");
 	printf("Complete.\n");
-	closeLog();
 	return 0;
 }
