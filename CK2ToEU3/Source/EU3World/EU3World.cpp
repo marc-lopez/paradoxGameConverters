@@ -613,7 +613,7 @@ void EU3World::getCultureRules()
 }
 
 
-void EU3World::convertProvinces(provinceMapping& provinceMap, map<int, CK2Province*>& allSrcProvinces, cultureMapping& cultureMap, religionMapping& religionMap, continentMapping& continentMap, const adjacencyMapping& adjacencyMap, const tradeGoodMapping& tradeGoodMap, const religionGroupMapping& EU3ReligionGroupMap, Object* positionObj)
+void EU3World::convertProvinces(provinceMapping& provinceMap, map<int, std::shared_ptr<CK2Province>>& allSrcProvinces, cultureMapping& cultureMap, religionMapping& religionMap, continentMapping& continentMap, const adjacencyMapping& adjacencyMap, const tradeGoodMapping& tradeGoodMap, const religionGroupMapping& EU3ReligionGroupMap, Object* positionObj)
 {
 	double totalHistoricalBaseTax		= 0.0f;
 	double totalHistoricalPopulation = 0.0f;
@@ -634,9 +634,9 @@ void EU3World::convertProvinces(provinceMapping& provinceMap, map<int, CK2Provin
 	double totalBaseTaxProxy	= 0.0f;
 	double totalPopProxy			= 0.0f;
 	double totalManpowerProxy	= 0.0f;
-	for (map<int, CK2Province*>::const_iterator srcItr = allSrcProvinces.begin(); srcItr != allSrcProvinces.end(); srcItr++)
+	for (auto srcProvince : allSrcProvinces)
 	{
-		vector<CK2Barony*> baronies = srcItr->second->getBaronies();
+		vector<CK2Barony*> baronies = srcProvince.second->getBaronies();
 		for (vector<CK2Barony*>::const_iterator baronyItr = baronies.begin(); baronyItr != baronies.end(); baronyItr++)
 		{
 			totalBaseTaxProxy		+= (*baronyItr)->getBaseTaxProxy();
@@ -686,7 +686,7 @@ void EU3World::convertProvinces(provinceMapping& provinceMap, map<int, CK2Provin
 		vector<CK2Province*> srcProvinces;
 		for (unsigned j = 0; j < srcProvinceNums.size(); j++)
 		{
-			CK2Province* srcProvince = allSrcProvinces[ srcProvinceNums[j] ];
+			CK2Province* srcProvince = allSrcProvinces[ srcProvinceNums[j] ].get();
 			if (srcProvince != NULL)
 			{
 				srcProvinces.push_back(srcProvince);

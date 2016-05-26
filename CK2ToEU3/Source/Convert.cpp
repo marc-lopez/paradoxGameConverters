@@ -23,6 +23,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <sys/stat.h>
 #include <io.h>
@@ -192,16 +193,16 @@ int main(int argc, char * argv[])
 	}
 
 	inform("\tGetting CK2 cultures");
-	cultureGroupMapping CK2CultureGroupMap;
+	auto CK2CultureGroupMap = std::make_shared<cultureGroupMapping>();
 	if (Configuration::getCK2Mod() != "")
 	{
 		obj = doParseFile((Configuration::getCK2ModPath() + "\\" + Configuration::getCK2Mod() + "/common/cultures.txt").c_str()); // for pre-1.06 installs
-		addCultureGroupMappings(obj, CK2CultureGroupMap);
-		doParseDirectoryContents((Configuration::getCK2ModPath() + "\\" + Configuration::getCK2Mod() + "\\common\\cultures\\"), [&](Object* eachobj) { addCultureGroupMappings(eachobj, CK2CultureGroupMap); });
+		addCultureGroupMappings(obj, *CK2CultureGroupMap);
+		doParseDirectoryContents((Configuration::getCK2ModPath() + "\\" + Configuration::getCK2Mod() + "\\common\\cultures\\"), [&](Object* eachobj) { addCultureGroupMappings(eachobj, *CK2CultureGroupMap); });
 	}
 	obj = doParseFile((Configuration::getCK2Path() + "/common/cultures.txt").c_str()); // for pre-1.06 installs
-	addCultureGroupMappings(obj, CK2CultureGroupMap);
-	if (!doParseDirectoryContents((CK2Loc + "\\common\\cultures\\"), [&](Object* eachobj) { addCultureGroupMappings(eachobj, CK2CultureGroupMap); }))
+	addCultureGroupMappings(obj, *CK2CultureGroupMap);
+	if (!doParseDirectoryContents((CK2Loc + "\\common\\cultures\\"), [&](Object* eachobj) { addCultureGroupMappings(eachobj, *CK2CultureGroupMap); }))
 	{
 		inform("\t\tError: Could not open cultures directory (ok for pre-1.06).");
 		if (obj == NULL)
@@ -346,7 +347,7 @@ int main(int argc, char * argv[])
 		printf("Error: Could not open %s\n", mappingFile);
 		exit(-1);
 	}
-	provinceMapping			provinceMap				= initProvinceMap(obj, srcWorld.getVersion());
+	provinceMapping			provinceMap				= initProvinceMap(obj, srcWorld.getVersion().get());
 	inverseProvinceMapping	inverseProvinceMap	= invertProvinceMap(provinceMap);
 	//map<int, CK2Province*> srcProvinces				= srcWorld.getProvinces();
 	//for (map<int, CK2Province*>::iterator i = srcProvinces.begin(); i != srcProvinces.end(); i++)

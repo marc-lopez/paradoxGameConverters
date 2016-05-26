@@ -26,6 +26,7 @@
 
 
 #include <fstream>
+#include <memory>
 #include <tuple>
 #include <set>
 #include "..\Mappers.h"
@@ -76,7 +77,7 @@ class EU3World
 		void	getCultureRules();
 
 		void	convertCountries(map<string, CK2Title*> CK2Titles, const religionMapping& religionMap, const cultureMapping& cultureMap, const provinceMapping provinceMap);
-		void	convertProvinces(provinceMapping&, map<int, CK2Province*>&, cultureMapping& cultureMap, religionMapping& religionMap, continentMapping& continentMap, const adjacencyMapping& adjacencyMap, const tradeGoodMapping& tradeGoodMap, const religionGroupMapping& EU3ReligionGroup, Object* positionObj);
+		void	convertProvinces(provinceMapping&, map<int, std::shared_ptr<CK2Province>>&, cultureMapping& cultureMap, religionMapping& religionMap, continentMapping& continentMap, const adjacencyMapping& adjacencyMap, const tradeGoodMapping& tradeGoodMap, const religionGroupMapping& EU3ReligionGroup, Object* positionObj);
 		void	addAcceptedCultures();
 		void	convertAdvisors(inverseProvinceMapping&, provinceMapping&, CK2World&);
 		void	convertTech(const CK2World& srcWorld);
