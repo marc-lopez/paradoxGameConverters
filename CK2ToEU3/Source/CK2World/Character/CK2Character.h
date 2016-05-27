@@ -30,7 +30,6 @@
 #include <map>
 #include <memory>
 #include <vector>
-#include "boost\move\unique_ptr.hpp"
 #include "Common\Date.h"
 #include "Mappers.h"
 #include "Parsers\IObject.h"
@@ -179,7 +178,7 @@ class CK2Character
 
 		map<int, vector<CK2Opinion> >		opinionMods;
 
-		boost::movelib::unique_ptr<ck2::character::Demesne>	demesne;
+		std::unique_ptr<ck2::character::Demesne>	demesne;
 };
 
 
