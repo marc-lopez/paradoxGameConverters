@@ -40,7 +40,9 @@
 
 
 
-CK2World::CK2World(std::shared_ptr<LogBase> logger) : logOutput(logger)
+CK2World::CK2World(std::shared_ptr<LogBase> logger,
+                   std::shared_ptr<ICK2OpinionRepository> opinionRepository) :
+                       logOutput(logger), opinionRepository(opinionRepository)
 {
 	buildingFactory = NULL;
 
@@ -108,12 +110,12 @@ void CK2World::init(IObject* obj, const std::shared_ptr<cultureGroupMapping> cul
 	// get characters
 	printf("\tGetting characters\n");
 	vector<IObject*> characterLeaves = obj->getValue("character");
+	auto thisReference = shared_from_this();
 	characterLeaves = characterLeaves[0]->getLeaves();
 	for (unsigned int i = 0; i < characterLeaves.size(); i++)
 	{
 		int number = atoi( characterLeaves[i]->getKey().c_str() );
-		auto newCharacter = std::make_shared<CK2Character>(characterLeaves[i], dynasties,
-			traits, endDate);
+		auto newCharacter = std::make_shared<CK2Character>(characterLeaves[i], thisReference);
 		characters.insert( make_pair(number, newCharacter) );
 	}
 

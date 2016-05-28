@@ -33,7 +33,7 @@
 
 
 
-CK2Province::CK2Province(Object* obj, map<string, CK2Title*>& titles, map<int, std::shared_ptr<CK2Character>>& characters, const CK2BuildingFactory* buildingFactory, CK2Version& version)
+CK2Province::CK2Province(IObject* obj, map<string, CK2Title*>& titles, map<int, std::shared_ptr<CK2Character>>& characters, const CK2BuildingFactory* buildingFactory, CK2Version& version)
 {
 	number			= atoi( obj->getKey().c_str() );
 	tradePost		= false;

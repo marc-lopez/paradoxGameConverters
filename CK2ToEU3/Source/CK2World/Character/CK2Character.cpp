@@ -29,6 +29,7 @@
 #include "Parsers\Object.h"
 #include "CK2World\CK2Dynasty.h"
 #include "CK2World\CK2Trait.h"
+#include "CK2World\CK2World.h"
 #include "CK2World\CK2Barony.h"
 #include "CK2World\CK2Province.h"
 #include "CK2World\CK2Title.h"
@@ -40,14 +41,18 @@
 
 
 
-CK2Character::CK2Character(IObject* obj, const map<int, std::shared_ptr<CK2Dynasty>>& dynasties,
-						   const map<int, CK2Trait*>& traitTypes, common::date theDate) :
-	capital(NULL), primaryTitle(NULL), demesne(new ck2::character::Demesne(obj->getValue("demesne")))
+CK2Character::CK2Character(IObject* obj, std::shared_ptr<CK2World>& world) :
+	capital(NULL), primaryTitle(NULL), demesne(new ck2::character::Demesne(obj->getValue("demesne"))),
+	opinionRepository(world->getOpinionRepository())
 {
 	num			= atoi( obj->getKey().c_str() );
 	name			= obj->getLeaf("birth_name");
 	religion		= CK2Religion::getReligion(obj->getLeaf("religion"));
 	culture		= obj->getLeaf("culture");
+
+	auto dynasties = world->getDynasties();
+	auto traitTypes = world->getTraitTypes();
+	auto theDate = world->getEndDate();
 
 	vector<IObject*> pobjs = obj->getValue("prestige");
 	if (pobjs.size() > 0)
@@ -302,7 +307,7 @@ void CK2Character::readOpinionModifiers(Object* obj)
 		vector<IObject*> modifiers = (*itr)->getLeaves();
 		for (vector<IObject*>::iterator mitr = modifiers.begin(); mitr != modifiers.end(); ++mitr)
 		{
-			CK2Opinion opinion(static_cast<Object*>(*mitr));
+			CK2Opinion opinion(static_cast<Object*>(*mitr), opinionRepository);
 			opinionMods[charId].push_back(opinion);
 		}
 	}
@@ -1129,24 +1134,24 @@ int CK2Character::getOpinionOf(const CK2Character* other, CK2Version& version) c
 
 	// Same Dynasty
 	if (dynasty == other->dynasty)
-		relations += CK2Opinion::getBaseValue("same_dynasty");
+		relations += opinionRepository->getBaseValue("same_dynasty");
 
 	// Ally
 	if (this->isAlliedWith(other))
-		relations += CK2Opinion::getBaseValue("opinion_ally");
+		relations += opinionRepository->getBaseValue("opinion_ally");
 
 	// At War
 	for (vector<CK2War*>::const_iterator itr = wars.begin(); itr != wars.end(); ++itr)
 	{
 		if ((*itr)->areEnemies(this->num, other->num))
-			relations += CK2Opinion::getBaseValue("opinion_at_war");
+			relations += opinionRepository->getBaseValue("opinion_at_war");
 	}
 
 	// Mother or Father of Child
 	if (other->mother == this)
-		relations += CK2Opinion::getBaseValue("opinion_mother_child");
+		relations += opinionRepository->getBaseValue("opinion_mother_child");
 	if (other->father == this)
-		relations += CK2Opinion::getBaseValue("opinion_father_of_child");
+		relations += opinionRepository->getBaseValue("opinion_father_of_child");
 
 	// Muslim brother or half-brother
 	if (religion->getGroup() == "muslim")
@@ -1154,12 +1159,12 @@ int CK2Character::getOpinionOf(const CK2Character* other, CK2Version& version) c
 		if (this->mother == other->mother && this->father == other->father)
 		{
 			// Muslim Brother
-			relations += CK2Opinion::getBaseValue("opinion_brother_muslim");
+			relations += opinionRepository->getBaseValue("opinion_brother_muslim");
 		}
 		else if (this->mother == other->mother || this->father == other->father)
 		{
 			// Muslim Half-brother
-			relations += CK2Opinion::getBaseValue("opinion_half_brother_muslim");
+			relations += opinionRepository->getBaseValue("opinion_half_brother_muslim");
 		}
 	}
 
@@ -1177,19 +1182,19 @@ int CK2Character::getOpinionOf(const CK2Character* other, CK2Version& version) c
 	// Infidel
 	if (religion->isInfidelTo(other->religion))
 	{
-		relations += CK2Opinion::getBaseValue("opinion_infidel");
+		relations += opinionRepository->getBaseValue("opinion_infidel");
 	}
 
 	// Heretic
 	if (religion->isHereticTo(other->religion))
 	{
-		relations += CK2Opinion::getBaseValue("opinion_heretic");
+		relations += opinionRepository->getBaseValue("opinion_heretic");
 	}
 
 	// Related Religion
 	if (religion->isRelatedTo(other->religion))
 	{
-		relations += CK2Opinion::getBaseValue("opinion_related_religion");
+		relations += opinionRepository->getBaseValue("opinion_related_religion");
 	}
 
 	// FIXME: Rightful Religious Head
@@ -1197,13 +1202,13 @@ int CK2Character::getOpinionOf(const CK2Character* other, CK2Version& version) c
 	// Female Heir
 	if (this->isDirectVassalOf(other) && primaryTitle->getLiege()->getHeir() && primaryTitle->getLiege()->getHeir()->isFemale())
 	{
-		relations += CK2Opinion::getBaseValue("opinion_female_heir");
+		relations += opinionRepository->getBaseValue("opinion_female_heir");
 	}
 
 	// Female Ruler
 	if (this->isDirectVassalOf(other) && other->isFemale() && !this->isFemale())
 	{
-		relations += CK2Opinion::getBaseValue("opinion_female_ruler");
+		relations += opinionRepository->getBaseValue("opinion_female_ruler");
 	}
 
 	// FIXME: Defending My Titles
@@ -1214,11 +1219,11 @@ int CK2Character::getOpinionOf(const CK2Character* other, CK2Version& version) c
 	// FIXME: Cleric vs. Non-crusader (current crusade)
 
 	// Wrong Government Type (counts and above only)
-	if (this->isDirectVassalOf(other) && demesne->getPrimaryTitle().substr(0,2) != "b_")
+	if (this->isDirectVassalOf(other) && getPrimaryTitleString().substr(0,2) != "b_")
 	{
 		if ((this->primaryHolding != NULL) && (this->primaryHolding->getType() != other->primaryHolding->getType()))
 		{
-			relations += CK2Opinion::getBaseValue("opinion_count_wrong_gov_vs_liege");
+			relations += opinionRepository->getBaseValue("opinion_count_wrong_gov_vs_liege");
 		}
 	}
 

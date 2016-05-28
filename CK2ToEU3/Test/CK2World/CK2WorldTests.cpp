@@ -26,6 +26,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 #include "Helpers\ObjectDataHelper.h"
 #include "Mocks\LoggerMock.h"
 #include "Mocks\ObjectMock.h"
+#include "Mocks\CK2World\CK2OpinionRepositoryMock.h"
 #include "CK2World\CK2Title.h"
 #include "CK2World\Character\CK2Character.h"
 #include "CK2World\CK2World.h"
@@ -44,7 +45,8 @@ class CK2WorldShould : public Test
 {
 protected:
 	CK2WorldShould() : color(), titleName("k_sample"), deJureLiegeTitleName("e_sample"),
-		world(std::make_shared<CK2World>(std::make_shared<LoggerMock>()))
+        opinionRepositoryMock(std::make_shared<CK2OpinionRepository>()),
+		world(std::make_shared<CK2World>(std::make_shared<LoggerMock>(), opinionRepositoryMock))
 	{
 	}
 
@@ -73,6 +75,7 @@ protected:
 	CK2Title* newTitle;
 	ObjectDataHelper saveData;
 	ObjectDataHelper provinceDataMock;
+	std::shared_ptr<ICK2OpinionRepository> opinionRepositoryMock;
 	std::shared_ptr<CK2World> world;
 };
 

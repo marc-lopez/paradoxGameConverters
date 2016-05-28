@@ -26,6 +26,7 @@
 
 
 #include "..\Mappers.h"
+#include "Parsers\IObject.h"
 #include <vector>
 #include <map>
 #include <memory>
@@ -44,7 +45,7 @@ class CK2Version;
 class CK2Province
 {
 	public:
-		CK2Province(Object*, map<string, CK2Title*>& titles, map<int, std::shared_ptr<CK2Character>>& characters, const CK2BuildingFactory* buildingFactory, CK2Version& version);
+		CK2Province(IObject*, map<string, CK2Title*>& titles, map<int, std::shared_ptr<CK2Character>>& characters, const CK2BuildingFactory* buildingFactory, CK2Version& version);
 
 		int						getNumber()				const { return number; };
 		vector<CK2Barony*>	getBaronies()			const { return baronies; };

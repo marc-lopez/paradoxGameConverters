@@ -19,16 +19,22 @@
  TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
+#include "CK2World/CK2Opinion.h"
 #include "gmock/gmock.h"
-#include "Log.h"
 
-#ifndef LOGGER_MOCK_H
-#define LOGGER_MOCK_H
+#ifndef CK2_OPINION_REPOSITORY_MOCK_H
+#define CK2_OPINION_REPOSITORY_MOCK_H
 
-class LoggerMock : public LogBase
+namespace mocks
 {
-public:
-	MOCK_METHOD0(Write, void());
+
+class CK2OpinionRepositoryMock : public ICK2OpinionRepository
+{
+    public:
+        MOCK_METHOD1(initOpinions, void(IObject*));
+        MOCK_METHOD1(getBaseValue, int(std::string));
 };
 
-#endif // LOGGER_MOCK_H
+} // namespace mocks
+
+#endif // CK2_OPINION_REPOSITORY_MOCK_H

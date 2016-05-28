@@ -31,7 +31,7 @@
 
 
 
-CK2Barony::CK2Barony(Object* obj, CK2Title* newTitle, CK2Province* newProvince, const CK2BuildingFactory* buildingFactory)
+CK2Barony::CK2Barony(IObject* obj, CK2Title* newTitle, CK2Province* newProvince, const CK2BuildingFactory* buildingFactory)
 {
 	title		= newTitle;
 	province	= newProvince;

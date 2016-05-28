@@ -38,8 +38,6 @@
 
 using namespace std;
 
-
-
 class		Object;
 class		CK2Dynasty;
 class		CK2Trait;
@@ -66,7 +64,7 @@ class CK2Character
 {
 	public:
 		CK2Character() {};
-		CK2Character(IObject*, const map<int, std::shared_ptr<CK2Dynasty>>&, const map<int, CK2Trait*>&, common::date theDate);
+		CK2Character(IObject*, std::shared_ptr<CK2World>& world);
 		void							readOpinionModifiers(Object* obj);
 
 		void							addTitle(CK2Title*);
@@ -124,7 +122,8 @@ class CK2Character
 		bool						isCloseRelationOf(const CK2Character* other) const;
 		bool						isRMWith(const CK2Character* other) const;
 		bool						isAlliedWith(const CK2Character* other) const;
-		int						getOpinionOf(const CK2Character* other, CK2Version& version) const;
+		int						    getOpinionOf(const CK2Character* other, CK2Version& version) const;
+		//vector<string>				getOpinionModsOf(const CK2Character* other, CK2Version& version) const;
 		bool						isDirectVassalOf(const CK2Character* other) const;
 	private:
 		vector<CK2Character*>	getGavelkindHeirs(string);
@@ -179,6 +178,7 @@ class CK2Character
 		map<int, vector<CK2Opinion> >		opinionMods;
 
 		std::unique_ptr<ck2::character::Demesne>	demesne;
+        std::shared_ptr<ICK2OpinionRepository>      opinionRepository;
 };
 
 

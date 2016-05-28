@@ -25,11 +25,8 @@
 #include "../Parsers/Object.h"
 #include "../Log.h"
 
-
-map<string, int> CK2Opinion::opinionVals;
-
-
-CK2Opinion::CK2Opinion(Object* obj) : multiplier(1), value(0)
+CK2Opinion::CK2Opinion(Object* obj, std::shared_ptr<ICK2OpinionRepository>& opinionRepository) : multiplier(1),
+    value(0)
 {
 	if (obj->getKey() == "truce")
 	{
@@ -69,7 +66,7 @@ CK2Opinion::CK2Opinion(Object* obj) : multiplier(1), value(0)
 		vector<IObject*> modifierObjs = obj->getValue("modifier");
 		if (modifierObjs.size() > 0)
 		{
-			value = getBaseValue(modifierObjs[0]->getLeaf());
+			value = opinionRepository->getBaseValue(modifierObjs[0]->getLeaf());
 		}
 		else
 		{
@@ -85,7 +82,7 @@ CK2Opinion::CK2Opinion(Object* obj) : multiplier(1), value(0)
 }
 
 
-void CK2Opinion::initOpinions(Object* root)
+void CK2OpinionRepository::initOpinions(IObject* root)
 {
 	if (root == NULL)
 	{
@@ -109,7 +106,7 @@ void CK2Opinion::initOpinions(Object* root)
 }
 
 
-int CK2Opinion::getBaseValue(string opinion)
+int CK2OpinionRepository::getBaseValue(string opinion)
 {
 	map<string,int>::const_iterator itr = opinionVals.find(opinion);
 	if (itr == opinionVals.end())
