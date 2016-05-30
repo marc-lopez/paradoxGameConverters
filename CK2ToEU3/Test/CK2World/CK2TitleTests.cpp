@@ -83,6 +83,8 @@ TEST_F(CK2TitleShould, NotResetHolderOfEatenTitle)
 TEST_F(CK2TitleShould, HandleVersion2Point2CrownAuthorityLaws)
 {
     const std::string CROWN_AUTHORITY_LAW = "crown_authority_0";
+    const std::string CENTRALIZATION_LAW = "centralization_0";
+    const std::string LAW_KEY = "law";
 
     ObjectDataHelper titleObj;
     std::vector<IObject *> laws;
@@ -96,7 +98,7 @@ TEST_F(CK2TitleShould, HandleVersion2Point2CrownAuthorityLaws)
     laws.push_back(&crownAuthorityLawMock);
     laws.push_back(&centralizationLawMock);
 
-	EXPECT_CALL(titleObj.getData(), getValue("law"))
+	EXPECT_CALL(titleObj.getData(), getValue(LAW_KEY))
         .WillRepeatedly(Return(laws));
 
     std::map<int, std::shared_ptr<CK2Character>> characterMap;
