@@ -19,22 +19,48 @@
  TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
-#include "CK2World/Opinion/CK2Opinion.h"
-#include "gmock/gmock.h"
 
-#ifndef CK2_OPINION_REPOSITORY_MOCK_H
-#define CK2_OPINION_REPOSITORY_MOCK_H
 
-namespace mocks
-{
+#ifndef CK2OPINION_H_
+#define CK2OPINION_H_
 
-class CK2OpinionRepositoryMock : public ICK2OpinionRepository
+#include <map>
+#include <memory>
+#include <string>
+#include "Parsers/IObject.h"
+using namespace std;
+
+class Object;
+
+class ICK2OpinionRepository
 {
     public:
-        MOCK_METHOD1(initOpinions, void(IObject*));
-        MOCK_METHOD1(getBaseValue, int(std::string));
+        virtual ~ICK2OpinionRepository() {};
+        virtual void initOpinions(IObject*) = 0;
+        virtual int getBaseValue(string) = 0;
 };
 
-} // namespace mocks
+class CK2Opinion
+{
+	public:
+		CK2Opinion() : multiplier(1), value(0) {};
+		CK2Opinion(Object*, std::shared_ptr<ICK2OpinionRepository>&);
 
-#endif // CK2_OPINION_REPOSITORY_MOCK_H
+		int getTotalOpinion() const { return multiplier * value; }
+
+	private:
+		int multiplier;
+		int value;
+};
+
+class CK2OpinionRepository : public ICK2OpinionRepository
+{
+    public:
+        void initOpinions(IObject*);
+        int getBaseValue(string);
+
+    private:
+		map<string, int> opinionVals;
+};
+
+#endif // CK2OPINION_H_

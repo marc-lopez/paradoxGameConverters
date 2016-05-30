@@ -29,7 +29,7 @@
 #include <map>
 #include <boost\function.hpp>
 #include "Parsers\IObject.h"
-#include "CK2World\CK2Opinion.h"
+#include "CK2World\Opinion\CK2Opinion.h"
 #include "Common\Date.h"
 #include "..\LogBase.h"
 #include "..\Mappers.h"

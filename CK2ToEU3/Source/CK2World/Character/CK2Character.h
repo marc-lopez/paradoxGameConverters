@@ -33,7 +33,7 @@
 #include "Common\Date.h"
 #include "Mappers.h"
 #include "Parsers\IObject.h"
-#include "CK2World\CK2Opinion.h"
+#include "CK2World\Opinion\CK2Opinion.h"
 #include "CK2World\Character\Demesne.h"
 
 using namespace std;
