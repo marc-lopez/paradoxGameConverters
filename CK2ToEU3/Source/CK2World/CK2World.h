@@ -54,7 +54,7 @@ class CK2Version;
 class CK2World : public std::enable_shared_from_this<CK2World>
 {
 	public:
-		CK2World(std::shared_ptr<LogBase>, std::shared_ptr<ICK2OpinionRepository>);
+		CK2World(std::shared_ptr<LogBase>, std::shared_ptr<ck2::opinion::IRepository>);
 		~CK2World();
 		void							init(IObject*, std::shared_ptr<cultureGroupMapping> cultureGroupMap);
 		void							addBuildingTypes(Object*);
@@ -93,14 +93,14 @@ class CK2World : public std::enable_shared_from_this<CK2World>
 		map<int, CK2Trait*>	        getTraitTypes() const { return traits; }
 
 		map<int, std::shared_ptr<CK2Dynasty>>   getDynasties() const { return dynasties; }
-		std::shared_ptr<ICK2OpinionRepository>  getOpinionRepository() const { return opinionRepository; }
+		std::shared_ptr<ck2::opinion::IRepository>  getOpinionRepository() const { return opinionRepository; }
 
 	private:
 	    void readSavedTitles(vector<IObject*>);
 
 		std::shared_ptr<LogBase> logOutput;
 		std::shared_ptr<CK2BuildingFactory>		buildingFactory;
-		std::shared_ptr<ICK2OpinionRepository>  opinionRepository;
+		std::shared_ptr<ck2::opinion::IRepository>  opinionRepository;
 
 		std::shared_ptr<CK2Version>				version;
 		common::date				endDate;

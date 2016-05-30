@@ -38,7 +38,7 @@
 #include "EU3World\EU3Country.h"
 #include "EU3World\EU3Tech.h"
 #include "CK2World\CK2World.h"
-#include "CK2World\CK2Opinion.h"
+#include "CK2World\Opinion\Repository.h"
 #include "CK2World\CK2Religion.h"
 #include "Mappers.h"
 using namespace std;
@@ -150,7 +150,7 @@ int main(int argc, char * argv[])
 
 	inform("\tGetting opinion modifiers");
 
-	auto srcOpinionRepository = std::make_shared<CK2OpinionRepository>();
+	auto srcOpinionRepository = std::make_shared<ck2::opinion::Repository>();
 
 	if (Configuration::getCK2Mod() != "")
 	{

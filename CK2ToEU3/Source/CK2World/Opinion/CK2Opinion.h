@@ -28,39 +28,22 @@
 #include <memory>
 #include <string>
 #include "Parsers/IObject.h"
+#include "CK2World/Opinion/IRepository.h"
 using namespace std;
 
 class Object;
-
-class ICK2OpinionRepository
-{
-    public:
-        virtual ~ICK2OpinionRepository() {};
-        virtual void initOpinions(IObject*) = 0;
-        virtual int getBaseValue(string) = 0;
-};
 
 class CK2Opinion
 {
 	public:
 		CK2Opinion() : multiplier(1), value(0) {};
-		CK2Opinion(Object*, std::shared_ptr<ICK2OpinionRepository>&);
+		CK2Opinion(Object*, std::shared_ptr<ck2::opinion::IRepository>&);
 
 		int getTotalOpinion() const { return multiplier * value; }
 
 	private:
 		int multiplier;
 		int value;
-};
-
-class CK2OpinionRepository : public ICK2OpinionRepository
-{
-    public:
-        void initOpinions(IObject*);
-        int getBaseValue(string);
-
-    private:
-		map<string, int> opinionVals;
 };
 
 #endif // CK2OPINION_H_

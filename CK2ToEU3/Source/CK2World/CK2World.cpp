@@ -41,7 +41,7 @@
 
 
 CK2World::CK2World(std::shared_ptr<LogBase> logger,
-                   std::shared_ptr<ICK2OpinionRepository> opinionRepository) :
+                   std::shared_ptr<ck2::opinion::IRepository> opinionRepository) :
                        logOutput(logger), opinionRepository(opinionRepository)
 {
 	buildingFactory = NULL;

@@ -24,7 +24,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 #include "Helpers\ObjectDataHelper.h"
 #include "Mocks/LoggerMock.h"
 #include "Mocks/ObjectMock.h"
-#include "Mocks/CK2World/CK2OpinionRepositoryMock.h"
+#include "Mocks/CK2World/Opinion/RepositoryMock.h"
 #include "Configuration.h"
 #include "Parsers/Object.h"
 #include "CK2World/CK2Barony.h"
@@ -53,7 +53,7 @@ class CK2CharacterShould : public Test
 {
 protected:
 	CK2CharacterShould() : SAMPLE_TITLE_NAME("e_sample"), DEMESNE_KEY("demesne"),
-        opinionRepositoryMock(std::make_shared<CK2OpinionRepositoryMock>()),
+        opinionRepositoryMock(std::make_shared<ck2::opinion::mocks::RepositoryMock>()),
         world(std::make_shared<CK2World>(std::make_shared<LoggerMock>(), opinionRepositoryMock))
 	{
 	}
@@ -117,7 +117,7 @@ protected:
 	const std::string DEMESNE_KEY;
     map<int, std::shared_ptr<CK2Dynasty>> dynasties;
 	map<int, CK2Trait*> traits;
-	std::shared_ptr<CK2OpinionRepositoryMock> opinionRepositoryMock;
+	std::shared_ptr<opinion::mocks::RepositoryMock> opinionRepositoryMock;
 	std::shared_ptr<CK2World> world;
 	ObjectMock saveDataMock;
 };

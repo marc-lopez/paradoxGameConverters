@@ -26,9 +26,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 #include "Helpers\ObjectDataHelper.h"
 #include "Mocks\LoggerMock.h"
 #include "Mocks\ObjectMock.h"
-#include "Mocks\CK2World\CK2OpinionRepositoryMock.h"
+#include "Mocks\CK2World\Opinion\RepositoryMock.h"
 #include "CK2World\CK2Title.h"
 #include "CK2World\Character\CK2Character.h"
+#include "CK2World\Opinion\Repository.h"
 #include "CK2World\CK2World.h"
 
 using namespace testing;
@@ -45,14 +46,14 @@ class CK2WorldShould : public Test
 {
 protected:
 	CK2WorldShould() : color(), titleName("k_sample"), deJureLiegeTitleName("e_sample"),
-        opinionRepositoryMock(std::make_shared<CK2OpinionRepository>()),
+        opinionRepositoryMock(std::make_shared<ck2::opinion::Repository>()),
 		world(std::make_shared<CK2World>(std::make_shared<LoggerMock>(), opinionRepositoryMock))
 	{
 	}
 
 	virtual void SetUp()
 	{
-        cultureGroupMapping = std::make_shared<::cultureGroupMapping>();
+        sampleCultureGroupMapping = std::make_shared<cultureGroupMapping>();
 		sampleDeJureLiege = std::make_shared<CK2Title>(deJureLiegeTitleName, color);
 		sampleDeJureLieges.insert(std::make_pair(deJureLiegeTitleName, sampleDeJureLiege));
 		newTitle = new CK2Title(titleName, color);
@@ -69,13 +70,13 @@ protected:
 	int color[3];
 	string titleName;
 	string deJureLiegeTitleName;
-    std::shared_ptr<cultureGroupMapping> cultureGroupMapping;
+    std::shared_ptr<cultureGroupMapping> sampleCultureGroupMapping;
 	map<string, std::shared_ptr<CK2Title>> sampleDeJureLieges;
 	std::shared_ptr<CK2Title> sampleDeJureLiege;
 	CK2Title* newTitle;
 	ObjectDataHelper saveData;
 	ObjectDataHelper provinceDataMock;
-	std::shared_ptr<ICK2OpinionRepository> opinionRepositoryMock;
+	std::shared_ptr<ck2::opinion::IRepository> opinionRepositoryMock;
 	std::shared_ptr<CK2World> world;
 };
 
@@ -104,7 +105,7 @@ TEST_F(CK2WorldShould, ReadProvincesForVersion2Point2)
 	EXPECT_CALL(saveData.getData(), getValue(_)).WillRepeatedly(Return(saveData.getContainer()));
 	EXPECT_CALL(saveData.getData(), getValue("provinces")).WillRepeatedly(Return(provinceDataMock.getContainer()));
 
-    world->init(&(saveData.getData()), cultureGroupMapping);
+    world->init(&(saveData.getData()), sampleCultureGroupMapping);
 
     ASSERT_FALSE(world->getProvinces().empty());
 }
@@ -162,7 +163,7 @@ TEST_P(CK2WorldWithObsoleteTitleShould, SubstituteOldTitleWithEquivalent)
 
     world->addPotentialTitles(&(installedTitles.getData()));
     world->addTitleMigrations(landedTitleMigrations);
-    world->init(&(saveData.getData()), cultureGroupMapping);
+    world->init(&(saveData.getData()), sampleCultureGroupMapping);
 
     ASSERT_THAT(world->getAllTitles()[oldTitleRepr], NotNull());
 }

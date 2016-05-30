@@ -25,7 +25,7 @@
 #include "Parsers/Object.h"
 #include "Log.h"
 
-CK2Opinion::CK2Opinion(Object* obj, std::shared_ptr<ICK2OpinionRepository>& opinionRepository) : multiplier(1),
+CK2Opinion::CK2Opinion(Object* obj, std::shared_ptr<ck2::opinion::IRepository>& opinionRepository) : multiplier(1),
     value(0)
 {
 	if (obj->getKey() == "truce")
@@ -79,37 +79,4 @@ CK2Opinion::CK2Opinion(Object* obj, std::shared_ptr<ICK2OpinionRepository>& opin
 			multiplier = atoi(multObjs[0]->getLeaf().c_str());
 		}
 	}
-}
-
-
-void CK2OpinionRepository::initOpinions(IObject* root)
-{
-	if (root == NULL)
-	{
-		return;
-	}
-	vector<IObject*> opinions = root->getLeaves();
-	for (vector<IObject*>::iterator itr = opinions.begin(); itr != opinions.end(); ++itr)
-	{
-		string name = (*itr)->getKey();
-		vector<IObject*> opinionObjs = (*itr)->getValue("opinion");
-		int value = 0;
-		if (opinionObjs.size() > 0)
-		{
-				value = atoi(opinionObjs[0]->getLeaf().c_str());
-		}
-		if (!name.empty() && value != 0)
-		{
-			opinionVals[name] = value;
-		}
-	}
-}
-
-
-int CK2OpinionRepository::getBaseValue(string opinion)
-{
-	map<string,int>::const_iterator itr = opinionVals.find(opinion);
-	if (itr == opinionVals.end())
-		return 0;
-	return itr->second;
 }

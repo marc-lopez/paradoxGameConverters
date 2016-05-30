@@ -178,7 +178,7 @@ class CK2Character
 		map<int, vector<CK2Opinion> >		opinionMods;
 
 		std::unique_ptr<ck2::character::Demesne>	demesne;
-        std::shared_ptr<ICK2OpinionRepository>      opinionRepository;
+        std::shared_ptr<ck2::opinion::IRepository>      opinionRepository;
 };
 
 
